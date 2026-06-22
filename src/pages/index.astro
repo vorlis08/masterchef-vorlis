@@ -1,113 +1,97 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { recipes, categories } from '../data/recipes';
+import recipesData from '../data/recipes.json';
+
+const categories = [...new Set(recipesData.map((r: any) => r.category))];
 ---
 
 <Layout title="MasterChef Vorlis">
 
   <!-- Header -->
   <header class="px-6 pt-10 pb-6 max-w-6xl mx-auto">
-    <h1 class="text-[28px] font-semibold tracking-tight text-text mb-8">
-      MasterChef <span class="text-accent">Vorlis</span>
-    </h1>
+    <div class="flex items-center justify-between mb-8">
+      <h1 class="text-[28px] font-semibold tracking-tight text-text">
+        MasterChef <span class="text-accent">Vorlis</span>
+      </h1>
+      <div class="flex items-center gap-3">
+        <!-- Unsaved indicator -->
+        <span id="unsaved-badge" class="hidden px-3 py-1 rounded-lg text-[12px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20">
+          Neuložené změny
+        </span>
+        <!-- Save button -->
+        <button id="save-btn" class="hidden px-4 py-2 rounded-lg text-[13px] font-medium bg-accent text-white hover:bg-accent-hover transition-colors" title="Uložit změny na GitHub">
+          Uložit
+        </button>
+        <!-- Add recipe -->
+        <button id="add-btn" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Přidat recept">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </button>
+        <!-- Settings -->
+        <button id="settings-btn" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Nastavení GitHub tokenu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 010 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 010-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
+    </div>
 
     <!-- Search -->
     <div class="relative mb-6">
       <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
-      <input
-        type="text"
-        id="search"
-        placeholder="Hledat recept..."
-        class="w-full bg-surface border border-border rounded-xl py-3 pl-12 pr-4 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-[15px]"
-      />
+      <input type="text" id="search" placeholder="Hledat recept..." class="w-full bg-surface border border-border rounded-xl py-3 pl-12 pr-4 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-[15px]" />
     </div>
 
     <!-- Filters -->
-    <div class="flex gap-2 flex-wrap">
-      <button class="filter-btn active px-4 py-1.5 rounded-lg text-[13px] font-medium bg-accent text-white transition-all" data-category="all">
-        Vše
-      </button>
+    <div class="flex gap-2 flex-wrap" id="filter-bar">
+      <button class="filter-btn active px-4 py-1.5 rounded-lg text-[13px] font-medium bg-accent text-white transition-all" data-category="all">Vše</button>
       {categories.map(cat => (
-        <button class="filter-btn px-4 py-1.5 rounded-lg text-[13px] font-medium bg-surface text-text-muted border border-border hover:text-text transition-all" data-category={cat}>
-          {cat}
-        </button>
+        <button class="filter-btn px-4 py-1.5 rounded-lg text-[13px] font-medium bg-surface text-text-muted border border-border hover:text-text transition-all" data-category={cat}>{cat}</button>
       ))}
     </div>
   </header>
 
   <!-- Recipe grid -->
   <section class="px-6 pb-16 max-w-6xl mx-auto">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="recipe-grid">
-      {recipes.map(recipe => (
-        <button
-          class="recipe-card text-left group"
-          data-category={recipe.category}
-          data-title={recipe.title.toLowerCase()}
-          data-slug={recipe.slug}
-        >
-          <div class="overflow-hidden rounded-xl mb-3 aspect-[3/2]">
-            <img
-              src={recipe.image}
-              alt={recipe.title}
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-              loading="lazy"
-            />
-          </div>
-          <h3 class="text-[16px] font-semibold text-text mb-1">{recipe.title}</h3>
-          <div class="flex items-center gap-3 text-[13px] text-text-muted">
-            <span>{recipe.time}</span>
-            <span class="w-1 h-1 rounded-full bg-border" />
-            <span>{recipe.difficulty}</span>
-            <span class="w-1 h-1 rounded-full bg-border" />
-            <span>{recipe.servings} porcí</span>
-          </div>
-        </button>
-      ))}
-    </div>
-
-    <p id="no-results" class="hidden text-center text-text-muted py-16 text-[15px]">
-      Žádné recepty nenalezeny.
-    </p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="recipe-grid"></div>
+    <p id="no-results" class="hidden text-center text-text-muted py-16 text-[15px]">Žádné recepty nenalezeny.</p>
   </section>
 
-  <!-- Modal overlay -->
+  <!-- Recipe detail modal -->
   <div id="modal-overlay" class="fixed inset-0 bg-black/70 z-50 hidden opacity-0 transition-opacity duration-200">
     <div id="modal" class="fixed inset-y-0 right-0 w-full max-w-2xl bg-bg overflow-y-auto translate-x-full transition-transform duration-300 ease-out">
-
-      <!-- Modal close -->
       <button id="modal-close" class="sticky top-4 ml-4 z-10 w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
-        </svg>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
-
-      <!-- Modal image -->
       <div class="-mt-14">
         <img id="modal-image" src="" alt="" class="w-full aspect-[16/9] object-cover" />
       </div>
-
-      <!-- Modal content -->
       <div class="px-8 py-8">
-        <h2 id="modal-title" class="text-[24px] font-semibold text-text mb-2"></h2>
+        <div class="flex items-start justify-between mb-2">
+          <h2 id="modal-title" class="text-[24px] font-semibold text-text"></h2>
+          <div class="flex gap-2 shrink-0 ml-4">
+            <button id="modal-edit" class="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Upravit">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+            </button>
+            <button id="modal-delete" class="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-red-400 hover:border-red-400/50 transition-colors" title="Smazat">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
+            </button>
+          </div>
+        </div>
         <p id="modal-description" class="text-text-muted text-[15px] mb-6 leading-relaxed"></p>
-
         <div id="modal-meta" class="flex gap-4 mb-8 text-[13px] text-text-muted"></div>
-
-        <!-- Ingredients -->
         <div class="mb-8">
           <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4">Ingredience</h3>
           <ul id="modal-ingredients" class="space-y-2"></ul>
         </div>
-
-        <!-- Steps -->
         <div class="mb-8">
           <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4">Postup</h3>
           <ol id="modal-steps" class="space-y-4"></ol>
         </div>
-
-        <!-- Tip -->
         <div id="modal-tip" class="hidden p-5 rounded-xl bg-surface border border-border">
           <p class="text-[14px] leading-relaxed">
             <span class="text-accent font-medium">Tip — </span>
@@ -118,139 +102,402 @@ import { recipes, categories } from '../data/recipes';
     </div>
   </div>
 
-  <script define:vars={{ recipes }}>
+  <!-- Edit/Add modal -->
+  <div id="edit-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden opacity-0 transition-opacity duration-200">
+    <div id="edit-modal" class="fixed inset-y-0 right-0 w-full max-w-2xl bg-bg overflow-y-auto translate-x-full transition-transform duration-300 ease-out">
+      <div class="px-8 py-8">
+        <div class="flex items-center justify-between mb-8">
+          <h2 id="edit-heading" class="text-[22px] font-semibold text-text">Nový recept</h2>
+          <button id="edit-close" class="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <form id="edit-form" class="space-y-5">
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">Název *</label>
+            <input name="title" required class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" />
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">Popis</label>
+            <textarea name="description" rows="2" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">URL obrázku</label>
+            <input name="image" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" placeholder="https://..." />
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-[13px] font-medium text-text-muted mb-1.5">Čas</label>
+              <input name="time" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" placeholder="45 min" />
+            </div>
+            <div>
+              <label class="block text-[13px] font-medium text-text-muted mb-1.5">Porce</label>
+              <input name="servings" type="number" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" placeholder="4" />
+            </div>
+            <div>
+              <label class="block text-[13px] font-medium text-text-muted mb-1.5">Obtížnost</label>
+              <select name="difficulty" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors">
+                <option>Snadné</option>
+                <option>Střední</option>
+                <option>Náročné</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">Kategorie</label>
+            <input name="category" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" placeholder="Hlavní chod" />
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">Tagy <span class="font-normal">(oddělené čárkou)</span></label>
+            <input name="tags" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" placeholder="česká kuchyně, maso" />
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">Ingredience <span class="font-normal">(každá na nový řádek)</span></label>
+            <textarea name="ingredients" rows="6" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors resize-none font-mono"></textarea>
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">Postup <span class="font-normal">(každý krok na nový řádek)</span></label>
+            <textarea name="steps" rows="6" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors resize-none font-mono"></textarea>
+          </div>
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">Tip</label>
+            <input name="tip" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" />
+          </div>
+          <input type="hidden" name="slug" />
+          <button type="submit" class="w-full py-3 rounded-lg bg-accent text-white font-medium text-[15px] hover:bg-accent-hover transition-colors">
+            Uložit recept
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settings-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden opacity-0 transition-opacity duration-200">
+    <div class="fixed inset-0 flex items-center justify-center p-6">
+      <div id="settings-modal" class="bg-bg border border-border rounded-2xl w-full max-w-md p-8 scale-95 opacity-0 transition-all duration-200">
+        <h2 class="text-[20px] font-semibold text-text mb-2">Nastavení</h2>
+        <p class="text-text-muted text-[13px] mb-6 leading-relaxed">
+          Pro ukládání změn potřebuješ GitHub Personal Access Token s oprávněním <code class="px-1.5 py-0.5 rounded bg-surface text-accent text-[12px]">contents: write</code>.
+          Vygeneruj si ho na <a href="https://github.com/settings/tokens?type=beta" target="_blank" class="text-accent hover:underline">github.com/settings/tokens</a>.
+        </p>
+        <div class="mb-6">
+          <label class="block text-[13px] font-medium text-text-muted mb-1.5">GitHub Token</label>
+          <input id="token-input" type="password" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" placeholder="github_pat_..." />
+        </div>
+        <div class="flex gap-3">
+          <button id="token-save" class="flex-1 py-2.5 rounded-lg bg-accent text-white font-medium text-[14px] hover:bg-accent-hover transition-colors">Uložit token</button>
+          <button id="settings-close" class="px-4 py-2.5 rounded-lg bg-surface border border-border text-text-muted font-medium text-[14px] hover:text-text transition-colors">Zavřít</button>
+        </div>
+        <p id="token-status" class="mt-4 text-[13px] hidden"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saving overlay -->
+  <div id="saving-overlay" class="fixed inset-0 bg-black/70 z-[70] hidden flex items-center justify-center">
+    <div class="bg-bg border border-border rounded-2xl p-8 text-center max-w-sm">
+      <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p id="saving-text" class="text-text text-[15px]">Ukládám na GitHub...</p>
+    </div>
+  </div>
+
+  <script define:vars={{ recipesData }}>
+    const REPO = 'vorlis08/masterchef-vorlis';
+    const FILE_PATH = 'src/data/recipes.json';
+
+    let recipes = JSON.parse(JSON.stringify(recipesData));
+    let originalJson = JSON.stringify(recipesData);
+    let dirty = false;
+    let currentSlug = null;
+
+    // --- DOM refs ---
     const grid = document.getElementById('recipe-grid');
-    const cards = grid.querySelectorAll('.recipe-card');
     const noResults = document.getElementById('no-results');
     const searchInput = document.getElementById('search');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-
+    const unsavedBadge = document.getElementById('unsaved-badge');
+    const saveBtn = document.getElementById('save-btn');
     let activeCategory = 'all';
-    let searchQuery = '';
 
-    function filterCards() {
+    // --- Render grid ---
+    function renderGrid() {
+      const query = searchInput.value.toLowerCase();
+      let html = '';
       let visible = 0;
-      cards.forEach(card => {
-        const cat = card.dataset.category;
-        const title = card.dataset.title;
-        const matchCat = activeCategory === 'all' || cat === activeCategory;
-        const matchSearch = !searchQuery || title.includes(searchQuery);
-        const show = matchCat && matchSearch;
-        card.style.display = show ? '' : 'none';
-        if (show) visible++;
+      recipes.forEach(r => {
+        const matchCat = activeCategory === 'all' || r.category === activeCategory;
+        const matchSearch = !query || r.title.toLowerCase().includes(query);
+        if (!matchCat || !matchSearch) return;
+        visible++;
+        html += `
+          <button class="recipe-card text-left group" data-slug="${r.slug}">
+            <div class="overflow-hidden rounded-xl mb-3 aspect-[3/2] bg-surface">
+              ${r.image ? `<img src="${r.image}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" loading="lazy" />` : '<div class="w-full h-full flex items-center justify-center text-4xl text-text-muted">🍽️</div>'}
+            </div>
+            <h3 class="text-[16px] font-semibold text-text mb-1">${r.title}</h3>
+            <div class="flex items-center gap-3 text-[13px] text-text-muted">
+              ${r.time ? `<span>${r.time}</span><span class="w-1 h-1 rounded-full bg-border"></span>` : ''}
+              <span>${r.difficulty || 'Snadné'}</span>
+              <span class="w-1 h-1 rounded-full bg-border"></span>
+              <span>${r.servings || '?'} porcí</span>
+            </div>
+          </button>`;
       });
+      grid.innerHTML = html;
       noResults.classList.toggle('hidden', visible > 0);
+      grid.querySelectorAll('.recipe-card').forEach(c =>
+        c.addEventListener('click', () => openDetailModal(c.dataset.slug))
+      );
     }
 
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        filterBtns.forEach(b => {
-          b.classList.remove('active', 'bg-accent', 'text-white');
-          b.classList.add('bg-surface', 'text-text-muted', 'border', 'border-border');
-        });
-        btn.classList.add('active', 'bg-accent', 'text-white');
-        btn.classList.remove('bg-surface', 'text-text-muted', 'border', 'border-border');
-        activeCategory = btn.dataset.category;
-        filterCards();
+    function updateDirty() {
+      dirty = JSON.stringify(recipes) !== originalJson;
+      unsavedBadge.classList.toggle('hidden', !dirty);
+      saveBtn.classList.toggle('hidden', !dirty);
+    }
+
+    function slugify(text) {
+      return text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+
+    // --- Filters ---
+    function updateFilters() {
+      const bar = document.getElementById('filter-bar');
+      const cats = [...new Set(recipes.map(r => r.category).filter(Boolean))];
+      bar.innerHTML = `<button class="filter-btn ${activeCategory === 'all' ? 'active bg-accent text-white' : 'bg-surface text-text-muted border border-border hover:text-text'} px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all" data-category="all">Vše</button>`;
+      cats.forEach(cat => {
+        bar.innerHTML += `<button class="filter-btn ${activeCategory === cat ? 'active bg-accent text-white' : 'bg-surface text-text-muted border border-border hover:text-text'} px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all" data-category="${cat}">${cat}</button>`;
       });
-    });
+      bar.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          activeCategory = btn.dataset.category;
+          updateFilters();
+          renderGrid();
+        });
+      });
+    }
 
-    searchInput.addEventListener('input', e => {
-      searchQuery = e.target.value.toLowerCase();
-      filterCards();
-    });
+    searchInput.addEventListener('input', renderGrid);
 
-    // Modal
+    // --- Detail modal ---
     const overlay = document.getElementById('modal-overlay');
     const modal = document.getElementById('modal');
-    const closeBtn = document.getElementById('modal-close');
 
-    function openModal(slug) {
-      const recipe = recipes.find(r => r.slug === slug);
-      if (!recipe) return;
-
-      document.getElementById('modal-image').src = recipe.image;
-      document.getElementById('modal-image').alt = recipe.title;
-      document.getElementById('modal-title').textContent = recipe.title;
-      document.getElementById('modal-description').textContent = recipe.description;
-
+    function openDetailModal(slug) {
+      const r = recipes.find(x => x.slug === slug);
+      if (!r) return;
+      currentSlug = slug;
+      document.getElementById('modal-image').src = r.image || '';
+      document.getElementById('modal-title').textContent = r.title;
+      document.getElementById('modal-description').textContent = r.description || '';
       document.getElementById('modal-meta').innerHTML =
-        `<span>${recipe.time}</span>` +
-        `<span class="w-1 h-1 rounded-full bg-border self-center"></span>` +
-        `<span>${recipe.difficulty}</span>` +
-        `<span class="w-1 h-1 rounded-full bg-border self-center"></span>` +
-        `<span>${recipe.servings} porcí</span>`;
+        `${r.time ? `<span>${r.time}</span><span class="w-1 h-1 rounded-full bg-border self-center"></span>` : ''}` +
+        `<span>${r.difficulty || ''}</span><span class="w-1 h-1 rounded-full bg-border self-center"></span><span>${r.servings || '?'} porcí</span>`;
 
       const ingList = document.getElementById('modal-ingredients');
-      ingList.innerHTML = recipe.ingredients.map((ing, i) =>
-        `<li class="flex items-start gap-3 cursor-pointer group ingredient-item" data-i="${i}">
+      ingList.innerHTML = (r.ingredients || []).map((ing, i) =>
+        `<li class="flex items-start gap-3 cursor-pointer group ingredient-item">
           <span class="mt-[3px] w-[18px] h-[18px] shrink-0 rounded border border-border group-hover:border-accent flex items-center justify-center transition-colors checkbox">
-            <svg class="w-3 h-3 text-accent opacity-0 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-            </svg>
+            <svg class="w-3 h-3 text-accent opacity-0 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
           </span>
           <span class="text-[15px] text-text-muted group-hover:text-text transition-colors ing-text">${ing}</span>
         </li>`
       ).join('');
-
       ingList.querySelectorAll('.ingredient-item').forEach(item => {
         item.addEventListener('click', () => {
-          const check = item.querySelector('.check-icon');
-          const cb = item.querySelector('.checkbox');
+          const ck = item.querySelector('.check-icon');
           const txt = item.querySelector('.ing-text');
-          const checked = check.style.opacity === '1';
-          check.style.opacity = checked ? '0' : '1';
-          cb.classList.toggle('border-accent', !checked);
-          txt.classList.toggle('line-through', !checked);
-          txt.classList.toggle('opacity-40', !checked);
+          const on = ck.style.opacity === '1';
+          ck.style.opacity = on ? '0' : '1';
+          item.querySelector('.checkbox').classList.toggle('border-accent', !on);
+          txt.classList.toggle('line-through', !on);
+          txt.classList.toggle('opacity-40', !on);
         });
       });
 
-      const stepsList = document.getElementById('modal-steps');
-      stepsList.innerHTML = recipe.steps.map((step, i) =>
-        `<li class="flex gap-4">
-          <span class="shrink-0 w-7 h-7 rounded-full bg-surface border border-border flex items-center justify-center text-[12px] font-semibold text-accent mt-0.5">${i + 1}</span>
-          <p class="text-[15px] text-text-muted leading-relaxed">${step}</p>
-        </li>`
+      document.getElementById('modal-steps').innerHTML = (r.steps || []).map((s, i) =>
+        `<li class="flex gap-4"><span class="shrink-0 w-7 h-7 rounded-full bg-surface border border-border flex items-center justify-center text-[12px] font-semibold text-accent mt-0.5">${i+1}</span><p class="text-[15px] text-text-muted leading-relaxed">${s}</p></li>`
       ).join('');
 
       const tipEl = document.getElementById('modal-tip');
-      const tipText = document.getElementById('modal-tip-text');
-      if (recipe.tip) {
-        tipEl.classList.remove('hidden');
-        tipText.textContent = recipe.tip;
-      } else {
-        tipEl.classList.add('hidden');
-      }
+      if (r.tip) { tipEl.classList.remove('hidden'); document.getElementById('modal-tip-text').textContent = r.tip; }
+      else { tipEl.classList.add('hidden'); }
 
       overlay.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
-      requestAnimationFrame(() => {
-        overlay.classList.remove('opacity-0');
-        modal.classList.remove('translate-x-full');
-      });
+      requestAnimationFrame(() => { overlay.classList.remove('opacity-0'); modal.classList.remove('translate-x-full'); });
     }
 
-    function closeModal() {
+    function closeDetailModal() {
       overlay.classList.add('opacity-0');
       modal.classList.add('translate-x-full');
-      setTimeout(() => {
-        overlay.classList.add('hidden');
-        document.body.style.overflow = '';
-        modal.scrollTop = 0;
-      }, 300);
+      setTimeout(() => { overlay.classList.add('hidden'); document.body.style.overflow = ''; modal.scrollTop = 0; }, 300);
+    }
+    document.getElementById('modal-close').addEventListener('click', closeDetailModal);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeDetailModal(); });
+
+    // --- Edit modal ---
+    const editOverlay = document.getElementById('edit-overlay');
+    const editModal = document.getElementById('edit-modal');
+    const editForm = document.getElementById('edit-form');
+
+    function openEditModal(recipe) {
+      document.getElementById('edit-heading').textContent = recipe ? 'Upravit recept' : 'Nový recept';
+      const f = editForm;
+      f.title.value = recipe?.title || '';
+      f.description.value = recipe?.description || '';
+      f.image.value = recipe?.image || '';
+      f.time.value = recipe?.time || '';
+      f.servings.value = recipe?.servings || '';
+      f.difficulty.value = recipe?.difficulty || 'Snadné';
+      f.category.value = recipe?.category || '';
+      f.tags.value = (recipe?.tags || []).join(', ');
+      f.ingredients.value = (recipe?.ingredients || []).join('\n');
+      f.steps.value = (recipe?.steps || []).join('\n');
+      f.tip.value = recipe?.tip || '';
+      f.slug.value = recipe?.slug || '';
+
+      editOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => { editOverlay.classList.remove('opacity-0'); editModal.classList.remove('translate-x-full'); });
     }
 
-    cards.forEach(card => {
-      card.addEventListener('click', () => openModal(card.dataset.slug));
+    function closeEditModal() {
+      editOverlay.classList.add('opacity-0');
+      editModal.classList.add('translate-x-full');
+      setTimeout(() => { editOverlay.classList.add('hidden'); editModal.scrollTop = 0; }, 300);
+    }
+    document.getElementById('edit-close').addEventListener('click', closeEditModal);
+    editOverlay.addEventListener('click', e => { if (e.target === editOverlay) closeEditModal(); });
+
+    editForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const f = editForm;
+      const existingSlug = f.slug.value;
+      const newRecipe = {
+        slug: existingSlug || slugify(f.title.value),
+        title: f.title.value,
+        description: f.description.value,
+        image: f.image.value,
+        time: f.time.value,
+        servings: parseInt(f.servings.value) || 4,
+        difficulty: f.difficulty.value,
+        category: f.category.value,
+        tags: f.tags.value.split(',').map(t => t.trim()).filter(Boolean),
+        ingredients: f.ingredients.value.split('\n').map(s => s.trim()).filter(Boolean),
+        steps: f.steps.value.split('\n').map(s => s.trim()).filter(Boolean),
+        tip: f.tip.value || undefined,
+      };
+
+      if (existingSlug) {
+        const idx = recipes.findIndex(r => r.slug === existingSlug);
+        if (idx >= 0) recipes[idx] = newRecipe;
+      } else {
+        recipes.push(newRecipe);
+      }
+
+      updateDirty();
+      updateFilters();
+      renderGrid();
+      closeEditModal();
+      closeDetailModal();
     });
 
-    closeBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', e => {
-      if (e.target === overlay) closeModal();
+    // --- Buttons ---
+    document.getElementById('add-btn').addEventListener('click', () => openEditModal(null));
+    document.getElementById('modal-edit').addEventListener('click', () => {
+      const r = recipes.find(x => x.slug === currentSlug);
+      if (r) openEditModal(r);
     });
+    document.getElementById('modal-delete').addEventListener('click', () => {
+      if (!confirm('Opravdu smazat tento recept?')) return;
+      recipes = recipes.filter(r => r.slug !== currentSlug);
+      updateDirty();
+      updateFilters();
+      renderGrid();
+      closeDetailModal();
+    });
+
+    // --- Settings ---
+    const settingsOverlay = document.getElementById('settings-overlay');
+    const settingsModal = document.getElementById('settings-modal');
+    const tokenInput = document.getElementById('token-input');
+    const tokenStatus = document.getElementById('token-status');
+
+    document.getElementById('settings-btn').addEventListener('click', () => {
+      tokenInput.value = localStorage.getItem('gh_token') || '';
+      tokenStatus.classList.add('hidden');
+      settingsOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => { settingsOverlay.classList.remove('opacity-0'); settingsModal.classList.remove('scale-95', 'opacity-0'); });
+    });
+    function closeSettings() {
+      settingsOverlay.classList.add('opacity-0');
+      settingsModal.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => settingsOverlay.classList.add('hidden'), 200);
+    }
+    document.getElementById('settings-close').addEventListener('click', closeSettings);
+    settingsOverlay.addEventListener('click', e => { if (e.target === settingsOverlay) closeSettings(); });
+
+    document.getElementById('token-save').addEventListener('click', () => {
+      const token = tokenInput.value.trim();
+      if (!token) { tokenStatus.textContent = 'Zadej token.'; tokenStatus.className = 'mt-4 text-[13px] text-red-400'; tokenStatus.classList.remove('hidden'); return; }
+      localStorage.setItem('gh_token', token);
+      tokenStatus.textContent = 'Token uložen.';
+      tokenStatus.className = 'mt-4 text-[13px] text-sage-400';
+      tokenStatus.classList.remove('hidden');
+      setTimeout(closeSettings, 1000);
+    });
+
+    // --- Save to GitHub ---
+    const savingOverlay = document.getElementById('saving-overlay');
+    const savingText = document.getElementById('saving-text');
+
+    saveBtn.addEventListener('click', async () => {
+      const token = localStorage.getItem('gh_token');
+      if (!token) { document.getElementById('settings-btn').click(); return; }
+
+      savingOverlay.classList.remove('hidden');
+      savingText.textContent = 'Ukládám na GitHub...';
+
+      try {
+        const getRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github.v3+json' }
+        });
+        if (!getRes.ok) throw new Error('Nepodařilo se načíst soubor z GitHubu. Zkontroluj token.');
+        const fileData = await getRes.json();
+
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(recipes, null, 2) + '\n')));
+
+        const putRes = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`, {
+          method: 'PUT',
+          headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: 'update recipes',
+            content: content,
+            sha: fileData.sha,
+          })
+        });
+        if (!putRes.ok) { const err = await putRes.json(); throw new Error(err.message || 'Push selhal.'); }
+
+        originalJson = JSON.stringify(recipes);
+        updateDirty();
+        savingText.textContent = 'Uloženo! Web se přestaví za ~30s.';
+        setTimeout(() => savingOverlay.classList.add('hidden'), 2000);
+      } catch (err) {
+        savingText.textContent = 'Chyba: ' + err.message;
+        setTimeout(() => savingOverlay.classList.add('hidden'), 3000);
+      }
+    });
+
+    // --- Escape key ---
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key !== 'Escape') return;
+      if (!settingsOverlay.classList.contains('hidden')) closeSettings();
+      else if (!editOverlay.classList.contains('hidden')) closeEditModal();
+      else if (!overlay.classList.contains('hidden')) closeDetailModal();
     });
+
+    // --- Init ---
+    updateFilters();
+    renderGrid();
   </script>
 </Layout>
