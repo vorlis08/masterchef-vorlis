@@ -23,7 +23,7 @@ export const recipes: Recipe[] = [
     servings: 4,
     difficulty: 'Střední',
     category: 'Hlavní chod',
-    tags: ['česká kuchyně', 'maso', 'omáčka', 'klasika'],
+    tags: ['česká kuchyně', 'maso', 'omáčka'],
     ingredients: [
       '800g hovězí svíčková',
       '2 mrkve',
@@ -61,7 +61,7 @@ export const recipes: Recipe[] = [
     servings: 4,
     difficulty: 'Snadné',
     category: 'Polévka',
-    tags: ['česká kuchyně', 'polévka', 'houby', 'vegetariánské'],
+    tags: ['česká kuchyně', 'polévka', 'houby'],
     ingredients: [
       '300g hub (houby dle sezóny nebo žampiony)',
       '4 střední brambory',
@@ -94,7 +94,7 @@ export const recipes: Recipe[] = [
     servings: 8,
     difficulty: 'Střední',
     category: 'Dezert',
-    tags: ['sladké', 'pečení', 'tradiční', 'dezert'],
+    tags: ['sladké', 'pečení', 'tradiční'],
     ingredients: [
       '500g hladké mouky',
       '200ml mléka',
@@ -127,7 +127,7 @@ export const recipes: Recipe[] = [
     servings: 4,
     difficulty: 'Snadné',
     category: 'Polévka',
-    tags: ['česká kuchyně', 'polévka', 'brambory', 'houby'],
+    tags: ['česká kuchyně', 'polévka', 'brambory'],
     ingredients: [
       '6 středních brambor',
       '200g hub',
@@ -154,13 +154,13 @@ export const recipes: Recipe[] = [
   {
     slug: 'medovnik',
     title: 'Medovník',
-    description: 'Vrstvený medový dort s karamelovo-smetanovým krémem. Neskutečně vláčný.',
+    description: 'Vrstvený medový dort s karamelovo-smetanovým krémem.',
     image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80',
     time: '3 hod',
     servings: 12,
     difficulty: 'Náročné',
     category: 'Dezert',
-    tags: ['sladké', 'pečení', 'dort', 'med'],
+    tags: ['sladké', 'pečení', 'dort'],
     ingredients: [
       '150g medu',
       '150g cukru',
@@ -181,7 +181,7 @@ export const recipes: Recipe[] = [
       'Střídejte vrstvy těsta a krému. Odřezky rozkrošte na posypání.',
       'Ozdobte drcenými ořechy a nechte přes noc odležet v lednici.',
     ],
-    tip: 'Čím déle dort v lednici odleží, tím lépe pláty nasáknou krémem a dort je vláčnější.',
+    tip: 'Čím déle dort v lednici odleží, tím lépe pláty nasáknou krémem.',
   },
   {
     slug: 'gulas',
@@ -192,7 +192,7 @@ export const recipes: Recipe[] = [
     servings: 6,
     difficulty: 'Snadné',
     category: 'Hlavní chod',
-    tags: ['česká kuchyně', 'maso', 'guláš', 'klasika'],
+    tags: ['česká kuchyně', 'maso', 'guláš'],
     ingredients: [
       '1kg hovězího (plec nebo kýta)',
       '6 velkých cibulí',
@@ -206,17 +206,16 @@ export const recipes: Recipe[] = [
       'Houskové knedlíky',
     ],
     steps: [
-      'Cibuli nakrájejte na jemno a osmažte na sádle dozlatova (trvá to 15–20 minut, neuspěchejte to).',
+      'Cibuli nakrájejte na jemno a osmažte na sádle dozlatova (15–20 minut, neuspěchejte to).',
       'Stáhněte z plotny, vmíchejte obě papriky a rajský protlak.',
       'Maso nakrájejte na 3cm kostky, přidejte k cibuli a opečte.',
       'Zalijte horkou vodou těsně nad úroveň masa. Přidejte kmín, sůl, pepř.',
       'Duste pod pokličkou 1.5–2 hodiny na mírném ohni, občas zamíchejte.',
       'Na konci přidejte protlačený česnek. Guláš by měl být hustý bez mouky.',
-      'Podávejte s houskovým knedlíkem a posypte cibulkou.',
+      'Podávejte s houskovým knedlíkem.',
     ],
     tip: 'Tajemství guláše je v cibuli – musí jí být hodně a musí být pořádně osmažená.',
   },
 ];
 
 export const categories = [...new Set(recipes.map(r => r.category))];
-export const allTags = [...new Set(recipes.flatMap(r => r.tags))];

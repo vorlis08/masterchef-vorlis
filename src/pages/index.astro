@@ -1,125 +1,256 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import RecipeCard from '../components/RecipeCard.astro';
 import { recipes, categories } from '../data/recipes';
 ---
 
-<Layout title="Recepty">
-  <!-- Hero -->
-  <section class="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-    <div class="absolute inset-0">
-      <img
-        src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80"
-        alt="Kuchyně"
-        class="w-full h-full object-cover"
+<Layout title="MasterChef Vorlis">
+
+  <!-- Header -->
+  <header class="px-6 pt-10 pb-6 max-w-6xl mx-auto">
+    <h1 class="text-[28px] font-semibold tracking-tight text-text mb-8">
+      MasterChef <span class="text-accent">Vorlis</span>
+    </h1>
+
+    <!-- Search -->
+    <div class="relative mb-6">
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+      <input
+        type="text"
+        id="search"
+        placeholder="Hledat recept..."
+        class="w-full bg-surface border border-border rounded-xl py-3 pl-12 pr-4 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-[15px]"
       />
-      <div class="hero-gradient absolute inset-0" />
-    </div>
-    <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
-      <span class="animate-fade-in-up inline-block text-accent font-medium tracking-widest uppercase text-sm mb-6">
-        Vítejte v kuchyni
-      </span>
-      <h1 class="animate-fade-in-up stagger-1 font-[Playfair_Display] text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight mb-6">
-        MasterChef<br /><span class="text-accent italic">Vorlis</span>
-      </h1>
-      <p class="animate-fade-in-up stagger-2 text-warm-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-        Objevte recepty, které vám změní pohled na vaření. Od české klasiky po moderní experimenty.
-      </p>
-      <a
-        href="#recepty"
-        class="animate-fade-in-up stagger-3 inline-flex items-center gap-3 bg-accent hover:bg-accent-dark text-white font-semibold px-8 py-4 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-accent/25 hover:-translate-y-0.5"
-      >
-        Prozkoumat recepty
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-      </a>
-    </div>
-    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-warm-950 to-transparent" />
-  </section>
-
-  <!-- Stats -->
-  <section class="relative -mt-16 z-20 max-w-5xl mx-auto px-6">
-    <div class="grid grid-cols-3 gap-4">
-      <div class="glass rounded-2xl p-6 text-center animate-scale-in stagger-1">
-        <p class="font-[Playfair_Display] text-3xl md:text-4xl font-bold text-accent">{recipes.length}</p>
-        <p class="text-warm-400 text-sm mt-1">Receptů</p>
-      </div>
-      <div class="glass rounded-2xl p-6 text-center animate-scale-in stagger-2">
-        <p class="font-[Playfair_Display] text-3xl md:text-4xl font-bold text-accent">{categories.length}</p>
-        <p class="text-warm-400 text-sm mt-1">Kategorií</p>
-      </div>
-      <div class="glass rounded-2xl p-6 text-center animate-scale-in stagger-3">
-        <p class="font-[Playfair_Display] text-3xl md:text-4xl font-bold text-accent">100%</p>
-        <p class="text-warm-400 text-sm mt-1">S láskou</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Filter + Recipes -->
-  <section id="recepty" class="max-w-7xl mx-auto px-6 pt-24 pb-12">
-    <div class="text-center mb-16">
-      <h2 class="font-[Playfair_Display] text-3xl md:text-5xl font-bold text-warm-100 mb-4">
-        Naše recepty
-      </h2>
-      <p class="text-warm-400 max-w-xl mx-auto">
-        Vyberte si z naší kolekce ověřených receptů. Každý je podrobně popsaný krok za krokem.
-      </p>
     </div>
 
-    <!-- Category filter -->
-    <div class="flex flex-wrap justify-center gap-3 mb-12" id="filter-bar">
-      <button
-        class="filter-btn active px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 bg-accent text-white"
-        data-category="all"
-      >
+    <!-- Filters -->
+    <div class="flex gap-2 flex-wrap">
+      <button class="filter-btn active px-4 py-1.5 rounded-lg text-[13px] font-medium bg-accent text-white transition-all" data-category="all">
         Vše
       </button>
       {categories.map(cat => (
-        <button
-          class="filter-btn px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 bg-warm-800/60 text-warm-300 hover:bg-warm-700/60 border border-warm-700/30"
-          data-category={cat}
-        >
+        <button class="filter-btn px-4 py-1.5 rounded-lg text-[13px] font-medium bg-surface text-text-muted border border-border hover:text-text transition-all" data-category={cat}>
           {cat}
         </button>
       ))}
     </div>
+  </header>
 
-    <!-- Recipe grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="recipe-grid">
-      {recipes.map((recipe, i) => (
-        <div class={`animate-fade-in-up stagger-${Math.min(i + 1, 6)}`} data-category={recipe.category}>
-          <RecipeCard {...recipe} />
-        </div>
+  <!-- Recipe grid -->
+  <section class="px-6 pb-16 max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="recipe-grid">
+      {recipes.map(recipe => (
+        <button
+          class="recipe-card text-left group"
+          data-category={recipe.category}
+          data-title={recipe.title.toLowerCase()}
+          data-slug={recipe.slug}
+        >
+          <div class="overflow-hidden rounded-xl mb-3 aspect-[3/2]">
+            <img
+              src={recipe.image}
+              alt={recipe.title}
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+              loading="lazy"
+            />
+          </div>
+          <h3 class="text-[16px] font-semibold text-text mb-1">{recipe.title}</h3>
+          <div class="flex items-center gap-3 text-[13px] text-text-muted">
+            <span>{recipe.time}</span>
+            <span class="w-1 h-1 rounded-full bg-border" />
+            <span>{recipe.difficulty}</span>
+            <span class="w-1 h-1 rounded-full bg-border" />
+            <span>{recipe.servings} porcí</span>
+          </div>
+        </button>
       ))}
     </div>
+
+    <p id="no-results" class="hidden text-center text-text-muted py-16 text-[15px]">
+      Žádné recepty nenalezeny.
+    </p>
   </section>
-</Layout>
 
-<script>
-  const buttons = document.querySelectorAll('.filter-btn');
-  const cards = document.querySelectorAll('#recipe-grid > div');
+  <!-- Modal overlay -->
+  <div id="modal-overlay" class="fixed inset-0 bg-black/70 z-50 hidden opacity-0 transition-opacity duration-200">
+    <div id="modal" class="fixed inset-y-0 right-0 w-full max-w-2xl bg-bg overflow-y-auto translate-x-full transition-transform duration-300 ease-out">
 
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cat = (btn as HTMLElement).dataset.category;
+      <!-- Modal close -->
+      <button id="modal-close" class="sticky top-4 ml-4 z-10 w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
-      buttons.forEach(b => {
-        b.classList.remove('active', 'bg-accent', 'text-white');
-        b.classList.add('bg-warm-800/60', 'text-warm-300', 'border', 'border-warm-700/30');
-      });
-      btn.classList.add('active', 'bg-accent', 'text-white');
-      btn.classList.remove('bg-warm-800/60', 'text-warm-300', 'border', 'border-warm-700/30');
+      <!-- Modal image -->
+      <div class="-mt-14">
+        <img id="modal-image" src="" alt="" class="w-full aspect-[16/9] object-cover" />
+      </div>
 
+      <!-- Modal content -->
+      <div class="px-8 py-8">
+        <h2 id="modal-title" class="text-[24px] font-semibold text-text mb-2"></h2>
+        <p id="modal-description" class="text-text-muted text-[15px] mb-6 leading-relaxed"></p>
+
+        <div id="modal-meta" class="flex gap-4 mb-8 text-[13px] text-text-muted"></div>
+
+        <!-- Ingredients -->
+        <div class="mb-8">
+          <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4">Ingredience</h3>
+          <ul id="modal-ingredients" class="space-y-2"></ul>
+        </div>
+
+        <!-- Steps -->
+        <div class="mb-8">
+          <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4">Postup</h3>
+          <ol id="modal-steps" class="space-y-4"></ol>
+        </div>
+
+        <!-- Tip -->
+        <div id="modal-tip" class="hidden p-5 rounded-xl bg-surface border border-border">
+          <p class="text-[14px] leading-relaxed">
+            <span class="text-accent font-medium">Tip — </span>
+            <span id="modal-tip-text" class="text-text-muted"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script define:vars={{ recipes }}>
+    const grid = document.getElementById('recipe-grid');
+    const cards = grid.querySelectorAll('.recipe-card');
+    const noResults = document.getElementById('no-results');
+    const searchInput = document.getElementById('search');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    let activeCategory = 'all';
+    let searchQuery = '';
+
+    function filterCards() {
+      let visible = 0;
       cards.forEach(card => {
-        const el = card as HTMLElement;
-        if (cat === 'all' || el.dataset.category === cat) {
-          el.style.display = '';
-          el.style.animation = 'fadeInUp 0.4s ease-out both';
-        } else {
-          el.style.display = 'none';
-        }
+        const cat = card.dataset.category;
+        const title = card.dataset.title;
+        const matchCat = activeCategory === 'all' || cat === activeCategory;
+        const matchSearch = !searchQuery || title.includes(searchQuery);
+        const show = matchCat && matchSearch;
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      noResults.classList.toggle('hidden', visible > 0);
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => {
+          b.classList.remove('active', 'bg-accent', 'text-white');
+          b.classList.add('bg-surface', 'text-text-muted', 'border', 'border-border');
+        });
+        btn.classList.add('active', 'bg-accent', 'text-white');
+        btn.classList.remove('bg-surface', 'text-text-muted', 'border', 'border-border');
+        activeCategory = btn.dataset.category;
+        filterCards();
       });
     });
-  });
-</script>
+
+    searchInput.addEventListener('input', e => {
+      searchQuery = e.target.value.toLowerCase();
+      filterCards();
+    });
+
+    // Modal
+    const overlay = document.getElementById('modal-overlay');
+    const modal = document.getElementById('modal');
+    const closeBtn = document.getElementById('modal-close');
+
+    function openModal(slug) {
+      const recipe = recipes.find(r => r.slug === slug);
+      if (!recipe) return;
+
+      document.getElementById('modal-image').src = recipe.image;
+      document.getElementById('modal-image').alt = recipe.title;
+      document.getElementById('modal-title').textContent = recipe.title;
+      document.getElementById('modal-description').textContent = recipe.description;
+
+      document.getElementById('modal-meta').innerHTML =
+        `<span>${recipe.time}</span>` +
+        `<span class="w-1 h-1 rounded-full bg-border self-center"></span>` +
+        `<span>${recipe.difficulty}</span>` +
+        `<span class="w-1 h-1 rounded-full bg-border self-center"></span>` +
+        `<span>${recipe.servings} porcí</span>`;
+
+      const ingList = document.getElementById('modal-ingredients');
+      ingList.innerHTML = recipe.ingredients.map((ing, i) =>
+        `<li class="flex items-start gap-3 cursor-pointer group ingredient-item" data-i="${i}">
+          <span class="mt-[3px] w-[18px] h-[18px] shrink-0 rounded border border-border group-hover:border-accent flex items-center justify-center transition-colors checkbox">
+            <svg class="w-3 h-3 text-accent opacity-0 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </span>
+          <span class="text-[15px] text-text-muted group-hover:text-text transition-colors ing-text">${ing}</span>
+        </li>`
+      ).join('');
+
+      ingList.querySelectorAll('.ingredient-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const check = item.querySelector('.check-icon');
+          const cb = item.querySelector('.checkbox');
+          const txt = item.querySelector('.ing-text');
+          const checked = check.style.opacity === '1';
+          check.style.opacity = checked ? '0' : '1';
+          cb.classList.toggle('border-accent', !checked);
+          txt.classList.toggle('line-through', !checked);
+          txt.classList.toggle('opacity-40', !checked);
+        });
+      });
+
+      const stepsList = document.getElementById('modal-steps');
+      stepsList.innerHTML = recipe.steps.map((step, i) =>
+        `<li class="flex gap-4">
+          <span class="shrink-0 w-7 h-7 rounded-full bg-surface border border-border flex items-center justify-center text-[12px] font-semibold text-accent mt-0.5">${i + 1}</span>
+          <p class="text-[15px] text-text-muted leading-relaxed">${step}</p>
+        </li>`
+      ).join('');
+
+      const tipEl = document.getElementById('modal-tip');
+      const tipText = document.getElementById('modal-tip-text');
+      if (recipe.tip) {
+        tipEl.classList.remove('hidden');
+        tipText.textContent = recipe.tip;
+      } else {
+        tipEl.classList.add('hidden');
+      }
+
+      overlay.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        modal.classList.remove('translate-x-full');
+      });
+    }
+
+    function closeModal() {
+      overlay.classList.add('opacity-0');
+      modal.classList.add('translate-x-full');
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+        modal.scrollTop = 0;
+      }, 300);
+    }
+
+    cards.forEach(card => {
+      card.addEventListener('click', () => openModal(card.dataset.slug));
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</Layout>
