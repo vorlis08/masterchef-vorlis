@@ -1,0 +1,45 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="O nás">
+  <section class="max-w-4xl mx-auto px-6 py-24">
+    <div class="text-center mb-16">
+      <span class="text-accent font-medium tracking-widest uppercase text-sm mb-4 block animate-fade-in-up">O projektu</span>
+      <h1 class="font-[Playfair_Display] text-4xl md:text-6xl font-bold text-warm-100 mb-6 animate-fade-in-up stagger-1">
+        MasterChef <span class="text-accent italic">Vorlis</span>
+      </h1>
+      <p class="text-warm-300 text-lg leading-relaxed max-w-2xl mx-auto animate-fade-in-up stagger-2">
+        Interaktivní online kuchařka, kde najdete ověřené recepty české i světové kuchyně.
+        Každý recept je podrobně popsaný s přesnými ingrediencemi a postupem krok za krokem.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 mb-16">
+      <div class="glass rounded-2xl p-8 text-center animate-scale-in stagger-1">
+        <div class="text-4xl mb-4">🍳</div>
+        <h3 class="font-[Playfair_Display] text-lg font-bold text-warm-100 mb-2">Ověřené recepty</h3>
+        <p class="text-warm-400 text-sm leading-relaxed">Každý recept je vyzkoušený a funguje. Žádné experimenty na vaší kuchyni.</p>
+      </div>
+      <div class="glass rounded-2xl p-8 text-center animate-scale-in stagger-2">
+        <div class="text-4xl mb-4">📱</div>
+        <h3 class="font-[Playfair_Display] text-lg font-bold text-warm-100 mb-2">Na každém zařízení</h3>
+        <p class="text-warm-400 text-sm leading-relaxed">Responzivní design, který funguje na mobilu, tabletu i počítači.</p>
+      </div>
+      <div class="glass rounded-2xl p-8 text-center animate-scale-in stagger-3">
+        <div class="text-4xl mb-4">✅</div>
+        <h3 class="font-[Playfair_Display] text-lg font-bold text-warm-100 mb-2">Interaktivní postup</h3>
+        <p class="text-warm-400 text-sm leading-relaxed">Odškrtávejte ingredience při vaření, aby vám nic neuniklo.</p>
+      </div>
+    </div>
+
+    <div class="glass rounded-2xl p-8 md:p-12 text-center">
+      <p class="text-warm-300 leading-relaxed mb-4">
+        Vytvořeno s ❤️ pomocí <a href="https://astro.build" class="text-accent hover:underline" target="_blank">Astro</a>,
+        <a href="https://tailwindcss.com" class="text-accent hover:underline" target="_blank">Tailwind CSS</a>
+        a nasazeno na <a href="https://pages.github.com" class="text-accent hover:underline" target="_blank">GitHub Pages</a>.
+      </p>
+      <p class="text-warm-500 text-sm">&copy; 2026 MasterChef Vorlis</p>
+    </div>
+  </section>
+</Layout>

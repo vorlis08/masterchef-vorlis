@@ -1,0 +1,125 @@
+---
+import Layout from '../layouts/Layout.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+import { recipes, categories } from '../data/recipes';
+---
+
+<Layout title="Recepty">
+  <!-- Hero -->
+  <section class="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+    <div class="absolute inset-0">
+      <img
+        src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1600&q=80"
+        alt="Kuchyně"
+        class="w-full h-full object-cover"
+      />
+      <div class="hero-gradient absolute inset-0" />
+    </div>
+    <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+      <span class="animate-fade-in-up inline-block text-accent font-medium tracking-widest uppercase text-sm mb-6">
+        Vítejte v kuchyni
+      </span>
+      <h1 class="animate-fade-in-up stagger-1 font-[Playfair_Display] text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight mb-6">
+        MasterChef<br /><span class="text-accent italic">Vorlis</span>
+      </h1>
+      <p class="animate-fade-in-up stagger-2 text-warm-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+        Objevte recepty, které vám změní pohled na vaření. Od české klasiky po moderní experimenty.
+      </p>
+      <a
+        href="#recepty"
+        class="animate-fade-in-up stagger-3 inline-flex items-center gap-3 bg-accent hover:bg-accent-dark text-white font-semibold px-8 py-4 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-accent/25 hover:-translate-y-0.5"
+      >
+        Prozkoumat recepty
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        </svg>
+      </a>
+    </div>
+    <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-warm-950 to-transparent" />
+  </section>
+
+  <!-- Stats -->
+  <section class="relative -mt-16 z-20 max-w-5xl mx-auto px-6">
+    <div class="grid grid-cols-3 gap-4">
+      <div class="glass rounded-2xl p-6 text-center animate-scale-in stagger-1">
+        <p class="font-[Playfair_Display] text-3xl md:text-4xl font-bold text-accent">{recipes.length}</p>
+        <p class="text-warm-400 text-sm mt-1">Receptů</p>
+      </div>
+      <div class="glass rounded-2xl p-6 text-center animate-scale-in stagger-2">
+        <p class="font-[Playfair_Display] text-3xl md:text-4xl font-bold text-accent">{categories.length}</p>
+        <p class="text-warm-400 text-sm mt-1">Kategorií</p>
+      </div>
+      <div class="glass rounded-2xl p-6 text-center animate-scale-in stagger-3">
+        <p class="font-[Playfair_Display] text-3xl md:text-4xl font-bold text-accent">100%</p>
+        <p class="text-warm-400 text-sm mt-1">S láskou</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter + Recipes -->
+  <section id="recepty" class="max-w-7xl mx-auto px-6 pt-24 pb-12">
+    <div class="text-center mb-16">
+      <h2 class="font-[Playfair_Display] text-3xl md:text-5xl font-bold text-warm-100 mb-4">
+        Naše recepty
+      </h2>
+      <p class="text-warm-400 max-w-xl mx-auto">
+        Vyberte si z naší kolekce ověřených receptů. Každý je podrobně popsaný krok za krokem.
+      </p>
+    </div>
+
+    <!-- Category filter -->
+    <div class="flex flex-wrap justify-center gap-3 mb-12" id="filter-bar">
+      <button
+        class="filter-btn active px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 bg-accent text-white"
+        data-category="all"
+      >
+        Vše
+      </button>
+      {categories.map(cat => (
+        <button
+          class="filter-btn px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 bg-warm-800/60 text-warm-300 hover:bg-warm-700/60 border border-warm-700/30"
+          data-category={cat}
+        >
+          {cat}
+        </button>
+      ))}
+    </div>
+
+    <!-- Recipe grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="recipe-grid">
+      {recipes.map((recipe, i) => (
+        <div class={`animate-fade-in-up stagger-${Math.min(i + 1, 6)}`} data-category={recipe.category}>
+          <RecipeCard {...recipe} />
+        </div>
+      ))}
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const buttons = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('#recipe-grid > div');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = (btn as HTMLElement).dataset.category;
+
+      buttons.forEach(b => {
+        b.classList.remove('active', 'bg-accent', 'text-white');
+        b.classList.add('bg-warm-800/60', 'text-warm-300', 'border', 'border-warm-700/30');
+      });
+      btn.classList.add('active', 'bg-accent', 'text-white');
+      btn.classList.remove('bg-warm-800/60', 'text-warm-300', 'border', 'border-warm-700/30');
+
+      cards.forEach(card => {
+        const el = card as HTMLElement;
+        if (cat === 'all' || el.dataset.category === cat) {
+          el.style.display = '';
+          el.style.animation = 'fadeInUp 0.4s ease-out both';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
