@@ -39,5 +39,43 @@
       "Přilij 300 ml smetany a přidej 130 g light smetanového sýra a 50 g sýra dle chuti. Šlehej metličkou, dokud se omáčka nespojí a nezačne houstnout.",
       "Přidej 520 g uvařených tagliatelle a propečené kuře zpět do pánve. Promíchej, dokud nejsou těstoviny rovnoměrně obalené krémovou omáčkou."
     ]
+  },
+  {
+    "slug": "kure-na-paprice",
+    "title": "Kuře na paprice",
+    "description": "Kuřecí maso vařené v papiňáku s cibulí a sladkou paprikou, zahuštěná moukou a dochucená smetanou.",
+    "image": "https://i.imgur.com/AeGSHAj.png",
+    "time": "1 hod 15 min",
+    "servings": 6,
+    "difficulty": "Střední",
+    "category": "Hlavní jídla",
+    "tags": [],
+    "ingredients": [
+      "2 kuřecí stehna",
+      "2 kuřecí křídla",
+      "2-3 lžíce sádla",
+      "2 cibule, nakrájené na kostičky",
+      "2,5 polévkové lžíce sladké papriky",
+      "3 bobkové listy",
+      "4 kuličky nového koření",
+      "sůl",
+      "pepř",
+      "hrnek polohrubé mouky na zahuštění",
+      "250 ml smetany"
+    ],
+    "steps": [
+      "V papiňáku rozpusť 2-3 lžíce sádla a pomalu restuj 2 nakrájené cibule dozlatova.",
+      "Přisyp 2,5 polévkové lžíce sladké papriky a krátce promíchej – jen tolik, aby se spojila s tukem a začala pěnit. Nemíchej dlouho, jinak zhořkne. Nastav indukci na stupeň 9.",
+      "Vlož do papiňáku 2 kuřecí stehna a 2 křídla (předtím důkladně omytá) a zalij vodou tak, aby bylo maso ponořené.",
+      "Přidej 3 bobkové listy, 4 kuličky nového koření, hrst soli a pepře dle uvážení.",
+      "Papiňák zavři a nech vařit. Jakmile začne výrazně syčet, stáhni indukci na stupeň 4 a nastav si časovač na 20 minut.",
+      "Po 20 minutách indukci vypni a nech papiňák dalších 15 minut samovolně dojít, aniž bys ho otevíral.",
+      "Papiňák otevři a maso vyndej na talíř, nech vychladnout.",
+      "Mezitím si dvakrát připrav zahušťovadlo: smíchej 1/2 hrnku vody s 1/2 hrnku polohrubé mouky (dohromady tedy 1 hrnek vody a 1 hrnek mouky).",
+      "Zapni indukci pod omáčkou v papiňáku, přiveď k varu a postupně vlévej zahušťovadlo, dokud se pořádně nepromíchá a omáčka nezhoustne.",
+      "Přidej 250 ml smetany a znovu promíchej.",
+      "Vychladlé maso rukou rozděl na menší kusy a vrať zpět do hrnce s omáčkou.",
+      "Dochuť solí a pepřem dle chuti."
+    ]
   }
 ]
