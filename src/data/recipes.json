@@ -8,7 +8,11 @@
     "servings": 4,
     "difficulty": "Střední",
     "category": "Hlavní chod",
-    "tags": ["česká kuchyně", "maso", "omáčka"],
+    "tags": [
+      "česká kuchyně",
+      "maso",
+      "omáčka"
+    ],
     "ingredients": [
       "800g hovězí svíčková",
       "2 mrkve",
@@ -38,39 +42,6 @@
     "tip": "Maso den předem naložte do kořenové zeleniny s trochou octa – bude ještě křehčí."
   },
   {
-    "slug": "kulajda",
-    "title": "Kulajda",
-    "description": "Tradiční jihočeská polévka s houbami, koprem, bramborami a zastřeným vejcem.",
-    "image": "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80",
-    "time": "45 min",
-    "servings": 4,
-    "difficulty": "Snadné",
-    "category": "Polévka",
-    "tags": ["česká kuchyně", "polévka", "houby"],
-    "ingredients": [
-      "300g hub (houby dle sezóny nebo žampiony)",
-      "4 střední brambory",
-      "200ml smetany",
-      "1 svazek kopru",
-      "4 vejce",
-      "2 lžíce octa",
-      "2 lžíce hladké mouky",
-      "1 lžíce másla",
-      "1 bobkový list",
-      "Sůl, pepř"
-    ],
-    "steps": [
-      "Houby nakrájejte a osmahněte na másle.",
-      "Zalijte 1.5 litrem vody, přidejte bobkový list a vařte 15 minut.",
-      "Brambory oloupejte, nakrájejte na kostičky a přidejte do polévky.",
-      "Vařte dalších 15 minut, dokud nejsou brambory měkké.",
-      "Smetanu rozmíchejte s moukou a vmíchejte do polévky. Povařte 5 minut.",
-      "Dochutťe octem, solí a pepřem. Přidejte nasekaný kopr.",
-      "Do každého talíře zastřete vejce – vložte ho do mírně vařící polévky na 3 minuty."
-    ],
-    "tip": "Nejlepší je s čerstvými hříbky na podzim, ale i se sušenými houbami je výborná."
-  },
-  {
     "slug": "trdelnik",
     "title": "Trdelník",
     "description": "Sladké pečivo z kynutého těsta obalené v cukru, skořici a ořechách.",
@@ -79,7 +50,11 @@
     "servings": 8,
     "difficulty": "Střední",
     "category": "Dezert",
-    "tags": ["sladké", "pečení", "tradiční"],
+    "tags": [
+      "sladké",
+      "pečení",
+      "tradiční"
+    ],
     "ingredients": [
       "500g hladké mouky",
       "200ml mléka",
@@ -112,7 +87,11 @@
     "servings": 4,
     "difficulty": "Snadné",
     "category": "Polévka",
-    "tags": ["česká kuchyně", "polévka", "brambory"],
+    "tags": [
+      "česká kuchyně",
+      "polévka",
+      "brambory"
+    ],
     "ingredients": [
       "6 středních brambor",
       "200g hub",
@@ -145,7 +124,11 @@
     "servings": 12,
     "difficulty": "Náročné",
     "category": "Dezert",
-    "tags": ["sladké", "pečení", "dort"],
+    "tags": [
+      "sladké",
+      "pečení",
+      "dort"
+    ],
     "ingredients": [
       "150g medu",
       "150g cukru",
@@ -177,7 +160,11 @@
     "servings": 6,
     "difficulty": "Snadné",
     "category": "Hlavní chod",
-    "tags": ["česká kuchyně", "maso", "guláš"],
+    "tags": [
+      "česká kuchyně",
+      "maso",
+      "guláš"
+    ],
     "ingredients": [
       "1kg hovězího (plec nebo kýta)",
       "6 velkých cibulí",
