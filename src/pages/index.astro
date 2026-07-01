@@ -22,6 +22,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <button id="save-btn" class="hidden px-4 py-2 rounded-lg text-[13px] font-medium bg-accent text-white hover:bg-accent-hover transition-colors" title="Uložit změny na GitHub">
           Uložit
         </button>
+        <!-- Import JSON -->
+        <button id="import-btn" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Importovat recept z JSON">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+          </svg>
+        </button>
+        <input type="file" id="import-file" accept=".json" class="hidden" />
         <!-- Add recipe -->
         <button id="add-btn" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Přidat recept">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -486,6 +493,55 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         savingText.textContent = 'Chyba: ' + err.message;
         setTimeout(() => savingOverlay.classList.add('hidden'), 3000);
       }
+    });
+
+    // --- Import JSON ---
+    const importBtn = document.getElementById('import-btn');
+    const importFile = document.getElementById('import-file');
+
+    importBtn.addEventListener('click', () => importFile.click());
+
+    importFile.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          const items = Array.isArray(data) ? data : [data];
+          let added = 0;
+          items.forEach(item => {
+            if (!item.title) return;
+            const recipe = {
+              slug: item.slug || slugify(item.title),
+              title: item.title,
+              description: item.description || '',
+              image: item.image || '',
+              time: item.time || '',
+              servings: parseInt(item.servings) || 4,
+              difficulty: item.difficulty || 'Snadné',
+              category: item.category || '',
+              tags: Array.isArray(item.tags) ? item.tags : (item.tags ? String(item.tags).split(',').map(t => t.trim()).filter(Boolean) : []),
+              ingredients: Array.isArray(item.ingredients) ? item.ingredients : [],
+              steps: Array.isArray(item.steps) ? item.steps : [],
+              tip: item.tip || undefined,
+            };
+            const existing = recipes.findIndex(r => r.slug === recipe.slug);
+            if (existing >= 0) recipes[existing] = recipe;
+            else recipes.push(recipe);
+            added++;
+          });
+          if (added === 0) { alert('JSON neobsahuje žádný platný recept (chybí pole "title").'); return; }
+          updateDirty();
+          updateFilters();
+          renderGrid();
+          alert(`Importováno: ${added} ${added === 1 ? 'recept' : added < 5 ? 'recepty' : 'receptů'}.`);
+        } catch {
+          alert('Neplatný JSON soubor.');
+        }
+      };
+      reader.readAsText(file);
+      importFile.value = '';
     });
 
     // --- Escape key ---
