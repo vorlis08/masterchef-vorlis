@@ -1,1 +1,43 @@
-[]
+[
+  {
+    "slug": "kremove-kureci-tagliatelle-meal-prep",
+    "title": "Chicken Alfredo",
+    "description": "Kořeněné kuřecí kostky v bohaté krémové rajčatové omáčce s tagliatelle. Ideální na meal-prep do krabiček.",
+    "image": "",
+    "time": "40 min",
+    "servings": 4,
+    "difficulty": "Střední",
+    "category": "Hlavní jídla",
+    "tags": [
+      "kuře"
+    ],
+    "ingredients": [
+      "800 g kuřecích prsou",
+      "1/2 lžičky soli (na kuře)",
+      "italské koření",
+      "sušená petržel",
+      "chilli vločky",
+      "sušený česnek",
+      "mletá paprika",
+      "olivový olej",
+      "máslo",
+      "cibule",
+      "4 stroužky česneku",
+      "150 g rajčatového protlaku nebo passaty",
+      "300 ml smetany min. 12 %",
+      "130 g light smetanového sýra",
+      "50 g sýra dle chuti, nastrouhaného",
+      "520 g uvařených tagliatelle nebo fettuccine"
+    ],
+    "steps": [
+      "Kuřecí prsa nakrájej na kostky a dej do mísy.",
+      "Ochuť je 1/2 lžičky soli, 1 lžičkou italských bylinek, 1 lžičkou petrželky, 1/2 lžičkou chilli vloček, 1 lžičkou česnekového prášku a 1 lžičkou mleté papriky, pokapej 2 lžícemi olivového oleje. Promíchej rukama, dokud maso rovnoměrně nezmění barvu.",
+      "Na pánvi rozehřej 1 lžíci másla a kuře opékej 6-8 minut na středně vysokém plameni, dokud není propečené a mírně zkaramelizované. Na závěr přidej zbylou lžíci másla a promíchej. Kuře vyjmi z pánve a odlož stranou.",
+      "Do stejné pánve (se zbylou šťávou z kuřete) přidej nadrobno nakrájenou cibuli a česnek. Restuj 5-6 minut, dokud nezměknou.",
+      "Přidej zbylé koření – 1/2 lžičky soli, 1 lžičku petrželky, 1 lžičku italských bylinek, 1 lžičku papriky a 1/2 lžičky chilli vloček.",
+      "Vmíchej 150 g rajčatového protlaku a restuj asi 5 minut, dokud omáčka nezhoustne.",
+      "Přilij 300 ml smetany a přidej 130 g light smetanového sýra a 50 g sýra dle chuti. Šlehej metličkou, dokud se omáčka nespojí a nezačne houstnout.",
+      "Přidej 520 g uvařených tagliatelle a propečené kuře zpět do pánve. Promíchej, dokud nejsou těstoviny rovnoměrně obalené krémovou omáčkou."
+    ]
+  }
+]
