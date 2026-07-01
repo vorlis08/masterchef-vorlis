@@ -307,16 +307,16 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
           <div class="mb-5">
             <label class="block text-[13px] font-medium text-text-muted mb-1.5">
-              Anthropic API <span class="font-normal">(pro AI doporučení)</span>
+              Google Gemini API <span class="font-normal">(pro AI doporučení — zdarma)</span>
             </label>
             <p class="text-text-muted text-[12px] mb-2">
-              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-accent hover:underline">Vygenerovat na console.anthropic.com</a>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-accent hover:underline">Vygenerovat na aistudio.google.com</a>
             </p>
             <div class="flex gap-2">
-              <input id="anthropic-key-input" type="password" class="flex-1 bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors" placeholder="sk-ant-..." />
-              <button id="anthropic-key-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
+              <input id="gemini-key-input" type="password" class="flex-1 bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors" placeholder="AIza..." />
+              <button id="gemini-key-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
             </div>
-            <p id="anthropic-key-status" class="mt-2 text-[12px] hidden"></p>
+            <p id="gemini-key-status" class="mt-2 text-[12px] hidden"></p>
           </div>
 
           <div>
@@ -593,9 +593,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     document.getElementById('settings-btn').addEventListener('click', () => {
       tokenInput.value = localStorage.getItem('gh_token') || '';
-      anthropicKeyInput.value = localStorage.getItem('anthropic_key') || '';
+      geminiKeyInput.value = localStorage.getItem('gemini_key') || '';
       tokenStatus.classList.add('hidden');
-      anthropicKeyStatus.classList.add('hidden');
+      geminiKeyStatus.classList.add('hidden');
       highlightActiveTheme();
       settingsOverlay.classList.remove('hidden');
       requestAnimationFrame(() => { settingsOverlay.classList.remove('opacity-0'); settingsModal.classList.remove('scale-95', 'opacity-0'); });
@@ -659,18 +659,18 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       }
     });
 
-    // --- Anthropic key ---
-    const anthropicKeyInput = document.getElementById('anthropic-key-input');
-    const anthropicKeyStatus = document.getElementById('anthropic-key-status');
+    // --- Gemini key ---
+    const geminiKeyInput = document.getElementById('gemini-key-input');
+    const geminiKeyStatus = document.getElementById('gemini-key-status');
 
-    document.getElementById('anthropic-key-save').addEventListener('click', () => {
-      const key = anthropicKeyInput.value.trim();
-      if (!key) { anthropicKeyStatus.textContent = 'Zadej klíč.'; anthropicKeyStatus.className = 'mt-2 text-[12px] text-red-400'; anthropicKeyStatus.classList.remove('hidden'); return; }
-      localStorage.setItem('anthropic_key', key);
-      anthropicKeyStatus.textContent = 'Klíč uložen.';
-      anthropicKeyStatus.className = 'mt-2 text-[12px] text-green-400';
-      anthropicKeyStatus.classList.remove('hidden');
-      setTimeout(() => anthropicKeyStatus.classList.add('hidden'), 2000);
+    document.getElementById('gemini-key-save').addEventListener('click', () => {
+      const key = geminiKeyInput.value.trim();
+      if (!key) { geminiKeyStatus.textContent = 'Zadej klíč.'; geminiKeyStatus.className = 'mt-2 text-[12px] text-red-400'; geminiKeyStatus.classList.remove('hidden'); return; }
+      localStorage.setItem('gemini_key', key);
+      geminiKeyStatus.textContent = 'Klíč uložen.';
+      geminiKeyStatus.className = 'mt-2 text-[12px] text-green-400';
+      geminiKeyStatus.classList.remove('hidden');
+      setTimeout(() => geminiKeyStatus.classList.add('hidden'), 2000);
     });
 
     // --- Chef AI ---
@@ -745,9 +745,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     });
 
     document.getElementById('chef-ai').addEventListener('click', async () => {
-      const apiKey = localStorage.getItem('anthropic_key');
+      const apiKey = localStorage.getItem('gemini_key');
       if (!apiKey) {
-        alert('Nastav si Anthropic API klíč v Nastavení.');
+        alert('Nastav si Gemini API klíč v Nastavení.');
         return;
       }
       const userIngs = parseIngredients(chefInput.value);
@@ -760,21 +760,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         `- ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
       ).join('\n');
 
-      try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1024,
-            messages: [{
-              role: 'user',
-              content: `Jsem kuchař a mám tyto ingredience: ${userIngs.join(', ')}
+      const prompt = `Jsem kuchař a mám tyto ingredience: ${userIngs.join(', ')}
 
 Tady jsou moje recepty:
 ${recipeList}
@@ -784,8 +770,15 @@ Doporuč mi nejlepší recept(y) z mého seznamu, které můžu uvařit s těmit
 2. Které ingredience mi případně chybí a čím je nahradit
 3. Krátký tip pro přípravu
 
-Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co mám (mimo seznam). Odpověz česky, stručně a prakticky.`
-            }]
+Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co mám (mimo seznam). Odpověz česky, stručně a prakticky.`;
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 1024 },
           })
         });
 
@@ -795,7 +788,9 @@ Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co 
         }
 
         const data = await res.json();
-        chefAiText.textContent = data.content[0].text;
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error('Prázdná odpověď od AI.');
+        chefAiText.textContent = text;
         chefAiResult.classList.remove('hidden');
       } catch (err) {
         chefAiText.textContent = 'Chyba: ' + err.message;
