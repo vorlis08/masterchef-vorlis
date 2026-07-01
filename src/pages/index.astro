@@ -22,6 +22,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <button id="save-btn" class="hidden px-4 py-2 rounded-lg text-[13px] font-medium bg-accent text-white hover:bg-accent-hover transition-colors" title="Uložit změny na GitHub">
           Uložit
         </button>
+        <!-- Chef AI -->
+        <button id="chef-btn" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Co dnes uvařit?">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+          </svg>
+        </button>
         <!-- Import JSON -->
         <button id="import-btn" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Importovat recept z JSON">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,6 +185,62 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
+  <!-- Chef AI modal -->
+  <div id="chef-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden opacity-0 transition-opacity duration-200">
+    <div id="chef-modal" class="fixed inset-y-0 right-0 w-full max-w-2xl bg-bg overflow-y-auto translate-x-full transition-transform duration-300 ease-out">
+      <div class="px-8 py-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-[22px] font-semibold text-text flex items-center gap-2">
+            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+            </svg>
+            Co dnes uvařit?
+          </h2>
+          <button id="chef-close" class="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-[13px] font-medium text-text-muted mb-1.5">Jaké máš ingredience?</label>
+          <textarea id="chef-input" rows="3" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors resize-none" placeholder="kuřecí prsa, rýže, smetana, cibule..."></textarea>
+        </div>
+
+        <div class="flex gap-3 mb-8">
+          <button id="chef-search" class="flex-1 py-2.5 rounded-lg bg-accent text-white font-medium text-[14px] hover:bg-accent-hover transition-colors">
+            Najdi recepty
+          </button>
+          <button id="chef-ai" class="flex-1 py-2.5 rounded-lg bg-surface border border-border text-text font-medium text-[14px] hover:border-accent hover:text-accent transition-colors flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+            </svg>
+            Zeptej se AI
+          </button>
+        </div>
+
+        <div id="chef-results" class="hidden">
+          <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4">Výsledky</h3>
+          <div id="chef-matches" class="space-y-3"></div>
+        </div>
+
+        <div id="chef-ai-result" class="hidden mt-6">
+          <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+            </svg>
+            AI doporučení
+          </h3>
+          <div id="chef-ai-text" class="p-5 rounded-xl bg-surface border border-border text-[15px] text-text leading-relaxed whitespace-pre-wrap"></div>
+        </div>
+
+        <div id="chef-loading" class="hidden py-8 text-center">
+          <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p class="text-text-muted text-[14px]">AI přemýšlí...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Settings modal -->
   <div id="settings-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden opacity-0 transition-opacity duration-200">
     <div class="fixed inset-0 flex items-center justify-center p-6">
@@ -239,18 +301,38 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </div>
         </div>
 
-        <!-- GitHub token -->
+        <!-- API Keys -->
         <div>
-          <h3 class="text-[13px] font-semibold text-text-muted uppercase tracking-wider mb-3">GitHub Token</h3>
-          <p class="text-text-muted text-[13px] mb-4 leading-relaxed">
-            Pro ukládání změn potřebuješ token s oprávněním <code class="px-1.5 py-0.5 rounded bg-surface text-accent text-[12px]">contents: write</code>.
-            <a href="https://github.com/settings/tokens?type=beta" target="_blank" class="text-accent hover:underline">Vygenerovat</a>
-          </p>
-          <div class="mb-4">
-            <input id="token-input" type="password" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[15px] focus:outline-none focus:border-accent transition-colors" placeholder="github_pat_..." />
+          <h3 class="text-[13px] font-semibold text-text-muted uppercase tracking-wider mb-4">API klíče</h3>
+
+          <div class="mb-5">
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">
+              Anthropic API <span class="font-normal">(pro AI doporučení)</span>
+            </label>
+            <p class="text-text-muted text-[12px] mb-2">
+              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="text-accent hover:underline">Vygenerovat na console.anthropic.com</a>
+            </p>
+            <div class="flex gap-2">
+              <input id="anthropic-key-input" type="password" class="flex-1 bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors" placeholder="sk-ant-..." />
+              <button id="anthropic-key-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
+            </div>
+            <p id="anthropic-key-status" class="mt-2 text-[12px] hidden"></p>
           </div>
-          <button id="token-save" class="w-full py-2.5 rounded-lg bg-accent text-white font-medium text-[14px] hover:bg-accent-hover transition-colors">Uložit token</button>
-          <p id="token-status" class="mt-3 text-[13px] hidden"></p>
+
+          <div>
+            <label class="block text-[13px] font-medium text-text-muted mb-1.5">
+              GitHub Token <span class="font-normal">(pro ukládání receptů)</span>
+            </label>
+            <p class="text-text-muted text-[12px] mb-2">
+              Potřebuje oprávnění <code class="px-1 py-0.5 rounded bg-surface text-accent text-[11px]">contents: write</code>.
+              <a href="https://github.com/settings/tokens?type=beta" target="_blank" class="text-accent hover:underline">Vygenerovat</a>
+            </p>
+            <div class="flex gap-2">
+              <input id="token-input" type="password" class="flex-1 bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors" placeholder="github_pat_..." />
+              <button id="token-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
+            </div>
+            <p id="token-status" class="mt-2 text-[12px] hidden"></p>
+          </div>
         </div>
       </div>
     </div>
@@ -511,7 +593,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     document.getElementById('settings-btn').addEventListener('click', () => {
       tokenInput.value = localStorage.getItem('gh_token') || '';
+      anthropicKeyInput.value = localStorage.getItem('anthropic_key') || '';
       tokenStatus.classList.add('hidden');
+      anthropicKeyStatus.classList.add('hidden');
       highlightActiveTheme();
       settingsOverlay.classList.remove('hidden');
       requestAnimationFrame(() => { settingsOverlay.classList.remove('opacity-0'); settingsModal.classList.remove('scale-95', 'opacity-0'); });
@@ -575,6 +659,151 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       }
     });
 
+    // --- Anthropic key ---
+    const anthropicKeyInput = document.getElementById('anthropic-key-input');
+    const anthropicKeyStatus = document.getElementById('anthropic-key-status');
+
+    document.getElementById('anthropic-key-save').addEventListener('click', () => {
+      const key = anthropicKeyInput.value.trim();
+      if (!key) { anthropicKeyStatus.textContent = 'Zadej klíč.'; anthropicKeyStatus.className = 'mt-2 text-[12px] text-red-400'; anthropicKeyStatus.classList.remove('hidden'); return; }
+      localStorage.setItem('anthropic_key', key);
+      anthropicKeyStatus.textContent = 'Klíč uložen.';
+      anthropicKeyStatus.className = 'mt-2 text-[12px] text-green-400';
+      anthropicKeyStatus.classList.remove('hidden');
+      setTimeout(() => anthropicKeyStatus.classList.add('hidden'), 2000);
+    });
+
+    // --- Chef AI ---
+    const chefOverlay = document.getElementById('chef-overlay');
+    const chefModal = document.getElementById('chef-modal');
+    const chefInput = document.getElementById('chef-input');
+    const chefResults = document.getElementById('chef-results');
+    const chefMatches = document.getElementById('chef-matches');
+    const chefAiResult = document.getElementById('chef-ai-result');
+    const chefAiText = document.getElementById('chef-ai-text');
+    const chefLoading = document.getElementById('chef-loading');
+
+    document.getElementById('chef-btn').addEventListener('click', () => {
+      chefOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => { chefOverlay.classList.remove('opacity-0'); chefModal.classList.remove('translate-x-full'); });
+      chefInput.focus();
+    });
+
+    function closeChef() {
+      chefOverlay.classList.add('opacity-0');
+      chefModal.classList.add('translate-x-full');
+      setTimeout(() => chefOverlay.classList.add('hidden'), 300);
+    }
+    document.getElementById('chef-close').addEventListener('click', closeChef);
+    chefOverlay.addEventListener('click', e => { if (e.target === chefOverlay) closeChef(); });
+
+    function parseIngredients(text) {
+      return text.toLowerCase().split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
+    }
+
+    function normalizeWord(w) {
+      return w.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    }
+
+    function ingredientMatch(userIngredients, recipeIngredient) {
+      const ri = normalizeWord(recipeIngredient);
+      return userIngredients.some(ui => {
+        const nu = normalizeWord(ui);
+        return ri.includes(nu) || nu.includes(ri);
+      });
+    }
+
+    document.getElementById('chef-search').addEventListener('click', () => {
+      const userIngs = parseIngredients(chefInput.value);
+      if (userIngs.length === 0) return;
+
+      const scored = recipes.map(r => {
+        const total = (r.ingredients || []).length;
+        if (total === 0) return null;
+        const matched = (r.ingredients || []).filter(ing => ingredientMatch(userIngs, ing)).length;
+        return { recipe: r, matched, total, pct: Math.round((matched / total) * 100) };
+      }).filter(s => s && s.matched > 0).sort((a, b) => b.pct - a.pct || b.matched - a.matched);
+
+      if (scored.length === 0) {
+        chefMatches.innerHTML = '<p class="text-text-muted text-[14px]">Žádný recept neodpovídá tvým ingrediencím.</p>';
+      } else {
+        chefMatches.innerHTML = scored.map(s => `
+          <button class="chef-match w-full text-left p-4 rounded-xl bg-surface border border-border hover:border-accent transition-colors" data-slug="${s.recipe.slug}">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[15px] font-medium text-text">${s.recipe.title}</span>
+              <span class="text-[13px] font-semibold ${s.pct >= 75 ? 'text-green-400' : s.pct >= 40 ? 'text-amber-400' : 'text-red-400'}">${s.pct}%</span>
+            </div>
+            <div class="text-[13px] text-text-muted">${s.matched} z ${s.total} ingrediencí • ${s.recipe.time || '?'} • ${s.recipe.difficulty || 'Snadné'}</div>
+          </button>
+        `).join('');
+        chefMatches.querySelectorAll('.chef-match').forEach(btn => {
+          btn.addEventListener('click', () => { closeChef(); setTimeout(() => openDetailModal(btn.dataset.slug), 350); });
+        });
+      }
+      chefResults.classList.remove('hidden');
+      chefAiResult.classList.add('hidden');
+    });
+
+    document.getElementById('chef-ai').addEventListener('click', async () => {
+      const apiKey = localStorage.getItem('anthropic_key');
+      if (!apiKey) {
+        alert('Nastav si Anthropic API klíč v Nastavení.');
+        return;
+      }
+      const userIngs = parseIngredients(chefInput.value);
+      if (userIngs.length === 0) return;
+
+      chefLoading.classList.remove('hidden');
+      chefAiResult.classList.add('hidden');
+
+      const recipeList = recipes.map(r =>
+        `- ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
+      ).join('\n');
+
+      try {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            messages: [{
+              role: 'user',
+              content: `Jsem kuchař a mám tyto ingredience: ${userIngs.join(', ')}
+
+Tady jsou moje recepty:
+${recipeList}
+
+Doporuč mi nejlepší recept(y) z mého seznamu, které můžu uvařit s těmito ingrediencemi. U každého napiš:
+1. Proč je vhodný
+2. Které ingredience mi případně chybí a čím je nahradit
+3. Krátký tip pro přípravu
+
+Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co mám (mimo seznam). Odpověz česky, stručně a prakticky.`
+            }]
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error?.message || 'API chyba');
+        }
+
+        const data = await res.json();
+        chefAiText.textContent = data.content[0].text;
+        chefAiResult.classList.remove('hidden');
+      } catch (err) {
+        chefAiText.textContent = 'Chyba: ' + err.message;
+        chefAiResult.classList.remove('hidden');
+      }
+      chefLoading.classList.add('hidden');
+    });
+
     // --- Import JSON ---
     const importBtn = document.getElementById('import-btn');
     const importFile = document.getElementById('import-file');
@@ -628,6 +857,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
       if (!settingsOverlay.classList.contains('hidden')) closeSettings();
+      else if (!chefOverlay.classList.contains('hidden')) closeChef();
       else if (!editOverlay.classList.contains('hidden')) closeEditModal();
       else if (!overlay.classList.contains('hidden')) closeDetailModal();
     });
