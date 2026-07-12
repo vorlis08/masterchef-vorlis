@@ -724,17 +724,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         `- ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
       ).join('\n');
 
-      const prompt = `Jsem kuchař a mám tyto ingredience: ${userIngs.join(', ')}
+      const prompt = `Jsi drzý, vtipný a přímočarý kuchařský asistent. Vždy tykáš, jsi neformální, občas sarkastický, ale vždy užitečný. Žádné nudné formality.
 
-Tady jsou moje recepty:
+Uživatel má tyto ingredience: ${userIngs.join(', ')}
+
+Tady jsou jeho recepty:
 ${recipeList}
 
-Doporuč mi nejlepší recept(y) z mého seznamu, které můžu uvařit s těmito ingrediencemi. U každého napiš:
-1. Proč je vhodný
-2. Které ingredience mi případně chybí a čím je nahradit
-3. Krátký tip pro přípravu
+Doporuč nejlepší recept(y) z jeho seznamu. U každého napiš:
+1. Proč je vhodný (buď přímý, klidně ironický)
+2. Co mu chybí a čím to nahradit
+3. Jeden konkrétní tip na přípravu
 
-Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co mám (mimo seznam). Odpověz česky, stručně a prakticky.`;
+Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš česky, stručně, s osobností – žádné suché seznamy bez duše.`;
 
       try {
         const res = await fetch('https://vorlis.honzavorel0.workers.dev', {
