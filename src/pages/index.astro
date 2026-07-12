@@ -334,7 +334,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
   <script define:vars={{ recipesData }}>
     const REPO = 'vorlis08/masterchef-vorlis';
     const FILE_PATH = 'src/data/recipes.json';
-    const _a = 'sk-ant-api0'; const _b = '3-vxuxQxvRHMijcuVucY4UdtcGgA2JZObSf6ZI1prVA9w-Q4hGI9Z3xVOWL8_6E7IYKyl3snprjmz93Y_1983fLQ-Gy6fMQAA'; const ANTHROPIC_KEY = _a + _b;
 
     let recipes = JSON.parse(JSON.stringify(recipesData));
     let originalJson = JSON.stringify(recipesData);
@@ -738,13 +737,10 @@ Doporuč mi nejlepší recept(y) z mého seznamu, které můžu uvařit s těmit
 Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co mám (mimo seznam). Odpověz česky, stručně a prakticky.`;
 
       try {
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
+        const res = await fetch('https://vorlis.honzavorel0.workers.dev', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': ANTHROPIC_KEY,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-request-browser': 'true',
           },
           body: JSON.stringify({
             model: 'claude-sonnet-4-6',
