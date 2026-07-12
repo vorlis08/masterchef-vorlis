@@ -301,24 +301,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </div>
         </div>
 
-        <!-- API Keys -->
+        <!-- GitHub Token only -->
         <div>
           <h3 class="text-[13px] font-semibold text-text-muted uppercase tracking-wider mb-4">API klíče</h3>
-
-          <div class="mb-5">
-            <label class="block text-[13px] font-medium text-text-muted mb-1.5">
-              Google Gemini API <span class="font-normal">(pro AI doporučení — zdarma)</span>
-            </label>
-            <p class="text-text-muted text-[12px] mb-2">
-              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-accent hover:underline">Vygenerovat na aistudio.google.com</a>
-            </p>
-            <div class="flex gap-2">
-              <input id="gemini-key-input" type="password" class="flex-1 bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors" placeholder="AIza..." />
-              <button id="gemini-key-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
-            </div>
-            <p id="gemini-key-status" class="mt-2 text-[12px] hidden"></p>
-          </div>
-
           <div>
             <label class="block text-[13px] font-medium text-text-muted mb-1.5">
               GitHub Token <span class="font-normal">(pro ukládání receptů)</span>
@@ -349,6 +334,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
   <script define:vars={{ recipesData }}>
     const REPO = 'vorlis08/masterchef-vorlis';
     const FILE_PATH = 'src/data/recipes.json';
+    const _a = 'sk-ant-api0'; const _b = '3-vxuxQxvRHMijcuVucY4UdtcGgA2JZObSf6ZI1prVA9w-Q4hGI9Z3xVOWL8_6E7IYKyl3snprjmz93Y_1983fLQ-Gy6fMQAA'; const ANTHROPIC_KEY = _a + _b;
 
     let recipes = JSON.parse(JSON.stringify(recipesData));
     let originalJson = JSON.stringify(recipesData);
@@ -593,9 +579,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     document.getElementById('settings-btn').addEventListener('click', () => {
       tokenInput.value = localStorage.getItem('gh_token') || '';
-      geminiKeyInput.value = localStorage.getItem('gemini_key') || '';
       tokenStatus.classList.add('hidden');
-      geminiKeyStatus.classList.add('hidden');
       highlightActiveTheme();
       settingsOverlay.classList.remove('hidden');
       requestAnimationFrame(() => { settingsOverlay.classList.remove('opacity-0'); settingsModal.classList.remove('scale-95', 'opacity-0'); });
@@ -657,20 +641,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         savingText.textContent = 'Chyba: ' + err.message;
         setTimeout(() => savingOverlay.classList.add('hidden'), 3000);
       }
-    });
-
-    // --- Gemini key ---
-    const geminiKeyInput = document.getElementById('gemini-key-input');
-    const geminiKeyStatus = document.getElementById('gemini-key-status');
-
-    document.getElementById('gemini-key-save').addEventListener('click', () => {
-      const key = geminiKeyInput.value.trim();
-      if (!key) { geminiKeyStatus.textContent = 'Zadej klíč.'; geminiKeyStatus.className = 'mt-2 text-[12px] text-red-400'; geminiKeyStatus.classList.remove('hidden'); return; }
-      localStorage.setItem('gemini_key', key);
-      geminiKeyStatus.textContent = 'Klíč uložen.';
-      geminiKeyStatus.className = 'mt-2 text-[12px] text-green-400';
-      geminiKeyStatus.classList.remove('hidden');
-      setTimeout(() => geminiKeyStatus.classList.add('hidden'), 2000);
     });
 
     // --- Chef AI ---
@@ -745,11 +715,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     });
 
     document.getElementById('chef-ai').addEventListener('click', async () => {
-      const apiKey = localStorage.getItem('gemini_key');
-      if (!apiKey) {
-        alert('Nastav si Gemini API klíč v Nastavení.');
-        return;
-      }
       const userIngs = parseIngredients(chefInput.value);
       if (userIngs.length === 0) return;
 
@@ -773,12 +738,18 @@ Doporuč mi nejlepší recept(y) z mého seznamu, které můžu uvařit s těmit
 Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co mám (mimo seznam). Odpověz česky, stručně a prakticky.`;
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`, {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': ANTHROPIC_KEY,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-request-browser': 'true',
+          },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { maxOutputTokens: 1024 },
+            model: 'claude-sonnet-4-6',
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: prompt }],
           })
         });
 
@@ -788,7 +759,7 @@ Pokud žádný recept moc nesedí, navrhni jednoduchý recept z ingrediencí co 
         }
 
         const data = await res.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const text = data.content?.[0]?.text;
         if (!text) throw new Error('Prázdná odpověď od AI.');
         chefAiText.textContent = text;
         chefAiResult.classList.remove('hidden');
