@@ -332,6 +332,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
   </div>
 
   <script define:vars={{ recipesData }}>
+    document.addEventListener("DOMContentLoaded", function() {
     const REPO = 'vorlis08/masterchef-vorlis';
     const FILE_PATH = 'src/data/recipes.json';
 
@@ -885,5 +886,7 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     // --- Init ---
     updateFilters();
     renderGrid();
+    }); // DOMContentLoaded
   </script>
 </Layout>
+
