@@ -324,7 +324,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
   </div>
 
   <!-- Saving overlay -->
-  <div id="saving-overlay" class="fixed inset-0 bg-black/70 z-[70] hidden flex items-center justify-center">
+  <div id="saving-overlay" class="fixed inset-0 bg-black/70 z-[70] hidden items-center justify-center">
     <div class="bg-bg border border-border rounded-2xl p-8 text-center max-w-sm">
       <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
       <p id="saving-text" class="text-text text-[15px]">Ukládám na GitHub...</p>
@@ -610,6 +610,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (!token) { document.getElementById('settings-btn').click(); return; }
 
       savingOverlay.classList.remove('hidden');
+      savingOverlay.classList.add('flex');
       savingText.textContent = 'Ukládám na GitHub...';
 
       try {
@@ -635,10 +636,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         originalJson = JSON.stringify(recipes);
         updateDirty();
         savingText.textContent = 'Uloženo! Web se přestaví za ~30s.';
-        setTimeout(() => savingOverlay.classList.add('hidden'), 2000);
+        setTimeout(() => { savingOverlay.classList.add('hidden'); savingOverlay.classList.remove('flex'); }, 2000);
       } catch (err) {
         savingText.textContent = 'Chyba: ' + err.message;
-        setTimeout(() => savingOverlay.classList.add('hidden'), 3000);
+        setTimeout(() => { savingOverlay.classList.add('hidden'); savingOverlay.classList.remove('flex'); }, 3000);
       }
     });
 
