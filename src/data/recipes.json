@@ -79,192 +79,121 @@
     ]
   },
   {
-    "slug": "svickova-na-smetane",
-    "title": "Svíčková na smetaně",
-    "description": "Klasická česká svíčková s bohatou smetanovou omáčkou, houskovým knedlíkem a brusinkami.",
-    "image": "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80",
-    "time": "2.5 hod",
+    "slug": "peceny-bucek-s-bramborovou-kasi",
+    "title": "Pečený bůček s bramborovou kaší",
+    "description": "Šťavnatý pečený bůček s křupavou kůží, podávaný s klasickou bramborovou kaší.",
+    "image": "",
+    "time": "2 hod 35 min",
     "servings": 4,
     "difficulty": "Střední",
-    "category": "Hlavní chod",
+    "category": "Hlavní jídla",
     "tags": [
-      "česká kuchyně",
-      "maso",
-      "omáčka"
+      "vepřové",
+      "klasika"
     ],
     "ingredients": [
-      "800g hovězí svíčková",
-      "2 mrkve",
-      "1 petržel",
-      "1 celer (menší)",
-      "2 cibule",
-      "200ml smetany ke šlehání",
-      "100g másla",
-      "2 lžíce hladké mouky",
-      "6 kuliček nového koření",
-      "3 bobkové listy",
-      "1 lžička cukru",
-      "2 lžíce octa",
-      "Sůl, pepř",
-      "Brusinkový kompot",
-      "Houskové knedlíky"
+      "1230 g vepřového bůčku s kostí",
+      "2 střední cibule",
+      "5 stroužků česneku",
+      "1,5 lžičky soli",
+      "0,5 lžičky pepře",
+      "1 lžička uzené papriky",
+      "0,5 lžičky kmínu",
+      "2 lžíce kremžské hořčice",
+      "200 ml vody na dno plechu (+ dolévání)",
+      "800 g brambor",
+      "50 g másla",
+      "150 ml ohřátého mléka",
+      "1 lžička soli do vody",
+      "špetka muškátového oříšku (volitelně)"
     ],
     "steps": [
-      "Maso osolte, opepřete a ze všech stran opečte na rozpáleném másle v hrnci.",
-      "Přidejte nakrájenou zeleninu (mrkev, petržel, celer, cibuli) a nechte zpěnit.",
-      "Vložte bobkový list, nové koření a zalijte vodou tak, aby bylo maso ponořené.",
-      "Duste pod pokličkou na mírném ohni cca 1.5–2 hodiny, dokud maso není měkké.",
-      "Maso vyjměte a zeleninu i s výpečkem rozmixujte.",
-      "Omáčku přeceďte, přidejte smetanu, cukr a ocet. Zahustěte jíškou z mouky a másla.",
-      "Dochutťe solí a pepřem. Maso nakrájejte na plátky a podávejte s knedlíkem a brusinkami."
+      "Na bůčku nařízni kůži ostrým nožem do mřížky — řezy každé 2 cm, hloubka jen 5 mm do tuku, ne do masa.",
+      "Potři bůček ze všech stran 2 lžícemi kremžské hořčice. Posyp 1,5 lžičky soli, 0,5 lžičky pepře, 1 lžičkou uzené papriky a 0,5 lžičky kmínu. Důkladně vetři do masa i do zářezů.",
+      "2 cibule nakrájej na hrubé půlky, 5 stroužků česneku ponech celé nebo lehce pomačkej. Rozlož na plech, přilij 200 ml vody na dno.",
+      "Polož bůček kůží nahoru na cibuli a česnek. Nastav troubu na 160 °C (horní + dolní ohřev) a vlož plech.",
+      "Peč 2 hodiny. Každých 40–50 minut zkontroluj dno plechu a dolij 50–100 ml vody, pokud je sucho. Maso neotáčej — kůže musí být nahoře celou dobu.",
+      "Po 2 hodinách zvyš teplotu na 220–230 °C a peč dalších 25–35 minut, dokud kůže nezačne bublat a křupat. Sleduj, ať nepřihoří.",
+      "Mezitím oloupej 800 g brambor a nakrájej na větší kusy. Zalij studenou vodou, přidej 1 lžičku soli a vař od studené vody 20–25 minut do měkka.",
+      "Brambory sceď a vrať do hrnce. Přidej 50 g másla a rozmačkej. Postupně přilívej 150 ml ohřátého mléka a míchej do hladka. Dochuť solí, případně špetkou muškátového oříšku.",
+      "Bůček nech 10 minut odpočinout na prkénku. Výpek ze dna plechu přelij přes maso nebo podávej zvlášť. Krájej kolmo na kost."
     ],
-    "tip": "Maso den předem naložte do kořenové zeleniny s trochou octa – bude ještě křehčí."
+    "tip": "Kost se při krájení sama oddělí — bůček s kostí je šťavnatější. Mléko do kaše přidávej vždy ohřáté. Výpek ze dna je plný chuti, neházej ho pryč. Mini trouba (Tefal) peče pomaleji — případně zvyš na 180 °C v průběhu."
   },
   {
-    "slug": "trdelnik",
-    "title": "Trdelník",
-    "description": "Sladké pečivo z kynutého těsta obalené v cukru, skořici a ořechách.",
-    "image": "https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?w=800&q=80",
-    "time": "1.5 hod",
-    "servings": 8,
-    "difficulty": "Střední",
-    "category": "Dezert",
-    "tags": [
-      "sladké",
-      "pečení",
-      "tradiční"
-    ],
-    "ingredients": [
-      "500g hladké mouky",
-      "200ml mléka",
-      "80g cukru",
-      "80g másla",
-      "2 žloutky",
-      "20g droždí",
-      "1 lžička soli",
-      "Vanilkový cukr",
-      "100g vlašských ořechů (mletých)",
-      "3 lžíce skořicového cukru"
-    ],
-    "steps": [
-      "Z mléka, droždí a lžičky cukru připravte kvásek. Nechte 15 min vzejít.",
-      "Smíchejte mouku, cukr, sůl, žloutky, měkké máslo a kvásek. Vypracujte hladké těsto.",
-      "Nechte kynout 1 hodinu pod utěrkou na teplém místě.",
-      "Těsto rozdělte na 8 dílů. Každý díl vyválejte na dlouhý pruh.",
-      "Pruhy namotejte na válcovité formy (nebo alobalem obalené válečky).",
-      "Pečte v troubě na 190°C cca 15–20 minut dozlatova.",
-      "Horké trdelníky obalte ve směsi skořicového cukru a mletých ořechů."
-    ],
-    "tip": "Pokud nemáte formy, použijte alobalem obalené ruličky od utěrek."
-  },
-  {
-    "slug": "bramboracka",
-    "title": "Bramboračka",
-    "description": "Hustá česká bramborová polévka s houbami, majoránkou a česnekem.",
-    "image": "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?w=800&q=80",
-    "time": "40 min",
-    "servings": 4,
+    "slug": "creamy-garlic-beef-pasta",
+    "title": "Creamy Garlic Beef Pasta",
+    "description": "Krémové těstoviny s mletým masem, česnekem a passatou. Přizpůsobeno českým surovinám — čedar místo parmazánu, smetana 31 %.",
+    "image": "",
+    "time": "35 min",
+    "servings": 3,
     "difficulty": "Snadné",
-    "category": "Polévka",
+    "category": "Hlavní jídla",
     "tags": [
-      "česká kuchyně",
-      "polévka",
-      "brambory"
+      "mleté maso",
+      "těstoviny"
     ],
     "ingredients": [
-      "6 středních brambor",
-      "200g hub",
-      "1 mrkev",
-      "1 petržel",
+      "500 g míchaného mletého masa (vepřové + hovězí)",
+      "240 g těstovin conchiglie",
+      "0,5 lžíce slunečnicového oleje",
+      "0,5 cibule",
+      "4 stroužky česneku",
+      "250 ml passaty",
+      "200 g smetany 31 %",
+      "0,5 lžičky italských bylinek",
+      "uzená paprika, sůl, pepř",
+      "chilli vločky dle chuti",
+      "trochu citronové šťávy",
+      "čedar na ozdobu",
+      "bazalka (volitelně)"
+    ],
+    "steps": [
+      "Uvař 240 g conchiglie al dente v osolené vodě. Před scezením odlij hrnek vody z těstovin.",
+      "Na 0,5 lžíce slunečnicového oleje opeč 500 g mletého masa na středním ohni. Ochuť solí, pepřem a uzenou paprikou. Nech ho chvíli bez míchání, ať se pěkně zatáhne — ne jen zešedne.",
+      "Přidej 0,5 nakrájené cibule a 2 prolisované stroužky česneku. Restuj 2–3 minuty, dokud cibule nezměkne.",
+      "Přilij 250 ml passaty, přidej 0,5 lžičky italských bylinek a chilli vločky. Nech probublávat 5 minut.",
+      "Vlij 200 g smetany 31 % a vař na středně nízkém ohni 5–7 minut, dokud omáčka nezhoustne. Přidej zbylé 2 prolisované stroužky česneku.",
+      "Vmíchej scezené těstoviny. Pokud je omáčka moc hustá, dolij trochu vody z těstovin. Na závěr kápni citronovou šťávu.",
+      "Naservíruj, posyp čedarem a bazalkou."
+    ],
+    "tip": "Čedar je krémovější a mírnější než parmazán — dej ho trochu víc. Voda z těstovin dodá omáčce hedvábnost."
+  },
+  {
+    "slug": "sunko-eidamovy-wrap-airfryer",
+    "title": "Šunko-eidamový wrap z airfryeru",
+    "description": "Fancy wrap se šunkou, eidamem a karamelizovanou cibulí, zapečený dokřupava v airfryeru. S hořčičným dipem.",
+    "image": "",
+    "time": "30 min",
+    "servings": 1,
+    "difficulty": "Snadné",
+    "category": "Rychlá jídla",
+    "tags": [
+      "airfryer",
+      "wrap"
+    ],
+    "ingredients": [
+      "1 tortilla",
+      "60 g šunky (2–3 plátky)",
+      "60 g eidamu",
       "1 cibule",
-      "3 stroužky česneku",
-      "2 lžičky majoránky",
-      "2 lžíce hladké mouky",
-      "2 lžíce másla",
-      "1 vejce",
-      "Sůl, pepř, kmín"
+      "1 lžíce slunečnicového oleje",
+      "1–2 lžíce cukru",
+      "špetka soli",
+      "0,5 lžičky kvasného octa",
+      "2 lžičky medové hořčice",
+      "chilli omáčka",
+      "1 lžička kečupu",
+      "1 lžíce kremžské hořčice (dip)"
     ],
     "steps": [
-      "Na másle orestujte nakrájenou cibuli, přidejte houby a nechte osmažit.",
-      "Přidejte nakrájenou mrkev a petržel, zalijte 1.5l vody.",
-      "Brambory oloupejte, nakrájejte na kostky a přidejte do hrnce.",
-      "Vařte 20 minut. Část brambor rozmačkejte vidličkou pro zahuštění.",
-      "Vmíchejte moukou zaprášenou jíšku, majoránku, protlačený česnek a kmín.",
-      "Rozšlehané vejce pomalu vlijte do polévky za stálého míchání.",
-      "Dochutťe solí a pepřem, podávejte s chlebem."
-    ]
-  },
-  {
-    "slug": "medovnik",
-    "title": "Medovník",
-    "description": "Vrstvený medový dort s karamelovo-smetanovým krémem.",
-    "image": "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&q=80",
-    "time": "3 hod",
-    "servings": 12,
-    "difficulty": "Náročné",
-    "category": "Dezert",
-    "tags": [
-      "sladké",
-      "pečení",
-      "dort"
+      "Cibuli nakrájej na tenké plátky. Na 1 lžíci slunečnicového oleje ji restuj s 1–2 lžícemi cukru a špetkou soli na středním ohni 15–20 minut, občas promíchej. Pokud se chytá, kápni trochu vody. Na konci přidej 0,5 lžičky kvasného octa a nech pár vteřin odpařit.",
+      "Tortillu potři tenkou vrstvou medové hořčice.",
+      "Naskládej 60 g šunky, 60 g eidamu a karamelizovanou cibuli. Kápni chilli omáčku a pevně zaroluj.",
+      "Vršek wrapu potři směsí 1 lžičky kečupu a 1 lžičky medové hořčice.",
+      "Peč v airfryeru na 180 °C 6–8 minut dozlatova a dokřupava.",
+      "Dip: smíchej 1 lžíci kremžské hořčice, 0,5 lžíce medové hořčice a chilli omáčku dle chuti."
     ],
-    "ingredients": [
-      "150g medu",
-      "150g cukru",
-      "100g másla",
-      "3 vejce",
-      "500g hladké mouky",
-      "1 lžička jedlé sody",
-      "1 plechovka karamelizovaného kondenzovaného mléka",
-      "400ml smetany ke šlehání",
-      "100g vlašských ořechů na ozdobu"
-    ],
-    "steps": [
-      "Ve vodní lázni rozehřejte med, cukr a máslo. Vmíchejte jedlou sodu – směs zpění.",
-      "Po lehkém vychladnutí přidejte vejce a postupně zašlehejte mouku.",
-      "Těsto rozdělte na 8 stejných dílů. Každý díl vyválejte na tenký plát.",
-      "Pečte každý plát 5–7 minut na 180°C dozlatova. Ořízněte do kruhu.",
-      "Smetanu vyšlehejte, vmíchejte karamelizované kondenzované mléko.",
-      "Střídejte vrstvy těsta a krému. Odřezky rozkrošte na posypání.",
-      "Ozdobte drcenými ořechy a nechte přes noc odležet v lednici."
-    ],
-    "tip": "Čím déle dort v lednici odleží, tím lépe pláty nasáknou krémem."
-  },
-  {
-    "slug": "gulas",
-    "title": "Hovězí guláš",
-    "description": "Pořádný český guláš s paprikou, cibulí a houskovým knedlíkem.",
-    "image": "https://images.unsplash.com/photo-1534939561126-855b8675edd7?w=800&q=80",
-    "time": "2 hod",
-    "servings": 6,
-    "difficulty": "Snadné",
-    "category": "Hlavní chod",
-    "tags": [
-      "česká kuchyně",
-      "maso",
-      "guláš"
-    ],
-    "ingredients": [
-      "1kg hovězího (plec nebo kýta)",
-      "6 velkých cibulí",
-      "3 lžíce sladké papriky",
-      "1 lžička ostré papriky",
-      "3 stroužky česneku",
-      "2 lžíce rajského protlaku",
-      "1 lžíce kmínu",
-      "2 lžíce sádla nebo oleje",
-      "Sůl, pepř",
-      "Houskové knedlíky"
-    ],
-    "steps": [
-      "Cibuli nakrájejte na jemno a osmažte na sádle dozlatova (15–20 minut, neuspěchejte to).",
-      "Stáhněte z plotny, vmíchejte obě papriky a rajský protlak.",
-      "Maso nakrájejte na 3cm kostky, přidejte k cibuli a opečte.",
-      "Zalijte horkou vodou těsně nad úroveň masa. Přidejte kmín, sůl, pepř.",
-      "Duste pod pokličkou 1.5–2 hodiny na mírném ohni, občas zamíchejte.",
-      "Na konci přidejte protlačený česnek. Guláš by měl být hustý bez mouky.",
-      "Podávejte s houskovým knedlíkem."
-    ],
-    "tip": "Tajemství guláše je v cibuli – musí jí být hodně a musí být pořádně osmažená."
+    "tip": "Na pořádnou karamelizaci je potřeba 1–2 lžíce cukru na dvě cibule a 15–20 minut času — s lžičkou cukru za 10 minut karamel neucítíš. Zbytek cibule vydrží v krabičce v lednici pár dní."
   }
 ]
