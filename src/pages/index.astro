@@ -762,8 +762,7 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
         const text = data.content?.[0]?.text;
         if (!text) throw new Error('Prázdná odpověď od AI.');
         function renderMarkdown(md) {
-          const lines = md.split('
-');
+          const lines = md.split("\n");
           let html = '';
           let inList = false;
           let inTable = false;
