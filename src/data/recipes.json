@@ -195,5 +195,50 @@
       "Dip: smíchej 1 lžíci kremžské hořčice, 0,5 lžíce medové hořčice a chilli omáčku dle chuti."
     ],
     "tip": "Na pořádnou karamelizaci je potřeba 1–2 lžíce cukru na dvě cibule a 15–20 minut času — s lžičkou cukru za 10 minut karamel neucítíš. Zbytek cibule vydrží v krabičce v lednici pár dní."
+  },
+  {
+    "slug": "caramelised-onion-pasta",
+    "title": "208g Protein Caramelised Onion Pasta",
+    "description": "Kuřecí prsa s karamelizovanou cibulí, česnekem a krémovou sýrovou omáčkou. Pasta se vaří přímo ve vývaru — výsledek je neuvěřitelně chutný. Jedno z nejlepších jídel.",
+    "image": "",
+    "time": "45 min",
+    "servings": 4,
+    "difficulty": "Lehká",
+    "category": "Hlavní jídla",
+    "tags": [
+      "kuře",
+      "high-protein",
+      "pasta",
+      "meal-prep"
+    ],
+    "ingredients": [
+      "650 g kuřecích prsou",
+      "0,5 lžičky soli",
+      "0,5 lžičky pepře",
+      "0,5 lžičky česnekového prášku",
+      "1 lžička baking sody (jedlá soda)",
+      "1 lžíce másla",
+      "2 cibule",
+      "2 lžíce cukru",
+      "1 lžíce balsamica",
+      "0,5 lžičky sušeného rozmarýnu",
+      "0,5 lžičky sušeného tymiánu",
+      "1 lžíce česnekového pretlaku",
+      "300 g pasty (farfalle nebo penne)",
+      "750 ml kuřecího vývaru (2 kelímky Knorr bujónu)",
+      "150 ml smetany na vaření 12%",
+      "40 g cheddaru nebo parmazánu, strouhaného",
+      "120 g Eidamu nebo Carského, strouhaného",
+      "1 svazek jarní cibulky"
+    ],
+    "steps": [
+      "Nakrájej kuřecí prsa na kousky. Přidej sůl, pepř, česnekový prášek a baking sodu. Dobře promíchej a nech 5 minut odležet.",
+      "Na rozpálené pánvi na slunečnicovém oleji opékej kuře na středně vysokém ohni dokud není ~90% hotové — zvenku opečené, uvnitř mírně růžové. Vyndej z pánve a odlož stranou.",
+      "Do stejné pánve přidej máslo. Nakrájej cibule na půlkolečka a přidej do pánve spolu s cukrem. Míchej každých pár minut na středním ohni 15–20 minut dokud cibule nezezlátne a nezkaramelizuje. Na konci přilij balsamico a promíchej.",
+      "Přidej rozmarýn, tymián a česnekový pretlak. Zamíchej. Přisyp pastu přímo do pánve. Přilij kuřecí vývar (2 kelímky bujónu rozpuštěné v 750 ml vroucí vody). Promíchej.",
+      "Vař 15 minut na středním ohni za občasného míchání, dokud pasta nenasaje vývar a není al dente.",
+      "Přidej kuře zpátky do pánve. Přilij smetanu, přisyp oba sýry. Míchej na nízkém ohni dokud se sýry nerozpustí a omáčka není krémová.",
+      "Podávej ihned, posyp nakrájenou jarní cibulkou."
+    ]
   }
 ]
