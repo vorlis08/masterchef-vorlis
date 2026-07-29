@@ -8,11 +8,14 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 <Layout title="MasterChef Vorlis">
 
   <!-- Header -->
-  <header class="px-4 sm:px-6 pt-6 sm:pt-10 pb-4 sm:pb-6 max-w-6xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
-      <h1 class="text-[22px] sm:text-[28px] font-semibold tracking-tight text-text">
-        MasterChef <span class="text-accent">Vorlis</span>
-      </h1>
+  <header class="px-4 sm:px-6 pt-6 sm:pt-9 pb-4 sm:pb-6 max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-9 sm:mb-12">
+      <div>
+        <div class="label text-accent mb-1.5">Kuchařka</div>
+        <h1 class="display text-[26px] sm:text-[34px] text-text">
+          MasterChef <span class="text-accent">Vorlis</span>
+        </h1>
+      </div>
       <div class="flex items-center gap-3">
         <!-- Unsaved indicator -->
         <span id="unsaved-badge" class="hidden px-3 py-1 rounded-lg text-[12px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20">
@@ -63,25 +66,31 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
-      <input type="text" id="search" placeholder="Hledat recept..." class="w-full bg-surface border border-border rounded-xl py-3.5 sm:py-3 pl-12 pr-4 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-[16px] sm:text-[15px]" />
+      <input type="text" id="search" placeholder="Hledat podle názvu nebo suroviny" class="w-full bg-surface border border-border rounded-xl py-3.5 sm:py-3 pl-12 pr-4 text-text placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors text-[16px] sm:text-[15px]" />
     </div>
 
     <!-- Filters -->
-    <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-6 px-6 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible" id="filter-bar">
-      <button class="filter-btn active px-4 py-1.5 rounded-lg text-[13px] font-medium bg-accent text-white transition-all" data-category="all">Vše</button>
+    <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible" id="filter-bar">
+      <button class="pill is-active" data-category="all">Vše</button>
       {categories.map(cat => (
-        <button class="filter-btn px-4 py-1.5 rounded-lg text-[13px] font-medium bg-surface text-text-muted border border-border hover:text-text transition-all" data-category={cat}>{cat}</button>
+        <button class="pill" data-category={cat}>{cat}</button>
       ))}
     </div>
   </header>
 
+  <!-- Dnešní volba -->
+  <section id="hero" class="px-4 sm:px-6 max-w-6xl mx-auto hidden"></section>
+
   <!-- Recipe grid -->
   <section class="px-4 sm:px-6 pb-32 sm:pb-16 max-w-6xl mx-auto">
-    <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5" id="recipe-grid"></div>
-    <div id="no-results" class="hidden text-center py-20">
-      <div class="text-5xl mb-4">🍳</div>
-      <p class="text-text font-medium text-[16px] mb-1">Nic tu není</p>
-      <p class="text-text-muted text-[14px]">Zkus jiné hledání, nebo přidej nový recept.</p>
+    <div id="grid-heading" class="hidden items-baseline gap-3 mb-5">
+      <h2 class="display text-[19px] sm:text-[22px] text-text">Všechny recepty</h2>
+      <span id="grid-count" class="meta text-text-muted"></span>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10" id="recipe-grid"></div>
+    <div id="no-results" class="hidden text-center py-24">
+      <p class="display text-[22px] text-text mb-2">Tady zatím nic není</p>
+      <p class="text-text-muted text-[14px] max-w-[280px] mx-auto leading-relaxed">Zkus hledat jinak, nebo přidej první recept tlačítkem plus.</p>
     </div>
   </section>
 
@@ -91,12 +100,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       <button id="modal-close" class="sticky top-4 ml-4 z-10 w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
-      <div class="-mt-14">
-        <img id="modal-image" src="" alt="" class="w-full aspect-[16/9] object-cover" />
+      <div class="-mt-14 relative">
+        <img id="modal-image" src="" alt="" class="w-full aspect-[16/10] object-cover" />
+        <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent pointer-events-none"></div>
       </div>
       <div class="px-5 sm:px-8 py-6 sm:py-8">
         <div class="flex items-start justify-between mb-2">
-          <h2 id="modal-title" class="text-[24px] font-semibold text-text"></h2>
+          <h2 id="modal-title" class="display text-[27px] sm:text-[32px] text-text"></h2>
           <div class="flex gap-2 shrink-0 ml-4">
             <button id="modal-edit" class="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Upravit">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
@@ -107,11 +117,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </div>
         </div>
         <p id="modal-description" class="text-text-muted text-[15px] mb-6 leading-relaxed"></p>
-        <div id="modal-meta" class="flex gap-4 mb-6 text-[13px] text-text-muted"></div>
+        <div id="modal-meta" class="meta flex items-center gap-2.5 mb-7 text-text-muted"></div>
         <div class="flex flex-wrap items-center gap-3 mb-8">
           <div class="flex items-center gap-1 bg-surface border border-border rounded-lg px-1 py-1">
             <button id="portion-minus" class="w-8 h-8 rounded-md flex items-center justify-center text-text-muted hover:text-accent hover:bg-surface-hover transition-colors text-[18px] font-medium">−</button>
-            <span id="portion-value" class="min-w-[70px] text-center text-[13px] font-medium text-text">4 porce</span>
+            <span id="portion-value" class="meta min-w-[74px] text-center text-text">4 porce</span>
             <button id="portion-plus" class="w-8 h-8 rounded-md flex items-center justify-center text-text-muted hover:text-accent hover:bg-surface-hover transition-colors text-[18px] font-medium">+</button>
           </div>
           <button id="cook-mode-btn" class="flex-1 sm:flex-none justify-center px-4 py-2.5 sm:py-2 rounded-lg bg-accent text-white text-[13px] font-medium active:scale-[0.98] hover:bg-accent-hover transition-all flex items-center gap-2">
@@ -123,12 +133,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </button>
         </div>
         <div class="mb-8">
-          <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4">Ingredience</h3>
+          <h3 class="label text-accent mb-4">Ingredience</h3>
           <ul id="modal-ingredients" class="space-y-2"></ul>
         </div>
         <div class="mb-8">
-          <h3 class="text-[14px] font-semibold text-text-muted uppercase tracking-wider mb-4">Postup</h3>
-          <ol id="modal-steps" class="space-y-4"></ol>
+          <h3 class="label text-accent mb-5">Postup</h3>
+          <ol id="modal-steps" class="space-y-5"></ol>
         </div>
         <div id="modal-tip" class="hidden p-5 rounded-xl bg-surface border border-border">
           <p class="text-[14px] leading-relaxed">
@@ -379,7 +389,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     <div class="flex-1 overflow-y-auto flex items-center justify-center px-6 py-10">
       <div class="max-w-2xl w-full text-center">
         <div id="cook-step-num" class="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center text-[18px] font-semibold mx-auto mb-8"></div>
-        <p id="cook-step-text" class="text-[20px] sm:text-[24px] leading-relaxed text-text"></p>
+        <p id="cook-step-text" class="display text-[23px] sm:text-[30px] leading-[1.35] text-text"></p>
       </div>
     </div>
     <div class="h-1 bg-surface mx-6 rounded-full overflow-hidden mb-2">
@@ -454,6 +464,73 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       renderGrid();
     }
 
+    // --- Scroll reveal ---
+    let revealObserver = null;
+    function revealCards() {
+      const items = grid.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(el => el.classList.add('in'));
+        return;
+      }
+      if (!revealObserver) {
+        revealObserver = new IntersectionObserver((entries, obs) => {
+          entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            const delay = Math.min(parseInt(el.dataset.i || '0', 10), 5) * 70;
+            setTimeout(() => el.classList.add('in'), delay);
+            obs.unobserve(el);
+          });
+        }, { rootMargin: '0px 0px -40px 0px', threshold: 0.05 });
+      }
+      items.forEach((el, i) => { el.dataset.i = i % 6; revealObserver.observe(el); });
+    }
+
+    // --- Dnešní volba: one dish, chosen by the date, no browsing required ---
+    function renderHero() {
+      const hero = document.getElementById('hero');
+      if (!hero) return;
+      const browsing = activeCategory !== 'all' || searchInput.value.trim() !== '';
+      if (browsing || recipes.length === 0) {
+        hero.classList.add('hidden');
+        hero.innerHTML = '';
+        return;
+      }
+      const now = new Date();
+      const dayIndex = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+      const r = recipes[dayIndex % recipes.length];
+      if (hero.dataset.slug === r.slug && !hero.classList.contains('hidden')) return;
+      hero.dataset.slug = r.slug;
+      hero.classList.remove('hidden');
+      hero.innerHTML = `
+        <div class="rise mb-12 sm:mb-16 grid sm:grid-cols-[1.05fr_1fr] gap-5 sm:gap-9 items-center">
+          <div class="card-media !aspect-[16/11] sm:!aspect-[4/3] order-1 sm:order-2">
+            ${r.image
+              ? `<img src="${r.image}" alt="${r.title}" />`
+              : `<div class="w-full h-full flex items-center justify-center"><span class="display text-[64px] text-border">${(r.title || '?').charAt(0)}</span></div>`}
+          </div>
+          <div class="order-2 sm:order-1">
+            <div class="label text-accent mb-3">Dnešní volba</div>
+            <h2 class="display text-[30px] sm:text-[42px] text-text mb-3">${r.title}</h2>
+            <p class="text-text-muted text-[14.5px] sm:text-[15px] leading-relaxed mb-5 max-w-[46ch]">${r.description || 'Otevři recept a uvidíš.'}</p>
+            <div class="meta text-text-muted flex items-center gap-2.5 mb-6">
+              ${r.time ? `<span>${r.time}</span><span class="opacity-40">/</span>` : ''}
+              <span>${r.difficulty || 'Snadné'}</span><span class="opacity-40">/</span>
+              <span>${r.servings || '?'} porcí</span>
+            </div>
+            <div class="flex gap-2.5">
+              <button id="hero-open" class="px-5 py-3 rounded-xl bg-accent text-white text-[14px] font-medium hover:bg-accent-hover active:scale-[0.98] transition-all">Otevřít recept</button>
+              <button id="hero-cook" class="px-5 py-3 rounded-xl border border-border text-text text-[14px] font-medium hover:border-accent hover:text-accent active:scale-[0.98] transition-all">Vařit hned</button>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('hero-open').addEventListener('click', () => openDetailModal(r.slug));
+      document.getElementById('hero-cook').addEventListener('click', () => {
+        openDetailModal(r.slug);
+        setTimeout(() => document.getElementById('cook-mode-btn').click(), 340);
+      });
+    }
+
     // --- Render grid ---
     function renderGrid() {
       const query = searchInput.value.toLowerCase();
@@ -469,24 +546,33 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         if (!matchCat || !matchSearch) return;
         visible++;
         html += `
-          <div class="recipe-card relative text-left group cursor-pointer active:scale-[0.98] transition-transform" data-slug="${r.slug}">
-            <button class="fav-btn absolute top-2 right-2 z-10 w-9 h-9 rounded-full bg-black/40 backdrop-blur flex items-center justify-center transition-colors ${isFav ? 'text-red-400' : 'text-white/70 hover:text-white'}" data-fav="${r.slug}" title="Oblíbené">
-              <svg class="w-5 h-5" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+          <article class="recipe-card reveal relative text-left cursor-pointer" data-slug="${r.slug}">
+            <button class="fav-btn absolute top-2.5 right-2.5 z-10 w-9 h-9 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center transition-colors ${isFav ? 'text-red-400' : 'text-white/70 hover:text-white'}" data-fav="${r.slug}" aria-label="Přidat do oblíbených">
+              <svg class="w-[18px] h-[18px]" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
             </button>
-            <div class="overflow-hidden rounded-xl mb-3 aspect-[3/2] bg-surface">
-              ${r.image ? `<img src="${r.image}" alt="${r.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" loading="lazy" />` : '<div class="w-full h-full flex items-center justify-center text-4xl text-text-muted">🍽️</div>'}
+            <div class="card-media mb-3">
+              ${r.image
+                ? `<img src="${r.image}" alt="${r.title}" loading="lazy" />`
+                : `<div class="w-full h-full flex items-center justify-center"><span class="display text-[34px] text-border">${(r.title || '?').charAt(0)}</span></div>`}
             </div>
-            <h3 class="text-[14px] sm:text-[16px] font-semibold text-text mb-1 leading-snug">${r.title}</h3>
-            <div class="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-[11px] sm:text-[13px] text-text-muted">
-              ${r.time ? `<span>${r.time}</span><span class="hidden sm:inline w-1 h-1 rounded-full bg-border"></span>` : ''}
-              <span class="hidden sm:inline">${r.difficulty || 'Snadné'}</span>
-              <span class="hidden sm:inline w-1 h-1 rounded-full bg-border"></span>
+            ${r.category ? `<div class="label text-accent mb-1.5">${r.category}</div>` : ''}
+            <h3 class="display text-[16px] sm:text-[19px] text-text mb-2">${r.title}</h3>
+            <div class="card-rule mb-2"></div>
+            <div class="meta text-text-muted flex items-center gap-2">
+              ${r.time ? `<span>${r.time}</span><span class="opacity-40">/</span>` : ''}
               <span>${r.servings || '?'} porcí</span>
             </div>
-          </div>`;
+          </article>`;
       });
       grid.innerHTML = html;
       noResults.classList.toggle('hidden', visible > 0);
+      const gh = document.getElementById('grid-heading');
+      const gc = document.getElementById('grid-count');
+      if (gh) gh.classList.toggle('hidden', visible === 0);
+      if (gh && visible > 0) gh.classList.add('flex');
+      if (gc) gc.textContent = visible === 1 ? '1 recept' : (visible < 5 ? visible + ' recepty' : visible + ' receptů');
+      revealCards();
+      renderHero();
       grid.querySelectorAll('.recipe-card').forEach(c =>
         c.addEventListener('click', () => openDetailModal(c.dataset.slug))
       );
@@ -509,10 +595,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     function updateFilters() {
       const bar = document.getElementById('filter-bar');
       const cats = [...new Set(recipes.map(r => r.category).filter(Boolean))];
-      bar.innerHTML = `<button class="filter-btn shrink-0 whitespace-nowrap ${activeCategory === 'all' ? 'active bg-accent text-white' : 'bg-surface text-text-muted border border-border hover:text-text'} px-4 py-2 sm:py-1.5 rounded-lg text-[13px] font-medium transition-all" data-category="all">Vše</button>`;
-      bar.innerHTML += `<button class="filter-btn shrink-0 whitespace-nowrap ${activeCategory === '__fav' ? 'active bg-accent text-white' : 'bg-surface text-text-muted border border-border hover:text-text'} px-4 py-2 sm:py-1.5 rounded-lg text-[13px] font-medium transition-all" data-category="__fav">♥ Oblíbené</button>`;
+      bar.innerHTML = `<button class="filter-btn pill ${activeCategory === 'all' ? 'is-active' : ''}" data-category="all">Vše</button>`;
+      bar.innerHTML += `<button class="filter-btn pill ${activeCategory === '__fav' ? 'is-active' : ''}" data-category="__fav">♥ Oblíbené</button>`;
       cats.forEach(cat => {
-        bar.innerHTML += `<button class="filter-btn shrink-0 whitespace-nowrap ${activeCategory === cat ? 'active bg-accent text-white' : 'bg-surface text-text-muted border border-border hover:text-text'} px-4 py-2 sm:py-1.5 rounded-lg text-[13px] font-medium transition-all" data-category="${cat}">${cat}</button>`;
+        bar.innerHTML += `<button class="filter-btn pill ${activeCategory === cat ? 'is-active' : ''}" data-category="${cat}">${cat}</button>`;
       });
       bar.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -602,13 +688,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       document.getElementById('modal-title').textContent = r.title;
       document.getElementById('modal-description').textContent = r.description || '';
       document.getElementById('modal-meta').innerHTML =
-        `${r.time ? `<span>${r.time}</span><span class="w-1 h-1 rounded-full bg-border self-center"></span>` : ''}` +
-        `<span>${r.difficulty || ''}</span><span class="w-1 h-1 rounded-full bg-border self-center"></span><span>${r.servings || '?'} porcí</span>`;
+        `${r.time ? `<span>${r.time}</span><span class="opacity-40">/</span>` : ''}` +
+        `<span>${r.difficulty || ''}</span><span class="opacity-40">/</span><span>${r.servings || '?'} porcí</span>`;
 
       renderIngredients(r);
 
       document.getElementById('modal-steps').innerHTML = (r.steps || []).map((s, i) =>
-        `<li class="flex gap-4"><span class="shrink-0 w-7 h-7 rounded-full bg-surface border border-border flex items-center justify-center text-[12px] font-semibold text-accent mt-0.5">${i+1}</span><p class="text-[15px] text-text-muted leading-relaxed">${s}</p></li>`
+        `<li class="flex gap-4 sm:gap-5"><span class="display shrink-0 w-8 text-[22px] leading-none text-accent/70 pt-0.5 text-right">${i+1}</span><p class="text-[15px] text-text-muted leading-[1.7]">${s}</p></li>`
       ).join('');
 
       const tipEl = document.getElementById('modal-tip');
