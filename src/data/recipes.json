@@ -1,7 +1,7 @@
 [
   {
     "slug": "kremove-kureci-tagliatelle-meal-prep",
-    "title": "Chicken Alfredo",
+    "title": "Krémové kuřecí tagliatelle",
     "description": "Kořeněné kuřecí kostky v bohaté krémové rajčatové omáčce s tagliatelle. Ideální na meal-prep do krabiček.",
     "image": "https://i.imgur.com/BwxxPaC.png",
     "time": "40 min",
@@ -122,7 +122,7 @@
   },
   {
     "slug": "creamy-garlic-beef-pasta",
-    "title": "Creamy Garlic Beef Pasta",
+    "title": "Krémová česneková pasta s mletým masem",
     "description": "Krémové těstoviny s mletým masem, česnekem a passatou. Přizpůsobeno českým surovinám — čedar místo parmazánu, smetana 31 %.",
     "image": "",
     "time": "35 min",
@@ -161,8 +161,8 @@
   },
   {
     "slug": "sunko-eidamovy-wrap-airfryer",
-    "title": "Šunko-eidamový wrap z airfryeru",
-    "description": "Fancy wrap se šunkou, eidamem a karamelizovanou cibulí, zapečený dokřupava v airfryeru. S hořčičným dipem.",
+    "title": "Zapečený wrap se šunkou, eidamem a karamelizovanou cibulkou",
+    "description": "Crispy wrap se šunkou, eidamem a karamelizovanou cibulí, zapečený dokřupava v airfryeru. S hořčičným dipem.",
     "image": "",
     "time": "30 min",
     "servings": 1,
@@ -198,9 +198,9 @@
   },
   {
     "slug": "caramelised-onion-pasta",
-    "title": "208g Protein Caramelised Onion Pasta",
+    "title": "Kuřecí pasta s karamelizovanou cibulkou",
     "description": "Kuřecí prsa s karamelizovanou cibulí, česnekem a krémovou sýrovou omáčkou. Pasta se vaří přímo ve vývaru — výsledek je neuvěřitelně chutný. Jedno z nejlepších jídel.",
-    "image": "",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/caramelised-onion-pasta.png",
     "time": "45 min",
     "servings": 4,
     "difficulty": "Lehká",
@@ -239,6 +239,84 @@
       "Vař 15 minut na středním ohni za občasného míchání, dokud pasta nenasaje vývar a není al dente.",
       "Přidej kuře zpátky do pánve. Přilij smetanu, přisyp oba sýry. Míchej na nízkém ohni dokud se sýry nerozpustí a omáčka není krémová.",
       "Podávej ihned, posyp nakrájenou jarní cibulkou."
+    ]
+  },
+  {
+    "slug": "parkova-pasta-se-slaninou",
+    "title": "Párková pasta se slaninou a cherry rajčaty",
+    "description": "Rychlá a chutná pasta s párky, křupavou slaninou, paprikou a cherry rajčaty v lehké smetanové omáčce.",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/sausage-pasta.png",
+    "time": "25 min",
+    "servings": 2,
+    "difficulty": "Snadné",
+    "category": "Hlavní jídla",
+    "tags": [
+      "pasta",
+      "párky",
+      "slanina"
+    ],
+    "ingredients": [
+      "200 g těstovin (farfalle nebo penne)",
+      "4 párky, nakrájené na kolečka",
+      "100 g slaniny",
+      "1 cibule, nakrájená na půlkolečka",
+      "3 stroužky česneku, prolisované",
+      "1 červená paprika, nakrájená na proužky",
+      "150 g cherry rajčat",
+      "150 ml smetany 12%",
+      "70 g cheddaru, strouhaného",
+      "1 lžička sladké papriky",
+      "0,5 lžičky uzené papriky",
+      "1 lžíce slunečnicového oleje",
+      "sůl, pepř"
+    ],
+    "steps": [
+      "Uvař těstoviny al dente v osolené vodě. Před scezením odlij hrnek vody od těstovin.",
+      "Na suché pánvi opékej slaninu dokřupava. Vyndej na talíř. Na tuku ze slaniny opeč kolečka párků dozlatova, vyndej stranou.",
+      "Přidej 1 lžíci slunečnicového oleje, přidej cibuli a restuj 3–4 min. Přidej česnek a paprikové proužky, restuj další 3 min.",
+      "Cherry rajčata vlož do pánve a zmáčkni vidličkou. Vař 2–3 min, dokud nezměknou.",
+      "Přidej sladkou a uzenou papriku, přilij smetanu a trochu vody od těstovin. Nech 1 min probublat.",
+      "Přidej scezené těstoviny, slaninu a párky zpět. Zamíchej, přisyp cheddar a vše spoj. Dochuť solí a pepřem.",
+      "Při ohřívání druhý den přidej lžíci vody, aby se omáčka znovu spojila."
+    ]
+  },
+  {
+    "slug": "chilli-con-carne",
+    "title": "Chilli con Carne",
+    "description": "Klasické mexické chilli s mletým masem, fazolemi, kukuřicí a passatou. Vydatné, vysokoproteinové, skvělé i druhý den.",
+    "image": "",
+    "time": "40 min",
+    "servings": 4,
+    "difficulty": "Snadné",
+    "category": "Hlavní jídla",
+    "tags": [
+      "mleté maso",
+      "fazole",
+      "mexické"
+    ],
+    "ingredients": [
+      "500 g mletého masa (vepřo-hovězí mix)",
+      "400 g červených fazolí z konzervy, slitých",
+      "285 g kukuřice z konzervy, slité (1 plechovka)",
+      "500 g passaty",
+      "1 cibule, hrubě nakrájená",
+      "3 stroužky česneku, prolisované",
+      "1 červená paprika, nakrájená na kostky",
+      "1 lžíce slunečnicového oleje",
+      "1 lžička mleté kmínové semínky",
+      "1 lžička sladké papriky",
+      "0,5 lžičky uzené papriky",
+      "0,5 lžičky chilli vloček (podle chuti)",
+      "0,5 lžičky oregana",
+      "sůl, pepř",
+      "60 g strouhaného cheddaru (na podávání)"
+    ],
+    "steps": [
+      "Na pánvi rozehřej 1 lžíci slunečnicového oleje. Přidej cibuli a orestuj 3–4 min dozlatova. Přidej česnek a papriku, restuj dalších 2–3 min.",
+      "Přidej 500 g mletého masa, rozlom na drobné kousky a opeč ze všech stran dozlatova. Osoluj a opepři.",
+      "Vmíchej sladkou papriku, uzenou papriku, kmín, chilli vločky a oregano. Restuj 1 min, aby se koření rozvonělo.",
+      "Přilij 500 g passaty, přidej fazole a kukuřici. Promíchej, přiveď k varu, pak zmenši oheň a dus odkryté 15–20 minut, dokud omáčka nezhoustne.",
+      "Ochutnaj, dolaď sůl, chilli nebo kmín. Podávej s rýží nebo chlebem, posyp strouhaným cheddarem."
     ]
   }
 ]
