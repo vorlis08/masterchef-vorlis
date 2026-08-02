@@ -70,11 +70,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
 
     <!-- Filters -->
-    <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible" id="filter-bar">
-      <button class="pill is-active" data-category="all">Vše</button>
-      {categories.map(cat => (
-        <button class="pill" data-category={cat}>{cat}</button>
-      ))}
+    <div class="flex flex-col gap-2.5" id="filter-area">
+      <!-- Row 1: category -->
+      <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible" id="filter-bar"></div>
+      <!-- Row 2: tags + meal type + time -->
+      <div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible" id="filter-bar-2"></div>
     </div>
   </header>
 
@@ -628,7 +628,18 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           || r.category === activeCategory;
         const haystack = (r.title + ' ' + (r.tags || []).join(' ') + ' ' + (r.ingredients || []).join(' ')).toLowerCase();
         const matchSearch = !query || haystack.includes(query);
-        if (!matchCat || !matchSearch) return;
+        const matchTag  = !activeTag  || (r.tags || []).includes(activeTag);
+        const matchMeal = !activeMeal || (r.meal_type || []).includes(activeMeal);
+        const mins = parseMinutes(r.time);
+        const timeBuckets = [
+          { key: '20',  fn: m => m <= 20 },
+          { key: '45',  fn: m => m <= 45 },
+          { key: '90',  fn: m => m <= 90 },
+          { key: '90+', fn: m => m > 90  },
+        ];
+        const bucket = timeBuckets.find(b => b.key === activeTime);
+        const matchTime = !activeTime || (mins !== null && bucket && bucket.fn(mins));
+        if (!matchCat || !matchSearch || !matchTag || !matchMeal || !matchTime) return;
         visible++;
         html += viewMode === 'grid' ? cardMarkup(r, isFav) : rowMarkup(r, isFav, visible);
       });
@@ -722,21 +733,69 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     // --- Filters ---
+    // active secondary filters
+    let activeTag = '';
+    let activeMeal = '';
+    let activeTime = '';
+
+    function parseMinutes(t) {
+      if (!t) return null;
+      const h = t.match(/(\d+)\s*hod/); const m = t.match(/(\d+)\s*min/);
+      return (h ? parseInt(h[1]) * 60 : 0) + (m ? parseInt(m[1]) : 0) || null;
+    }
+
     function updateFilters() {
-      const bar = document.getElementById('filter-bar');
+      const bar  = document.getElementById('filter-bar');
+      const bar2 = document.getElementById('filter-bar-2');
       const cats = [...new Set(recipes.map(r => r.category).filter(Boolean))];
-      bar.innerHTML = `<button class="filter-btn pill ${activeCategory === 'all' ? 'is-active' : ''}" data-category="all">Vše</button>`;
-      bar.innerHTML += `<button class="filter-btn pill ${activeCategory === '__fav' ? 'is-active' : ''}" data-category="__fav">♥ Oblíbené</button>`;
+
+      // Row 1: category
+      let h1 = `<button class="filter-btn pill ${activeCategory === 'all' ? 'is-active' : ''}" data-category="all">Vše</button>`;
+      h1 += `<button class="filter-btn pill ${activeCategory === '__fav' ? 'is-active' : ''}" data-category="__fav">♥ Oblíbené</button>`;
       cats.forEach(cat => {
-        bar.innerHTML += `<button class="filter-btn pill ${activeCategory === cat ? 'is-active' : ''}" data-category="${cat}">${cat}</button>`;
+        h1 += `<button class="filter-btn pill ${activeCategory === cat ? 'is-active' : ''}" data-category="${cat}">${cat}</button>`;
       });
+      bar.innerHTML = h1;
       bar.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => { activeCategory = btn.dataset.category; updateFilters(); renderGrid(); });
+      });
+
+      // Row 2: tags, meal_type, time buckets
+      const allTags  = [...new Set(recipes.flatMap(r => r.tags || []))].sort();
+      const allMeals = [...new Set(recipes.flatMap(r => r.meal_type || []))];
+      const mealOrder = ['snídaně','svačina','oběd','večeře','dezert','polévka','příloha','ostatní'];
+      allMeals.sort((a,b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
+      const timeBuckets = [
+        { key: '20',  label: '⚡ do 20 min',  fn: m => m <= 20 },
+        { key: '45',  label: '🕐 do 45 min',  fn: m => m <= 45 },
+        { key: '90',  label: '🕑 do 90 min',  fn: m => m <= 90 },
+        { key: '90+', label: '⏳ 90 min+',    fn: m => m > 90  },
+      ];
+
+      let h2 = '';
+      allTags.forEach(tag => {
+        h2 += `<button class="filter-btn pill pill-sm ${activeTag === tag ? 'is-active' : ''}" data-tag="${tag}">${tag}</button>`;
+      });
+      if (allMeals.length) {
+        h2 += `<span class="pill-sep"></span>`;
+        allMeals.forEach(m => {
+          h2 += `<button class="filter-btn pill pill-sm ${activeMeal === m ? 'is-active' : ''}" data-meal="${m}">${m}</button>`;
+        });
+      }
+      h2 += `<span class="pill-sep"></span>`;
+      timeBuckets.forEach(b => {
+        h2 += `<button class="filter-btn pill pill-sm ${activeTime === b.key ? 'is-active' : ''}" data-time="${b.key}">${b.label}</button>`;
+      });
+      bar2.innerHTML = h2;
+      bar2.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          activeCategory = btn.dataset.category;
-          updateFilters();
-          renderGrid();
+          if (btn.dataset.tag  !== undefined) activeTag  = activeTag  === btn.dataset.tag  ? '' : btn.dataset.tag;
+          if (btn.dataset.meal !== undefined) activeMeal = activeMeal === btn.dataset.meal ? '' : btn.dataset.meal;
+          if (btn.dataset.time !== undefined) activeTime = activeTime === btn.dataset.time ? '' : btn.dataset.time;
+          updateFilters(); renderGrid();
         });
       });
+
       const navAll = document.getElementById('nav-all');
       const navFav = document.getElementById('nav-fav');
       if (navAll) navAll.classList.toggle('text-accent', activeCategory !== '__fav');

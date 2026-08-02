@@ -9,7 +9,9 @@
     "difficulty": "Střední",
     "category": "Hlavní jídla",
     "tags": [
-      "kuře"
+      "kuře",
+      "těstoviny",
+      "meal-prep"
     ],
     "ingredients": [
       "800 g kuřecích prsou",
@@ -38,6 +40,9 @@
       "Vmíchej 150 g rajčatového protlaku a restuj asi 5 minut, dokud omáčka nezhoustne.",
       "Přilij 300 ml smetany a přidej 130 g light smetanového sýra a 50 g sýra dle chuti. Šlehej metličkou, dokud se omáčka nespojí a nezačne houstnout.",
       "Přidej 520 g uvařených tagliatelle a propečené kuře zpět do pánve. Promíchej, dokud nejsou těstoviny rovnoměrně obalené krémovou omáčkou."
+    ],
+    "meal_type": [
+      "oběd"
     ]
   },
   {
@@ -49,7 +54,11 @@
     "servings": 6,
     "difficulty": "Střední",
     "category": "Hlavní jídla",
-    "tags": [],
+    "tags": [
+      "kuře",
+      "omáčka",
+      "česká"
+    ],
     "ingredients": [
       "2 kuřecí stehna",
       "2 kuřecí křídla",
@@ -76,6 +85,9 @@
       "Přidej 250 ml smetany a znovu promíchej.",
       "Vychladlé maso rukou rozděl na menší kusy a vrať zpět do hrnce s omáčkou.",
       "Dochuť solí a pepřem dle chuti."
+    ],
+    "meal_type": [
+      "oběd"
     ]
   },
   {
@@ -89,7 +101,8 @@
     "category": "Hlavní jídla",
     "tags": [
       "vepřové",
-      "klasika"
+      "pečeně",
+      "česká"
     ],
     "ingredients": [
       "1230 g vepřového bůčku s kostí",
@@ -118,7 +131,10 @@
       "Brambory sceď a vrať do hrnce. Přidej 50 g másla a rozmačkej. Postupně přilívej 150 ml ohřátého mléka a míchej do hladka. Dochuť solí, případně špetkou muškátového oříšku.",
       "Bůček nech 10 minut odpočinout na prkénku. Výpek ze dna plechu přelij přes maso nebo podávej zvlášť. Krájej kolmo na kost."
     ],
-    "tip": "Kost se při krájení sama oddělí — bůček s kostí je šťavnatější. Mléko do kaše přidávej vždy ohřáté. Výpek ze dna je plný chuti, neházej ho pryč. Mini trouba (Tefal) peče pomaleji — případně zvyš na 180 °C v průběhu."
+    "tip": "Kost se při krájení sama oddělí — bůček s kostí je šťavnatější. Mléko do kaše přidávej vždy ohřáté. Výpek ze dna je plný chuti, neházej ho pryč. Mini trouba (Tefal) peče pomaleji — případně zvyš na 180 °C v průběhu.",
+    "meal_type": [
+      "oběd"
+    ]
   },
   {
     "slug": "creamy-garlic-beef-pasta",
@@ -131,7 +147,8 @@
     "category": "Hlavní jídla",
     "tags": [
       "mleté maso",
-      "těstoviny"
+      "těstoviny",
+      "comfort food"
     ],
     "ingredients": [
       "500 g míchaného mletého masa (vepřové + hovězí)",
@@ -157,7 +174,11 @@
       "Vmíchej scezené těstoviny. Pokud je omáčka moc hustá, dolij trochu vody z těstovin. Na závěr kápni citronovou šťávu.",
       "Naservíruj, posyp čedarem a bazalkou."
     ],
-    "tip": "Čedar je krémovější a mírnější než parmazán — dej ho trochu víc. Voda z těstovin dodá omáčce hedvábnost."
+    "tip": "Čedar je krémovější a mírnější než parmazán — dej ho trochu víc. Voda z těstovin dodá omáčce hedvábnost.",
+    "meal_type": [
+      "oběd",
+      "večeře"
+    ]
   },
   {
     "slug": "sunko-eidamovy-wrap-airfryer",
@@ -169,8 +190,10 @@
     "difficulty": "Snadné",
     "category": "Rychlá jídla",
     "tags": [
-      "airfryer",
-      "wrap"
+      "uzeniny",
+      "wrap",
+      "rychlovka",
+      "airfryer"
     ],
     "ingredients": [
       "1 tortilla",
@@ -194,7 +217,11 @@
       "Peč v airfryeru na 180 °C 6–8 minut dozlatova a dokřupava.",
       "Dip: smíchej 1 lžíci kremžské hořčice, 0,5 lžíce medové hořčice a chilli omáčku dle chuti."
     ],
-    "tip": "Na pořádnou karamelizaci je potřeba 1–2 lžíce cukru na dvě cibule a 15–20 minut času — s lžičkou cukru za 10 minut karamel neucítíš. Zbytek cibule vydrží v krabičce v lednici pár dní."
+    "tip": "Na pořádnou karamelizaci je potřeba 1–2 lžíce cukru na dvě cibule a 15–20 minut času — s lžičkou cukru za 10 minut karamel neucítíš. Zbytek cibule vydrží v krabičce v lednici pár dní.",
+    "meal_type": [
+      "svačina",
+      "večeře"
+    ]
   },
   {
     "slug": "caramelised-onion-pasta",
@@ -207,9 +234,8 @@
     "category": "Hlavní jídla",
     "tags": [
       "kuře",
-      "high-protein",
-      "pasta",
-      "meal-prep"
+      "těstoviny",
+      "high-protein"
     ],
     "ingredients": [
       "650 g kuřecích prsou",
@@ -239,6 +265,9 @@
       "Vař 15 minut na středním ohni za občasného míchání, dokud pasta nenasaje vývar a není al dente.",
       "Přidej kuře zpátky do pánve. Přilij smetanu, přisyp oba sýry. Míchej na nízkém ohni dokud se sýry nerozpustí a omáčka není krémová.",
       "Podávej ihned, posyp nakrájenou jarní cibulkou."
+    ],
+    "meal_type": [
+      "oběd"
     ]
   },
   {
@@ -251,9 +280,9 @@
     "difficulty": "Snadné",
     "category": "Hlavní jídla",
     "tags": [
-      "pasta",
-      "párky",
-      "slanina"
+      "uzeniny",
+      "těstoviny",
+      "rychlovka"
     ],
     "ingredients": [
       "200 g těstovin (farfalle nebo penne)",
@@ -278,6 +307,9 @@
       "Přidej sladkou a uzenou papriku, přilij smetanu a trochu vody od těstovin. Nech 1 min probublat.",
       "Přidej scezené těstoviny, slaninu a párky zpět. Zamíchej, přisyp cheddar a vše spoj. Dochuť solí a pepřem.",
       "Při ohřívání druhý den přidej lžíci vody, aby se omáčka znovu spojila."
+    ],
+    "meal_type": [
+      "večeře"
     ]
   },
   {
@@ -291,8 +323,8 @@
     "category": "Hlavní jídla",
     "tags": [
       "mleté maso",
-      "fazole",
-      "mexické"
+      "mexická",
+      "meal-prep"
     ],
     "ingredients": [
       "500 g mletého masa (vepřo-hovězí mix)",
@@ -317,6 +349,9 @@
       "Vmíchej sladkou papriku, uzenou papriku, kmín, chilli vločky a oregano. Restuj 1 min, aby se koření rozvonělo.",
       "Přilij 500 g passaty, přidej fazole a kukuřici. Promíchej, přiveď k varu, pak zmenši oheň a dus odkryté 15–20 minut, dokud omáčka nezhoustne.",
       "Ochutnaj, dolaď sůl, chilli nebo kmín. Podávej s rýží nebo chlebem, posyp strouhaným cheddarem."
+    ],
+    "meal_type": [
+      "oběd"
     ]
   }
 ]

@@ -434,3 +434,22 @@ body {
 @media (max-width: 640px) {
   .cook-ghost { font-size: clamp(180px, 54vw, 300px); }
 }
+
+/* ---- Secondary filter pills ------------------------------------------- */
+
+.pill-sm {
+  font-size: 11px !important;
+  padding: 5px 11px !important;
+  opacity: 0.82;
+}
+.pill-sm.is-active { opacity: 1; }
+
+.pill-sep {
+  display: inline-block;
+  width: 1px;
+  height: 22px;
+  background: var(--color-border);
+  margin: 0 2px;
+  align-self: center;
+  flex-shrink: 0;
+}
