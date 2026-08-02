@@ -799,3 +799,136 @@ body {
   line-height: 1.6;
   color: var(--f-cream-dim);
 }
+
+/* ---- Photos: blurred stand-in sits behind every image ------------------ */
+
+.photo {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* ======================================================================= */
+/* ==== FANCY: cook mode ================================================= */
+/* ======================================================================= */
+
+#cook-overlay.is-fancy {
+  --f-gold: #d8b26a;
+  --f-gold-dim: #7d6533;
+  --f-cream: #f3ecdd;
+  --f-cream-dim: #a3927a;
+  background:
+    radial-gradient(90% 46% at 50% 0%, rgba(216, 178, 106, 0.11), transparent 66%),
+    #0a0910;
+  color: var(--f-cream);
+}
+
+#cook-overlay.is-fancy #cook-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-variation-settings: normal;
+  font-weight: 400;
+  font-size: 19px;
+  letter-spacing: 0.03em;
+  color: var(--f-cream);
+}
+@media (min-width: 640px) { #cook-overlay.is-fancy #cook-title { font-size: 23px; } }
+
+#cook-overlay.is-fancy #cook-progress,
+#cook-overlay.is-fancy #cook-step-num {
+  font-family: 'Cormorant SC', Georgia, serif;
+  font-size: 12.5px;
+  letter-spacing: 0.26em;
+  color: var(--f-gold);
+}
+
+#cook-overlay.is-fancy #cook-step-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-variation-settings: normal;
+  font-weight: 300;
+  font-size: 27px;
+  line-height: 1.5;
+  letter-spacing: 0.012em;
+  color: var(--f-cream);
+}
+@media (min-width: 640px) { #cook-overlay.is-fancy #cook-step-text { font-size: 36px; } }
+
+/* The roman numeral becomes the room */
+#cook-overlay.is-fancy .cook-ghost {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-variation-settings: normal;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  font-size: clamp(200px, 40vw, 400px);
+  color: var(--f-gold);
+  opacity: 0.075;
+}
+
+#cook-overlay.is-fancy #cook-ing-btn,
+#cook-overlay.is-fancy #cook-close,
+#cook-overlay.is-fancy #cook-prev {
+  background: transparent;
+  border-color: rgba(216, 178, 106, 0.32);
+  color: var(--f-cream-dim);
+}
+#cook-overlay.is-fancy #cook-ing-btn:hover,
+#cook-overlay.is-fancy #cook-close:hover,
+#cook-overlay.is-fancy #cook-prev:hover {
+  color: var(--f-gold);
+  border-color: var(--f-gold);
+}
+
+#cook-overlay.is-fancy #cook-prev,
+#cook-overlay.is-fancy #cook-next {
+  font-family: 'Cormorant SC', Georgia, serif;
+  font-size: 15px;
+  letter-spacing: 0.16em;
+}
+#cook-overlay.is-fancy #cook-next {
+  background: linear-gradient(180deg, rgba(216, 178, 106, 0.26), rgba(216, 178, 106, 0.09));
+  border: 1px solid rgba(216, 178, 106, 0.45);
+  color: var(--f-gold);
+}
+#cook-overlay.is-fancy #cook-next:hover { background: rgba(216, 178, 106, 0.2); }
+
+#cook-overlay.is-fancy #cook-bar { background: var(--f-gold); }
+#cook-overlay.is-fancy .h-\[3px\] { background: rgba(216, 178, 106, 0.14); }
+
+#cook-overlay.is-fancy .cook-hint {
+  border-left-color: var(--f-gold);
+  border-bottom-color: var(--f-gold);
+  opacity: 0.16;
+}
+
+#cook-overlay.is-fancy #cook-ing-panel {
+  background: #0f0c16;
+  border-top-color: rgba(216, 178, 106, 0.3);
+}
+#cook-overlay.is-fancy #cook-ing-panel .border-border { border-color: rgba(216, 178, 106, 0.18); }
+#cook-overlay.is-fancy #cook-ing-value {
+  font-family: 'Cormorant SC', Georgia, serif;
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  color: var(--f-cream);
+}
+#cook-overlay.is-fancy .cook-ing-txt {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  color: var(--f-cream);
+}
+#cook-overlay.is-fancy .cook-ing-box { border-color: rgba(216, 178, 106, 0.4); }
+#cook-overlay.is-fancy .cook-ing.is-done .cook-ing-box {
+  background: var(--f-gold);
+  border-color: var(--f-gold);
+}
+
+#cook-overlay.is-fancy .timer-chip,
+#cook-overlay.is-fancy .timer-start {
+  font-family: 'Cormorant SC', Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  border-color: rgba(216, 178, 106, 0.34);
+  color: var(--f-cream);
+  background: transparent;
+}
+#cook-overlay.is-fancy .timer-chip::before { background: rgba(216, 178, 106, 0.18); }
+#cook-overlay.is-fancy .timer-chip.is-done { border-color: var(--f-gold); color: var(--f-gold); }

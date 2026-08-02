@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Original photos — converted to WebP by `npm run images`
+photos-raw/

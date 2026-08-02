@@ -208,7 +208,7 @@
     "slug": "creamy-garlic-beef-pasta",
     "title": "Krémová česneková pasta s mletým masem",
     "description": "Krémové těstoviny s mletým masem, česnekem a passatou. Přizpůsobeno českým surovinám — čedar místo parmazánu, smetana 31 %.",
-    "image": "https://vorlis08.github.io/masterchef-vorlis/images/garlic-beef-pasta.png",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/creamy-garlic-beef-pasta.webp",
     "time": "35 min",
     "servings": 3,
     "difficulty": "Snadné",
@@ -246,7 +246,8 @@
     "meal_type": [
       "oběd",
       "večeře"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRsYAAABXRUJQVlA4ILoAAADwBACdASoUABEAPu1ur1IppiQiqAgBMB2JYgCdMoR5adAcQeKsSRWR4ODXotQ2s4AA/sHLaZ168jmlPm2TFUgZFd9wv6Wo1PpSIwcGON4ztMD8xc58z8gMx/cYNPn57hwVM7RM+2etQAvFpfVeQ0g5a0IF1yNgQ0WY5AeGvcZcpvMV2Gurh9aCEoWyjGr2hZHaKxtDuMb2qfxQ/R64GhOyoMNMmIzVxP48KSg8w5K4L2xvAP5O29lAAAA="
   },
   {
     "slug": "sunko-eidamovy-wrap-airfryer",
@@ -295,7 +296,7 @@
     "slug": "caramelised-onion-pasta",
     "title": "Kuřecí pasta s karamelizovanou cibulkou",
     "description": "Kuřecí prsa s karamelizovanou cibulí, česnekem a krémovou sýrovou omáčkou. Pasta se vaří přímo ve vývaru — výsledek je neuvěřitelně chutný. Jedno z nejlepších jídel.",
-    "image": "https://vorlis08.github.io/masterchef-vorlis/images/caramelised-onion-pasta.png",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/caramelised-onion-pasta.webp",
     "time": "45 min",
     "servings": 4,
     "difficulty": "Lehká",
@@ -336,13 +337,14 @@
     ],
     "meal_type": [
       "oběd"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRhwBAABXRUJQVlA4IBABAAAwBgCdASoUABsAPu1mrE+ppaQiMBgIATAdiWgAtRuTQU0gETYD/vXj05guEkEkBIVRS0owWoBZ6m1AAP7rfNn6+GxSxKRgXeQXMSQ+TP/1tUJ+Q1UEdpFOhwRovOMrJyLTpG2XsFZU7TW0UYnTcpBSBT576G9yhqEOYmulUsbpzII2GgCqOI9kOYqdsyJHT2mItFgcT+g/YX2JLJf72ousqmI9C3uGaDcoAmeGJWwKoXGpkO2l969oWQo62pqngsrUZ/tPAZyacmWJs3cu2JVg8g9phCTeUVevfQzfRjA/1YJLMKzml3l4SFeKSop4Obq/mS9Us8v9L19+5det3saWis5c3c27EKaFuGqA5tgAAA=="
   },
   {
     "slug": "parkova-pasta-se-slaninou",
     "title": "Párková pasta se slaninou a cherry rajčaty",
     "description": "Rychlá a chutná pasta s párky, křupavou slaninou, paprikou a cherry rajčaty v lehké smetanové omáčce.",
-    "image": "https://vorlis08.github.io/masterchef-vorlis/images/sausage-pasta.png",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/parkova-pasta-se-slaninou.webp",
     "time": "25 min",
     "servings": 2,
     "difficulty": "Snadné",
@@ -378,7 +380,8 @@
     ],
     "meal_type": [
       "večeře"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRuwAAABXRUJQVlA4IOAAAABQBgCdASoUABsAPu1qsFAppaUiqAqpMB2JbACdMoRwAkgPe8P/obXHr7ZboeOC65ZhTRLPwPzZOv40AAD+cZ5vNv9Wv08c+LZF+MlW7988d6oyfxhzUmc5OiNgZ4WEUAAh7c9p+dcWbicu2hRTbErDeK/ZrG6ZVNyy+HLoLWb3pfAawY32p6nYixatManfuYPcXs1twhH4YSmczlp9rnrsaDfz4lWqouCi6fdLg8+T7PwbgpTvmziO4988WsUIPDByiViJMPyDuugMvFuw2P3uqtqId1p5zVOZAivfX2AAAA=="
   },
   {
     "slug": "chilli-con-carne",
