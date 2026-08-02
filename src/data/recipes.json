@@ -1,5 +1,73 @@
 [
   {
+    "slug": "mamincin-fejkovej-katuv-sleh",
+    "title": "Maminčin fejkovej katův šleh",
+    "description": "Vepřová kýta dušená v papiňáku s pasírovanými rajčaty a Kunovjankou. Za půl hodiny hotovo, podává se s vařeným bramborem.",
+    "description_fancy": "Ta samá kýta, jen se jí věnuješ. Cibule doměkka, maso opečené po dávkách dozlatova, bobkový list a kapka worcesteru — víc práce, hlubší chuť.",
+    "image": "",
+    "time": "35 min",
+    "time_fancy": "55 min",
+    "servings": 5,
+    "difficulty": "Snadné",
+    "category": "Hlavní jídla",
+    "tags": [
+      "vepřové",
+      "papiňák",
+      "omáčka"
+    ],
+    "meal_type": [
+      "oběd",
+      "večeře"
+    ],
+    "ingredients": [
+      "1300 g vepřové kýty bez kosti",
+      "2 lžíce slunečnicového oleje",
+      "500 ml pasírovaných rajčat",
+      "2 sklenice Kunovjanky (2× 340 g) i s nálevem",
+      "sůl",
+      "cukr dle chuti",
+      "vařené brambory na podávání"
+    ],
+    "steps": [
+      "Vepřovou kýtu nakrájej na kostky asi 2 cm — přesnost tu nehraje roli.",
+      "V papiňáku rozehřej 2 lžíce slunečnicového oleje a vhoď maso.",
+      "Nech ho pustit veškerou vodu a povař, dokud není propečené.",
+      "Přilij 500 ml pasírovaných rajčat a obě sklenice Kunovjanky i s nálevem. Zamíchej.",
+      "Zavři papiňák a chvíli povař na stupni 9, dokud ventil nezačne syčet.",
+      "Stáhni na stupeň 6 a nech ještě 23 minut.",
+      "Odstav, vypusť páru. Osol a dochuť cukrem — Kunovjanka je kyselá, cukr ji srovná.",
+      "Podávej s vařeným bramborem."
+    ],
+    "ingredients_fancy": [
+      "1300 g vepřové kýty bez kosti",
+      "2 cibule",
+      "3 stroužky česneku",
+      "2 lžíce slunečnicového oleje",
+      "500 ml pasírovaných rajčat",
+      "2 sklenice Kunovjanky (2× 340 g) i s nálevem",
+      "1 lžíce worcesterové omáčky",
+      "2 bobkové listy",
+      "8 kuliček celého pepře",
+      "sůl",
+      "cukr dle chuti",
+      "vařené brambory na podávání"
+    ],
+    "steps_fancy": [
+      "Vepřovou kýtu nakrájej na kostky asi 2 cm a osuš je papírovou utěrkou. Mokré maso se v pánvi nezatáhne, jen se dusí.",
+      "V papiňáku rozehřej 2 lžíce slunečnicového oleje a orestuj 2 nadrobno nakrájené cibule doměkka a dosklovita, asi 5 minut na středním ohni.",
+      "Přidej 3 prolisované stroužky česneku a míchej minutu — dál už ne, spálený česnek zhořkne. Cibuli s česnekem vyndej na talíř.",
+      "Zvyš plamen a maso opeč po dávkách dozlatova, vždy jen jednu vrstvu. Každá kostka se musí dotknout dna, jinak se maso začne vařit ve vlastní šťávě.",
+      "Vrať do papiňáku všechno maso i orestovanou cibuli, přihoď 2 bobkové listy a 8 kuliček celého pepře.",
+      "Zalij 500 ml pasírovaných rajčat, nasyp obě sklenice Kunovjanky i s nálevem a přidej 1 lžíci worcesterové omáčky. Zamíchej.",
+      "Zavři papiňák, roztop na stupeň 9 a počkej, až začne syčet ventil.",
+      "Stáhni na stupeň 6 a nech 23 minut.",
+      "Odstav, vypusť páru a vylov bobkové listy. Osol a dochuť cukrem — Kunovjanka je kyselá, cukr ji srovná.",
+      "Podávej s vařeným bramborem."
+    ],
+    "tip": "Množství Kunovjanky nemusíš odměřovat — dvě sklenice i s nálevem jsou celý základ omáčky.",
+    "tip_fancy": "Opékání masa po dávkách je jediný krok, na kterém tu záleží. Přeplněný papiňák znamená šedé maso a mělkou omáčku."
+  },
+  {
     "slug": "kremove-kureci-tagliatelle-meal-prep",
     "title": "Krémové kuřecí tagliatelle",
     "description": "Kořeněné kuřecí kostky v bohaté krémové rajčatové omáčce s tagliatelle. Ideální na meal-prep do krabiček.",

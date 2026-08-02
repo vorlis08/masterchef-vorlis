@@ -453,3 +453,349 @@ body {
   align-self: center;
   flex-shrink: 0;
 }
+
+/* ======================================================================= */
+/* ==== BASIC / FANCY — two versions of the same recipe ================== */
+/* ======================================================================= */
+
+/* ---- The switch ------------------------------------------------------- */
+
+.mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 9px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.mode-opt {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  transition: color 0.18s, background 0.18s;
+  white-space: nowrap;
+}
+.mode-opt:hover { color: var(--color-text); }
+.mode-opt.is-on { background: var(--color-surface-hover); color: var(--color-accent); }
+
+/* ---- The gilding sweep ------------------------------------------------ */
+
+.mode-sweep {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  max-width: 42rem;
+  z-index: 45;
+  pointer-events: none;
+  opacity: 0;
+}
+
+@keyframes modeSweep {
+  0%   { opacity: 0; transform: translateX(-115%) skewX(-9deg); }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(115%) skewX(-9deg); }
+}
+
+@keyframes modeSettle {
+  0%   { opacity: 1; filter: blur(0); transform: scale(1); }
+  22%  { opacity: 0; filter: blur(7px); transform: scale(0.985); }
+  46%  { opacity: 0; filter: blur(7px); transform: scale(0.985); }
+  100% { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+
+@keyframes modeRise {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#modal.is-morphing .mode-sweep {
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(216, 178, 106, 0.06) 34%,
+    rgba(238, 214, 160, 0.5) 48%,
+    rgba(255, 246, 224, 0.85) 50%,
+    rgba(238, 214, 160, 0.5) 52%,
+    rgba(216, 178, 106, 0.06) 66%,
+    transparent 100%
+  );
+  animation: modeSweep 0.86s cubic-bezier(0.44, 0, 0.2, 1);
+}
+
+#modal.is-morphing #modal-body,
+#modal.is-morphing #modal-figure {
+  animation: modeSettle 0.86s cubic-bezier(0.44, 0, 0.2, 1);
+}
+
+.mode-rise { animation: modeRise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  #modal.is-morphing .mode-sweep,
+  #modal.is-morphing #modal-body,
+  #modal.is-morphing #modal-figure,
+  .mode-rise { animation: none !important; }
+}
+
+/* ======================================================================= */
+/* ==== FANCY ============================================================ */
+/* ======================================================================= */
+
+#modal.is-fancy {
+  --f-ink: #0a0910;
+  --f-gold: #d8b26a;
+  --f-gold-dim: #7d6533;
+  --f-cream: #f3ecdd;
+  --f-cream-dim: #a3927a;
+
+  background:
+    radial-gradient(115% 52% at 50% -8%, rgba(216, 178, 106, 0.15), transparent 62%),
+    var(--f-ink);
+  color: var(--f-cream);
+}
+
+/* Chrome ---------------------------------------------------------------- */
+
+#modal.is-fancy #modal-close {
+  background: transparent;
+  border-color: rgba(216, 178, 106, 0.32);
+  color: var(--f-cream-dim);
+}
+#modal.is-fancy #modal-close:hover { color: var(--f-gold); border-color: var(--f-gold); }
+
+#modal.is-fancy #modal-image {
+  filter: sepia(0.3) saturate(0.78) contrast(1.1) brightness(0.8);
+}
+#modal.is-fancy #modal-image-fade {
+  background: linear-gradient(to top, var(--f-ink), transparent);
+}
+#modal.is-fancy #modal-figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 90px 24px rgba(10, 9, 16, 0.72);
+}
+
+/* Type ------------------------------------------------------------------ */
+
+#modal.is-fancy #modal-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-variation-settings: normal;
+  font-weight: 300;
+  font-size: 40px;
+  line-height: 1.12;
+  letter-spacing: 0.035em;
+  text-align: center;
+  color: var(--f-cream);
+}
+@media (min-width: 640px) { #modal.is-fancy #modal-title { font-size: 48px; } }
+
+#modal.is-fancy #modal-description {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--f-cream-dim);
+  max-width: 34rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#modal.is-fancy #modal-meta {
+  font-family: 'Cormorant SC', Georgia, serif;
+  font-size: 12.5px;
+  letter-spacing: 0.24em;
+  justify-content: center;
+  color: var(--f-gold);
+}
+#modal.is-fancy #modal-meta .opacity-40 { opacity: 0.45; }
+
+#modal.is-fancy #modal-header-row { justify-content: center; }
+#modal.is-fancy #modal-actions { display: none; }
+
+/* Fleuron --------------------------------------------------------------- */
+
+.f-fleuron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--f-gold);
+  opacity: 0.7;
+  margin: 22px 0 26px;
+}
+.f-fleuron::before,
+.f-fleuron::after {
+  content: "";
+  height: 1px;
+  width: 58px;
+  background: linear-gradient(to right, transparent, var(--f-gold-dim));
+}
+.f-fleuron::after { background: linear-gradient(to left, transparent, var(--f-gold-dim)); }
+.f-fleuron span { font-size: 15px; line-height: 1; }
+
+/* Section headings ------------------------------------------------------ */
+
+.f-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+.f-head span {
+  font-family: 'Cormorant SC', Georgia, serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--f-gold);
+  white-space: nowrap;
+}
+.f-head::before,
+.f-head::after { content: ""; height: 1px; flex: 1; background: rgba(216, 178, 106, 0.24); }
+
+/* Ingredients as a menu -------------------------------------------------- */
+
+.f-ing-list { list-style: none; margin: 0 auto; max-width: 32rem; }
+
+.f-ing {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 0;
+  cursor: pointer;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--f-cream);
+  transition: color 0.18s, opacity 0.18s;
+}
+.f-ing:hover { color: #fff; }
+.f-ing-name { flex-shrink: 1; }
+.f-ing-dots {
+  flex: 1;
+  min-width: 18px;
+  align-self: center;
+  height: 1px;
+  background-image: radial-gradient(circle, rgba(216, 178, 106, 0.5) 1px, transparent 1px);
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+}
+.f-ing-qty {
+  font-variant-numeric: oldstyle-nums;
+  letter-spacing: 0.03em;
+  color: var(--f-gold);
+  white-space: nowrap;
+}
+.f-ing.is-done { opacity: 0.32; }
+.f-ing.is-done .f-ing-name { text-decoration: line-through; }
+
+/* Steps as courses ------------------------------------------------------- */
+
+.f-step-list { list-style: none; margin: 0 auto; max-width: 34rem; }
+
+.f-step {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 20px;
+  padding-bottom: 26px;
+}
+.f-step:last-child { padding-bottom: 0; }
+
+.f-step-num {
+  position: relative;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
+  font-size: 24px;
+  letter-spacing: 0.06em;
+  color: var(--f-gold);
+  text-align: right;
+  padding-top: 2px;
+}
+.f-step-num::after {
+  content: "";
+  position: absolute;
+  top: 34px;
+  bottom: -26px;
+  right: 11px;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(216, 178, 106, 0.32), rgba(216, 178, 106, 0.04));
+}
+.f-step:last-child .f-step-num::after { display: none; }
+
+.f-step-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.78;
+  color: var(--f-cream);
+  opacity: 0.92;
+}
+
+/* Portion / action row --------------------------------------------------- */
+
+#modal.is-fancy #modal-controls { justify-content: center; }
+
+#modal.is-fancy #modal-controls .bg-surface,
+#modal.is-fancy #modal-controls .bg-accent {
+  background: transparent;
+  border: 1px solid rgba(216, 178, 106, 0.34);
+  color: var(--f-cream-dim);
+}
+#modal.is-fancy #modal-controls button:hover { color: var(--f-gold); }
+#modal.is-fancy #portion-value { color: var(--f-cream); font-family: 'Cormorant SC', serif; letter-spacing: 0.14em; font-size: 12.5px; }
+#modal.is-fancy #cook-mode-btn { color: var(--f-gold); }
+#modal.is-fancy #cook-mode-btn:hover { background: rgba(216, 178, 106, 0.12); }
+
+#modal.is-fancy .mode-toggle { background: transparent; border-color: rgba(216, 178, 106, 0.34); }
+#modal.is-fancy .mode-opt {
+  font-family: 'Cormorant SC', Georgia, serif;
+  font-size: 12.5px;
+  letter-spacing: 0.2em;
+  text-transform: none;
+  color: var(--f-cream-dim);
+}
+#modal.is-fancy .mode-opt.is-on {
+  background: linear-gradient(180deg, rgba(216, 178, 106, 0.24), rgba(216, 178, 106, 0.07));
+  color: var(--f-gold);
+}
+
+/* Tip + fallback note ---------------------------------------------------- */
+
+#modal.is-fancy #modal-tip {
+  background: rgba(216, 178, 106, 0.05);
+  border-color: rgba(216, 178, 106, 0.25);
+  max-width: 34rem;
+  margin: 0 auto;
+}
+#modal.is-fancy #modal-tip p {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.7;
+}
+#modal.is-fancy #modal-tip .text-accent { color: var(--f-gold); }
+#modal.is-fancy #modal-tip-text { color: var(--f-cream-dim); }
+
+.f-note {
+  max-width: 34rem;
+  margin: 0 auto 26px;
+  padding: 13px 18px;
+  border-left: 2px solid rgba(216, 178, 106, 0.4);
+  background: rgba(216, 178, 106, 0.04);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--f-cream-dim);
+}

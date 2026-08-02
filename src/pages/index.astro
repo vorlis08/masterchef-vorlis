@@ -108,14 +108,15 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       <button id="modal-close" class="sticky top-4 ml-4 z-10 w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
-      <div class="-mt-14 relative">
+      <div id="mode-sweep" class="mode-sweep" aria-hidden="true"></div>
+      <div id="modal-figure" class="-mt-14 relative">
         <img id="modal-image" src="" alt="" class="w-full aspect-[16/10] object-cover" />
-        <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent pointer-events-none"></div>
+        <div id="modal-image-fade" class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-bg to-transparent pointer-events-none"></div>
       </div>
-      <div class="px-5 sm:px-8 py-6 sm:py-8">
-        <div class="flex items-start justify-between mb-2">
+      <div id="modal-body" class="px-5 sm:px-8 py-6 sm:py-8">
+        <div id="modal-header-row" class="flex items-start justify-between mb-2">
           <h2 id="modal-title" class="display text-[27px] sm:text-[32px] text-text"></h2>
-          <div class="flex gap-2 shrink-0 ml-4">
+          <div id="modal-actions" class="flex gap-2 shrink-0 ml-4">
             <button id="modal-edit" class="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Upravit">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
             </button>
@@ -126,7 +127,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         </div>
         <p id="modal-description" class="text-text-muted text-[15px] mb-6 leading-relaxed"></p>
         <div id="modal-meta" class="meta flex items-center gap-2.5 mb-7 text-text-muted"></div>
-        <div class="flex flex-wrap items-center gap-3 mb-8">
+        <div id="modal-fleuron" class="f-fleuron hidden" aria-hidden="true"><span>&#10087;</span></div>
+        <div id="modal-note" class="f-note hidden"></div>
+        <div id="modal-controls" class="flex flex-wrap items-center gap-3 mb-8">
+          <div class="mode-toggle" id="mode-toggle" role="group" aria-label="Verze receptu">
+            <button type="button" class="mode-opt is-on" data-mode="basic">Basic</button>
+            <button type="button" class="mode-opt" data-mode="fancy">Fancy</button>
+          </div>
           <div class="flex items-center gap-1 bg-surface border border-border rounded-lg px-1 py-1">
             <button id="portion-minus" class="w-8 h-8 rounded-md flex items-center justify-center text-text-muted hover:text-accent hover:bg-surface-hover transition-colors text-[18px] font-medium">−</button>
             <span id="portion-value" class="meta min-w-[74px] text-center text-text">4 porce</span>
@@ -141,11 +148,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </button>
         </div>
         <div class="mb-8">
-          <h3 class="label text-accent mb-4">Ingredience</h3>
+          <h3 id="head-ingredients" class="label text-accent mb-4">Ingredience</h3>
           <ul id="modal-ingredients" class="space-y-2"></ul>
         </div>
         <div class="mb-8">
-          <h3 class="label text-accent mb-5">Postup</h3>
+          <h3 id="head-steps" class="label text-accent mb-5">Postup</h3>
           <ol id="modal-steps" class="space-y-5"></ol>
         </div>
         <div id="modal-tip" class="hidden p-5 rounded-xl bg-surface border border-border">
@@ -815,6 +822,55 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       return String(rounded).replace('.', ',');
     }
 
+    // ---- Basic / Fancy -------------------------------------------------
+    let fancyMode = localStorage.getItem('recipeMode') === 'fancy';
+
+    // A recipe may carry a second, more involved version of itself.
+    // Missing pieces fall back to the basic ones, so the switch works everywhere.
+    function variantOf(r) {
+      if (!fancyMode) return {
+        ingredients: r.ingredients || [],
+        steps: r.steps || [],
+        description: r.description || '',
+        time: r.time || '',
+        tip: r.tip || '',
+        own: true
+      };
+      return {
+        ingredients: r.ingredients_fancy || r.ingredients || [],
+        steps: r.steps_fancy || r.steps || [],
+        description: r.description_fancy || r.description || '',
+        time: r.time_fancy || r.time || '',
+        tip: r.tip_fancy || r.tip || '',
+        own: !!(r.ingredients_fancy || r.steps_fancy)
+      };
+    }
+
+    const QTY_UNITS = ['g','kg','mg','ml','l','dl','cl','ks','kus','kusy','kusů','lžíce','lžíci','lžic','lžička','lžičky','lžiček','stroužek','stroužky','stroužku','stroužků','balení','plátek','plátky','plátků','špetka','špetky','hrst','hrsti','šálek','šálky','sklenice','sklenici','porce','porcí','konzerva','konzervy','kelímek','kelímky','svazek','snítka','snítky','větvička','list','listy','listů'];
+
+    // Splits "800 g kuřecích prsou" into a menu line: name left, quantity right.
+    function splitQty(text) {
+      const m = text.match(/^(\d+(?:[.,]\d+)?(?:\s*[–\/-]\s*\d+(?:[.,]\d+)?)?)\s*(\S+)?\s*(.*)$/);
+      if (!m) return { qty: '', name: text };
+      let qty = m[1];
+      let rest = ((m[2] || '') + ' ' + (m[3] || '')).trim();
+      const w = (m[2] || '').replace(/[.,:]$/, '').toLowerCase();
+      if (QTY_UNITS.indexOf(w) !== -1) { qty += ' ' + m[2]; rest = (m[3] || '').trim(); }
+      if (!rest) return { qty: '', name: text };
+      return { qty: qty, name: rest };
+    }
+
+    function roman(n) {
+      const v = [50, 40, 10, 9, 5, 4, 1], sym = ['L','XL','X','IX','V','IV','I'];
+      let out = '';
+      for (let i = 0; i < v.length; i++) { while (n >= v[i]) { out += sym[i]; n -= v[i]; } }
+      return out || '\u2014';
+    }
+
+    function esc(t) {
+      return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
     function scaleIngredient(text, factor) {
       if (factor === 1) return text;
       return text.replace(/(\d+(?:[.,]\d+)?)(\s*[–-]\s*)(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)/g, (m, a, dash, b, single) => {
@@ -833,7 +889,25 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       document.getElementById('portion-value').textContent =
         currentServings + ' ' + (currentServings === 1 ? 'porce' : currentServings < 5 ? 'porce' : 'porcí');
       const ingList = document.getElementById('modal-ingredients');
-      ingList.innerHTML = (r.ingredients || []).map(raw => {
+      const list = variantOf(r).ingredients;
+
+      if (fancyMode) {
+        ingList.className = 'f-ing-list';
+        ingList.innerHTML = list.map(raw => {
+          const parts = splitQty(scaleIngredient(raw, factor));
+          return '<li class="f-ing">' +
+            '<span class="f-ing-name">' + esc(parts.name) + '</span>' +
+            (parts.qty ? '<span class="f-ing-dots"></span><span class="f-ing-qty">' + esc(parts.qty) + '</span>' : '') +
+            '</li>';
+        }).join('');
+        ingList.querySelectorAll('.f-ing').forEach(li =>
+          li.addEventListener('click', () => li.classList.toggle('is-done'))
+        );
+        return;
+      }
+
+      ingList.className = 'space-y-2';
+      ingList.innerHTML = list.map(raw => {
         const ing = scaleIngredient(raw, factor);
         return `<li class="flex items-start gap-3 cursor-pointer group ingredient-item">
           <span class="mt-[3px] w-[18px] h-[18px] shrink-0 rounded border border-border group-hover:border-accent flex items-center justify-center transition-colors checkbox">
@@ -868,6 +942,106 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (r) renderIngredients(r);
     });
 
+    function renderSteps(r) {
+      const v = variantOf(r);
+      const el = document.getElementById('modal-steps');
+
+      if (fancyMode) {
+        el.className = 'f-step-list';
+        el.innerHTML = v.steps.map((s, i) =>
+          '<li class="f-step"><span class="f-step-num">' + roman(i + 1) + '</span>' +
+          '<p class="f-step-text">' + esc(s) + '</p></li>'
+        ).join('');
+        return;
+      }
+
+      el.className = 'space-y-5';
+      el.innerHTML = v.steps.map((s, i) =>
+        '<li class="flex gap-4 sm:gap-5"><span class="display shrink-0 w-8 text-[22px] leading-none text-accent/70 pt-0.5 text-right">' + (i + 1) + '</span>' +
+        '<p class="text-[15px] text-text-muted leading-[1.7]">' + esc(s) + '</p></li>'
+      ).join('');
+    }
+
+    // Everything that is not the ingredient/step lists: headings, meta, note.
+    function renderModeChrome(r) {
+      const v = variantOf(r);
+      const headIng  = document.getElementById('head-ingredients');
+      const headStep = document.getElementById('head-steps');
+      const fleuron  = document.getElementById('modal-fleuron');
+      const note     = document.getElementById('modal-note');
+      const tipEl    = document.getElementById('modal-tip');
+
+      modal.classList.toggle('is-fancy', fancyMode);
+      document.querySelectorAll('#mode-toggle .mode-opt').forEach(b =>
+        b.classList.toggle('is-on', (b.dataset.mode === 'fancy') === fancyMode)
+      );
+
+      document.getElementById('modal-description').textContent = v.description;
+      document.getElementById('modal-meta').innerHTML =
+        (v.time ? '<span>' + esc(v.time) + '</span><span class="opacity-40">/</span>' : '') +
+        '<span>' + esc(r.difficulty || '') + '</span><span class="opacity-40">/</span>' +
+        '<span>' + (r.servings || '?') + ' porcí</span>';
+
+      if (fancyMode) {
+        headIng.className  = 'f-head';
+        headStep.className = 'f-head';
+        headIng.innerHTML  = '<span>Suroviny</span>';
+        headStep.innerHTML = '<span>Postup</span>';
+        fleuron.classList.remove('hidden');
+        if (v.own) { note.classList.add('hidden'); }
+        else {
+          note.classList.remove('hidden');
+          note.textContent = 'Pro tento recept zatím není vlastní Fancy verze — vidíš základní postup.';
+        }
+      } else {
+        headIng.className  = 'label text-accent mb-4';
+        headStep.className = 'label text-accent mb-5';
+        headIng.textContent  = 'Ingredience';
+        headStep.textContent = 'Postup';
+        fleuron.classList.add('hidden');
+        note.classList.add('hidden');
+      }
+
+      if (v.tip) { tipEl.classList.remove('hidden'); document.getElementById('modal-tip-text').textContent = v.tip; }
+      else { tipEl.classList.add('hidden'); }
+    }
+
+    // The switch. Content changes behind a sweep of gold light.
+    let morphing = false;
+    function setRecipeMode(next) {
+      if (morphing || next === fancyMode) return;
+      const r = recipes.find(x => x.slug === currentSlug);
+      if (!r) return;
+
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      fancyMode = next;
+      localStorage.setItem('recipeMode', next ? 'fancy' : 'basic');
+
+      const paint = () => {
+        renderIngredients(r);
+        renderSteps(r);
+        renderModeChrome(r);
+        if (reduce) return;
+        const body = document.getElementById('modal-body');
+        body.classList.remove('mode-rise');
+        void body.offsetWidth;
+        body.classList.add('mode-rise');
+      };
+
+      if (reduce) { paint(); return; }
+
+      morphing = true;
+      modal.classList.remove('is-morphing');
+      void modal.offsetWidth;
+      modal.classList.add('is-morphing');
+      setTimeout(paint, 250);
+      setTimeout(() => { modal.classList.remove('is-morphing'); morphing = false; }, 900);
+    }
+
+    document.querySelectorAll('#mode-toggle .mode-opt').forEach(btn =>
+      btn.addEventListener('click', () => setRecipeMode(btn.dataset.mode === 'fancy'))
+    );
+
     function openDetailModal(slug) {
       const r = recipes.find(x => x.slug === slug);
       if (!r) return;
@@ -881,14 +1055,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         `<span>${r.difficulty || ''}</span><span class="opacity-40">/</span><span>${r.servings || '?'} porcí</span>`;
 
       renderIngredients(r);
-
-      document.getElementById('modal-steps').innerHTML = (r.steps || []).map((s, i) =>
-        `<li class="flex gap-4 sm:gap-5"><span class="display shrink-0 w-8 text-[22px] leading-none text-accent/70 pt-0.5 text-right">${i+1}</span><p class="text-[15px] text-text-muted leading-[1.7]">${s}</p></li>`
-      ).join('');
-
-      const tipEl = document.getElementById('modal-tip');
-      if (r.tip) { tipEl.classList.remove('hidden'); document.getElementById('modal-tip-text').textContent = r.tip; }
-      else { tipEl.classList.add('hidden'); }
+      renderSteps(r);
+      renderModeChrome(r);
 
       overlay.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
@@ -1565,7 +1733,7 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
       const base = cookRecipe.servings || 4;
       const factor = cookServings / base;
       cookIngValue.textContent = cookServings + ' ' + (cookServings < 5 ? 'porce' : 'porc\u00ed');
-      cookIngList.innerHTML = (cookRecipe.ingredients || []).map(raw =>
+      cookIngList.innerHTML = (variantOf(cookRecipe).ingredients || []).map(raw =>
         '<li class="cook-ing"><span class="cook-ing-box"></span><span class="cook-ing-txt">' + scaleIngredient(raw, factor) + '</span></li>'
       ).join('');
       cookIngList.querySelectorAll('.cook-ing').forEach(li =>
@@ -1587,9 +1755,9 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     // -- Open / close --
     document.getElementById('cook-mode-btn').addEventListener('click', () => {
       const r = recipes.find(x => x.slug === currentSlug);
-      if (!r || !(r.steps || []).length) return;
+      if (!r || !variantOf(r).steps.length) return;
       cookRecipe = r;
-      cookSteps = r.steps;
+      cookSteps = variantOf(r).steps;
       cookIndex = 0;
       cookServings = currentServings || r.servings || 4;
       timers = [];
@@ -1711,7 +1879,7 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
       if (!r) return;
       const base = r.servings || 4;
       const factor = currentServings / base;
-      (r.ingredients || []).forEach(raw => {
+      variantOf(r).ingredients.forEach(raw => {
         const text = scaleIngredient(raw, factor);
         if (!shopList.some(i => i.text === text)) shopList.push({ text, done: false });
       });
