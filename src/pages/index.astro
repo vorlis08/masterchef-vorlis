@@ -384,29 +384,69 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
   </div>
 
   <!-- Cooking mode overlay -->
-  <div id="cook-overlay" class="fixed inset-0 bg-bg z-[80] hidden flex-col">
-    <div class="flex items-center justify-between px-6 py-5 border-b border-border">
-      <div>
-        <h2 id="cook-title" class="display text-[18px] text-text"></h2>
-        <p id="cook-progress" class="meta text-text-muted mt-1"></p>
+  <div id="cook-overlay" class="fixed inset-0 bg-bg z-[80] hidden flex-col overflow-hidden">
+
+    <!-- Top bar -->
+    <div class="flex items-center gap-2.5 px-4 sm:px-6 pt-[calc(0.85rem+env(safe-area-inset-top))] pb-2.5 shrink-0">
+      <div class="min-w-0 flex-1">
+        <h2 id="cook-title" class="display text-[15px] sm:text-[19px] text-text truncate leading-tight"></h2>
+        <p id="cook-progress" class="meta text-text-muted mt-0.5"></p>
       </div>
-      <button id="cook-close" class="w-10 h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
+      <button id="cook-ing-btn" class="w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted active:scale-95 hover:text-accent hover:border-accent transition-all shrink-0" title="Ingredience">
+        <svg class="w-[19px] h-[19px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
+      </button>
+      <button id="cook-close" class="w-11 h-11 sm:w-10 sm:h-10 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted active:scale-95 hover:text-text transition-all shrink-0">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
     </div>
-    <div class="flex-1 overflow-y-auto flex items-center justify-center px-6 py-10 relative">
+
+    <!-- Active timers -->
+    <div id="cook-timers" class="hidden flex-wrap gap-2 px-4 sm:px-6 pb-2.5 shrink-0"></div>
+
+    <!-- Step stage -->
+    <div id="cook-stage" class="flex-1 relative overflow-hidden">
       <div id="cook-ghost" class="cook-ghost"></div>
-      <div class="max-w-2xl w-full text-center relative z-10">
-        <div id="cook-step-num" class="label text-accent mb-6"></div>
-        <p id="cook-step-text" class="display text-[24px] sm:text-[32px] leading-[1.32] text-text"></p>
+      <div id="cook-slide" class="cook-slide absolute inset-0 flex items-center justify-center px-6 sm:px-10 py-4 overflow-y-auto">
+        <div class="max-w-2xl w-full text-center relative z-10">
+          <div id="cook-step-num" class="label text-accent mb-5"></div>
+          <p id="cook-step-text" class="display text-[26px] sm:text-[34px] leading-[1.32] text-text"></p>
+          <div id="cook-step-timer" class="hidden flex-wrap justify-center gap-2 mt-8"></div>
+        </div>
       </div>
+      <span class="cook-hint cook-hint-l sm:hidden"></span>
+      <span class="cook-hint cook-hint-r sm:hidden"></span>
+      <canvas id="cook-confetti" class="pointer-events-none absolute inset-0 z-40 hidden"></canvas>
     </div>
-    <div class="h-1 bg-surface mx-6 rounded-full overflow-hidden mb-2">
+
+    <!-- Progress -->
+    <div class="h-[3px] bg-surface mx-4 sm:mx-6 rounded-full overflow-hidden shrink-0">
       <div id="cook-bar" class="h-full bg-accent transition-all duration-300" style="width:0%"></div>
     </div>
-    <div class="flex items-center justify-between gap-3 px-4 sm:px-6 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))] border-t border-border">
-      <button id="cook-prev" class="flex-1 py-4 rounded-xl bg-surface border border-border text-text font-medium text-[16px] active:scale-[0.98] hover:border-accent transition-all disabled:opacity-30 disabled:pointer-events-none">← Zpět</button>
-      <button id="cook-next" class="flex-[1.4] py-4 rounded-xl bg-accent text-white font-medium text-[16px] active:scale-[0.98] hover:bg-accent-hover transition-all">Další →</button>
+
+    <!-- Controls -->
+    <div class="px-4 sm:px-6 pt-3 pb-[calc(0.9rem+env(safe-area-inset-bottom))] shrink-0">
+      <div class="hidden sm:flex items-center justify-between gap-3">
+        <button id="cook-prev" class="flex-1 py-3.5 rounded-xl bg-surface border border-border text-text font-medium text-[15px] active:scale-[0.98] hover:border-accent transition-all disabled:opacity-25 disabled:pointer-events-none">← Zpět</button>
+        <button id="cook-next" class="flex-[1.4] py-3.5 rounded-xl bg-accent text-white font-medium text-[15px] active:scale-[0.98] hover:bg-accent-hover transition-all">Další →</button>
+      </div>
+      <p class="sm:hidden meta text-center text-text-muted opacity-55">Ťukni vlevo zpět · vpravo dál</p>
+    </div>
+
+    <!-- Ingredients drawer -->
+    <div id="cook-ing-backdrop" class="hidden absolute inset-0 bg-black/50 z-40"></div>
+    <div id="cook-ing-panel" class="absolute inset-x-0 bottom-0 z-50 bg-surface border-t border-border rounded-t-2xl translate-y-full transition-transform duration-300 ease-out flex flex-col" style="max-height:76%">
+      <div class="flex items-center justify-between gap-3 px-5 pt-4 pb-3 border-b border-border shrink-0">
+        <h3 class="label text-accent">Ingredience</h3>
+        <div class="flex items-center gap-1 bg-bg border border-border rounded-lg p-1">
+          <button id="cook-ing-minus" class="w-8 h-8 rounded-md flex items-center justify-center text-text-muted active:scale-90 hover:text-accent transition-all text-[18px] leading-none">−</button>
+          <span id="cook-ing-value" class="meta min-w-[68px] text-center text-text"></span>
+          <button id="cook-ing-plus" class="w-8 h-8 rounded-md flex items-center justify-center text-text-muted active:scale-90 hover:text-accent transition-all text-[18px] leading-none">+</button>
+        </div>
+        <button id="cook-ing-close" class="w-9 h-9 rounded-full bg-bg border border-border flex items-center justify-center text-text-muted active:scale-95 transition-all shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <ul id="cook-ing-list" class="overflow-y-auto px-5 py-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] space-y-1"></ul>
     </div>
   </div>
 
@@ -1212,15 +1252,22 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     });
 
     // --- Cooking mode ---
-    const cookOverlay = document.getElementById('cook-overlay');
-    const cookTitle = document.getElementById('cook-title');
-    const cookProgress = document.getElementById('cook-progress');
-    const cookStepNum = document.getElementById('cook-step-num');
-    const cookStepText = document.getElementById('cook-step-text');
-    const cookPrev = document.getElementById('cook-prev');
-    const cookNext = document.getElementById('cook-next');
+    const cookOverlay   = document.getElementById('cook-overlay');
+    const cookTitle     = document.getElementById('cook-title');
+    const cookProgress  = document.getElementById('cook-progress');
+    const cookStepNum   = document.getElementById('cook-step-num');
+    const cookStepText  = document.getElementById('cook-step-text');
+    const cookStepTimer = document.getElementById('cook-step-timer');
+    const cookSlide     = document.getElementById('cook-slide');
+    const cookStage     = document.getElementById('cook-stage');
+    const cookTimersBar = document.getElementById('cook-timers');
+    const cookPrev      = document.getElementById('cook-prev');
+    const cookNext      = document.getElementById('cook-next');
     let cookSteps = [];
     let cookIndex = 0;
+    let cookRecipe = null;
+    let cookServings = 4;
+    let cookAnimating = false;
     let wakeLock = null;
 
     async function requestWakeLock() {
@@ -1229,25 +1276,269 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     function releaseWakeLock() {
       try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch {}
     }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && cookOverlay && !cookOverlay.classList.contains('hidden')) requestWakeLock();
+    });
 
-    function renderCookStep() {
-      cookStepNum.textContent = `Krok ${cookIndex + 1} / ${cookSteps.length}`;
+    // -- Duration parsing (Czech) --
+    function parseDurations(text) {
+      const out = [];
+      const re = /(\d+)(?:\s*[\u2013\u2014-]\s*(\d+))?\s*(hodin\w*|hod\.?|minut\w*|min\.?|sekund\w*|vte\u0159in\w*|sek\.?)/gi;
+      let m;
+      while ((m = re.exec(text)) !== null) {
+        const hi = parseInt(m[2] || m[1], 10);
+        const u = m[3].toLowerCase();
+        let secs;
+        if (u.indexOf('hod') === 0) secs = hi * 3600;
+        else if (u.indexOf('sek') === 0 || u.indexOf('vte') === 0) secs = hi;
+        else secs = hi * 60;
+        if (!secs || secs < 5 || secs > 6 * 3600) continue;
+        if (out.some(o => o.secs === secs)) continue;
+        out.push({ secs: secs, label: m[0].trim() });
+      }
+      return out.slice(0, 3);
+    }
+
+    function fmtClock(s) {
+      const m = Math.floor(s / 60), sec = s % 60;
+      if (m >= 60) return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
+      return m + ':' + String(sec).padStart(2, '0');
+    }
+
+    // -- Parallel timers --
+    let timers = [];
+    let timerTick = null;
+    let audioCtx = null;
+
+    function beep() {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+          audioCtx = audioCtx || new AC();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          [0, 0.3, 0.6].forEach(off => {
+            const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            o.type = 'sine'; o.frequency.value = 880;
+            const t = audioCtx.currentTime + off;
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(0.4, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+            o.start(t); o.stop(t + 0.27);
+          });
+        }
+      } catch {}
+      try { if (navigator.vibrate) navigator.vibrate([300, 130, 300, 130, 300]); } catch {}
+    }
+
+    function notifyDone(t) {
+      beep();
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('\u010casova\u010d dob\u011bhl \u2014 krok ' + t.step, { body: t.label, tag: 'cook-' + t.id });
+        }
+      } catch {}
+    }
+
+    function startTimer(secs, label, stepNo) {
+      if (timers.some(t => t.step === stepNo && t.total === secs && !t.done)) return;
+      try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {}
+      try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) { audioCtx = audioCtx || new AC(); if (audioCtx.state === 'suspended') audioCtx.resume(); } } catch {}
+      timers.push({ id: String(Date.now()) + Math.floor(Math.random() * 1000), total: secs, left: secs, label: label, step: stepNo, done: false });
+      if (!timerTick) timerTick = setInterval(tickTimers, 1000);
+      renderTimers(); renderStepTimerBtns();
+    }
+
+    function tickTimers() {
+      if (timers.length === 0) { clearInterval(timerTick); timerTick = null; return; }
+      timers.forEach(t => {
+        if (t.done) return;
+        t.left--;
+        if (t.left <= 0) { t.left = 0; t.done = true; notifyDone(t); }
+      });
+      renderTimers();
+    }
+
+    function renderTimers() {
+      if (!cookTimersBar) return;
+      if (timers.length === 0) { cookTimersBar.classList.add('hidden'); cookTimersBar.classList.remove('flex'); cookTimersBar.innerHTML = ''; return; }
+      cookTimersBar.classList.remove('hidden'); cookTimersBar.classList.add('flex');
+      cookTimersBar.innerHTML = timers.map(t => {
+        const pct = t.total ? Math.round((1 - t.left / t.total) * 100) : 100;
+        return '<button class="timer-chip' + (t.done ? ' is-done' : '') + '" data-tid="' + t.id + '" style="--p:' + pct + '%">' +
+               '<span class="timer-step">' + t.step + '</span>' +
+               '<span class="timer-clock">' + (t.done ? 'Hotovo' : fmtClock(t.left)) + '</span>' +
+               '<span class="timer-x">\u00d7</span></button>';
+      }).join('');
+      cookTimersBar.querySelectorAll('.timer-chip').forEach(c => {
+        c.addEventListener('click', e => {
+          e.stopPropagation();
+          timers = timers.filter(t => t.id !== c.dataset.tid);
+          if (timers.length === 0 && timerTick) { clearInterval(timerTick); timerTick = null; }
+          renderTimers(); renderStepTimerBtns();
+        });
+      });
+    }
+
+    function renderStepTimerBtns() {
+      if (!cookStepTimer) return;
+      const ds = parseDurations(cookSteps[cookIndex] || '');
+      if (ds.length === 0) { cookStepTimer.classList.add('hidden'); cookStepTimer.classList.remove('flex'); cookStepTimer.innerHTML = ''; return; }
+      cookStepTimer.classList.remove('hidden'); cookStepTimer.classList.add('flex');
+      cookStepTimer.innerHTML = ds.map(d => {
+        const running = timers.some(t => t.step === cookIndex + 1 && t.total === d.secs && !t.done);
+        return '<button class="timer-start' + (running ? ' is-running' : '') + '" data-secs="' + d.secs + '" data-label="' + d.label.replace(/"/g, '&quot;') + '"' + (running ? ' disabled' : '') + '>' +
+               '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+               (running ? 'B\u011b\u017e\u00ed' : fmtClock(d.secs)) + '</button>';
+      }).join('');
+      cookStepTimer.querySelectorAll('.timer-start').forEach(b => {
+        b.addEventListener('click', e => {
+          e.stopPropagation();
+          startTimer(parseInt(b.dataset.secs, 10), b.dataset.label, cookIndex + 1);
+        });
+      });
+    }
+
+    // -- Step rendering + transition --
+    function paintStep() {
+      cookStepNum.textContent = 'Krok ' + (cookIndex + 1) + ' / ' + cookSteps.length;
       const ghost = document.getElementById('cook-ghost');
       if (ghost) ghost.textContent = cookIndex + 1;
       cookStepText.textContent = cookSteps[cookIndex] || '';
-      cookProgress.textContent = `Krok ${cookIndex + 1} z ${cookSteps.length}`;
+      cookProgress.textContent = 'Krok ' + (cookIndex + 1) + ' z ' + cookSteps.length;
       document.getElementById('cook-bar').style.width = ((cookIndex + 1) / cookSteps.length * 100) + '%';
-      cookPrev.disabled = cookIndex === 0;
-      cookNext.textContent = cookIndex === cookSteps.length - 1 ? 'Hotovo ✓' : 'Další →';
+      if (cookPrev) cookPrev.disabled = cookIndex === 0;
+      if (cookNext) cookNext.textContent = cookIndex === cookSteps.length - 1 ? 'Hotovo \u2713' : 'Dal\u0161\u00ed \u2192';
+      renderStepTimerBtns();
     }
 
+    function goStep(target, dir) {
+      if (cookAnimating || target < 0 || target >= cookSteps.length) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { cookIndex = target; paintStep(); return; }
+      cookAnimating = true;
+      cookSlide.style.setProperty('--dir', dir > 0 ? '-1' : '1');
+      cookSlide.classList.add('is-out');
+      setTimeout(() => {
+        cookIndex = target;
+        paintStep();
+        cookSlide.classList.remove('is-out');
+        cookSlide.style.setProperty('--dir', dir > 0 ? '1' : '-1');
+        cookSlide.classList.add('is-pre');
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          cookSlide.classList.remove('is-pre');
+          setTimeout(() => { cookAnimating = false; }, 280);
+        }));
+      }, 175);
+    }
+
+    function nextStep() { if (cookIndex < cookSteps.length - 1) goStep(cookIndex + 1, 1); else finishCooking(); }
+    function prevStep() { if (cookIndex > 0) goStep(cookIndex - 1, -1); }
+
+    // -- Confetti --
+    function fireConfetti() {
+      const cv = document.getElementById('cook-confetti');
+      if (!cv || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const w = cookStage.clientWidth, h = cookStage.clientHeight;
+      if (!w || !h) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = w * dpr; cv.height = h * dpr;
+      cv.style.width = w + 'px'; cv.style.height = h + 'px';
+      cv.classList.remove('hidden');
+      const ctx = cv.getContext('2d');
+      ctx.scale(dpr, dpr);
+      let accent = '';
+      try { accent = getComputedStyle(document.documentElement).getPropertyValue('--color-accent').trim(); } catch {}
+      const colors = [accent || '#e07850', '#ffffff', '#ffd166', '#06d6a0', '#ef476f'];
+      const parts = [];
+      for (let i = 0; i < 150; i++) {
+        parts.push({
+          x: w / 2 + (Math.random() - 0.5) * w * 0.5,
+          y: h * 0.58,
+          vx: (Math.random() - 0.5) * 14,
+          vy: -Math.random() * 17 - 7,
+          s: 4 + Math.random() * 7,
+          rot: Math.random() * Math.PI,
+          vr: (Math.random() - 0.5) * 0.4,
+          c: colors[Math.floor(Math.random() * colors.length)],
+          life: 1
+        });
+      }
+      let f = 0;
+      (function loop() {
+        f++;
+        ctx.clearRect(0, 0, w, h);
+        parts.forEach(p => {
+          if (p.life <= 0) return;
+          p.vy += 0.44; p.vx *= 0.995;
+          p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+          if (p.y > h * 0.7) p.life -= 0.022;
+          ctx.save();
+          ctx.globalAlpha = Math.max(p.life, 0);
+          ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+          ctx.fillStyle = p.c;
+          ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.62);
+          ctx.restore();
+        });
+        if (f < 200) requestAnimationFrame(loop);
+        else { ctx.clearRect(0, 0, w, h); cv.classList.add('hidden'); }
+      })();
+    }
+
+    function finishCooking() {
+      fireConfetti();
+      try { if (navigator.vibrate) navigator.vibrate([60, 50, 60]); } catch {}
+      cookStepText.textContent = 'Hotovo. Dobrou chu\u0165!';
+      cookStepNum.textContent = 'Uva\u0159eno';
+      cookStepTimer.classList.add('hidden');
+      if (cookNext) cookNext.textContent = 'Zav\u0159\u00edt';
+      setTimeout(() => { if (!cookOverlay.classList.contains('hidden')) closeCookMode(); }, 2600);
+    }
+
+    // -- Ingredients drawer --
+    const cookIngPanel    = document.getElementById('cook-ing-panel');
+    const cookIngBackdrop = document.getElementById('cook-ing-backdrop');
+    const cookIngList     = document.getElementById('cook-ing-list');
+    const cookIngValue    = document.getElementById('cook-ing-value');
+    let cookIngOpen = false;
+
+    function renderCookIngredients() {
+      if (!cookRecipe || !cookIngList) return;
+      const base = cookRecipe.servings || 4;
+      const factor = cookServings / base;
+      cookIngValue.textContent = cookServings + ' ' + (cookServings < 5 ? 'porce' : 'porc\u00ed');
+      cookIngList.innerHTML = (cookRecipe.ingredients || []).map(raw =>
+        '<li class="cook-ing"><span class="cook-ing-box"></span><span class="cook-ing-txt">' + scaleIngredient(raw, factor) + '</span></li>'
+      ).join('');
+      cookIngList.querySelectorAll('.cook-ing').forEach(li =>
+        li.addEventListener('click', () => li.classList.toggle('is-done'))
+      );
+    }
+
+    function setCookIng(open) {
+      cookIngOpen = open;
+      cookIngPanel.classList.toggle('translate-y-full', !open);
+      cookIngBackdrop.classList.toggle('hidden', !open);
+    }
+    document.getElementById('cook-ing-btn').addEventListener('click', () => { renderCookIngredients(); setCookIng(true); });
+    document.getElementById('cook-ing-close').addEventListener('click', () => setCookIng(false));
+    cookIngBackdrop.addEventListener('click', () => setCookIng(false));
+    document.getElementById('cook-ing-minus').addEventListener('click', () => { if (cookServings > 1) { cookServings--; renderCookIngredients(); } });
+    document.getElementById('cook-ing-plus').addEventListener('click', () => { if (cookServings < 20) { cookServings++; renderCookIngredients(); } });
+
+    // -- Open / close --
     document.getElementById('cook-mode-btn').addEventListener('click', () => {
       const r = recipes.find(x => x.slug === currentSlug);
       if (!r || !(r.steps || []).length) return;
+      cookRecipe = r;
       cookSteps = r.steps;
       cookIndex = 0;
+      cookServings = currentServings || r.servings || 4;
+      timers = [];
+      if (timerTick) { clearInterval(timerTick); timerTick = null; }
+      renderTimers();
       cookTitle.textContent = r.title;
-      renderCookStep();
+      paintStep();
+      setCookIng(false);
       cookOverlay.classList.remove('hidden');
       cookOverlay.classList.add('flex');
       document.body.style.overflow = 'hidden';
@@ -1258,23 +1549,42 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
       cookOverlay.classList.add('hidden');
       cookOverlay.classList.remove('flex');
       document.body.style.overflow = '';
+      setCookIng(false);
+      timers = [];
+      if (timerTick) { clearInterval(timerTick); timerTick = null; }
+      renderTimers();
       releaseWakeLock();
     }
     document.getElementById('cook-close').addEventListener('click', closeCookMode);
-    let touchX = null;
-    cookOverlay.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
-    cookOverlay.addEventListener('touchend', e => {
-      if (touchX === null) return;
+
+    // -- Tap zones: left third back, right two-thirds forward --
+    cookStage.addEventListener('click', e => {
+      if (cookIngOpen) return;
+      if (e.target.closest('button, a')) return;
+      const rect = cookStage.getBoundingClientRect();
+      if ((e.clientX - rect.left) < rect.width * 0.34) prevStep(); else nextStep();
+    });
+
+    // -- Swipe --
+    let touchX = null, touchY = null;
+    cookStage.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }, { passive: true });
+    cookStage.addEventListener('touchend', e => {
+      if (touchX === null || cookIngOpen) { touchX = null; return; }
       const dx = e.changedTouches[0].clientX - touchX;
+      const dy = e.changedTouches[0].clientY - touchY;
       touchX = null;
-      if (Math.abs(dx) < 60) return;
-      if (dx < 0 && cookIndex < cookSteps.length - 1) { cookIndex++; renderCookStep(); }
-      else if (dx > 0 && cookIndex > 0) { cookIndex--; renderCookStep(); }
+      if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0) nextStep(); else prevStep();
     }, { passive: true });
-    cookPrev.addEventListener('click', () => { if (cookIndex > 0) { cookIndex--; renderCookStep(); } });
-    cookNext.addEventListener('click', () => {
-      if (cookIndex < cookSteps.length - 1) { cookIndex++; renderCookStep(); }
-      else closeCookMode();
+
+    if (cookPrev) cookPrev.addEventListener('click', prevStep);
+    if (cookNext) cookNext.addEventListener('click', nextStep);
+
+    // -- Keyboard --
+    document.addEventListener('keydown', e => {
+      if (cookOverlay.classList.contains('hidden')) return;
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextStep(); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
     });
 
     // --- Shopping list ---
