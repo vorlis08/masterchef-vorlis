@@ -342,7 +342,52 @@
     "meal_type": [
       "oběd"
     ],
-    "blur": "data:image/webp;base64,UklGRhwBAABXRUJQVlA4IBABAAAwBgCdASoUABsAPu1mrE+ppaQiMBgIATAdiWgAtRuTQU0gETYD/vXj05guEkEkBIVRS0owWoBZ6m1AAP7rfNn6+GxSxKRgXeQXMSQ+TP/1tUJ+Q1UEdpFOhwRovOMrJyLTpG2XsFZU7TW0UYnTcpBSBT576G9yhqEOYmulUsbpzII2GgCqOI9kOYqdsyJHT2mItFgcT+g/YX2JLJf72ousqmI9C3uGaDcoAmeGJWwKoXGpkO2l969oWQo62pqngsrUZ/tPAZyacmWJs3cu2JVg8g9phCTeUVevfQzfRjA/1YJLMKzml3l4SFeKSop4Obq/mS9Us8v9L19+5det3saWis5c3c27EKaFuGqA5tgAAA=="
+    "blur": "data:image/webp;base64,UklGRhwBAABXRUJQVlA4IBABAAAwBgCdASoUABsAPu1mrE+ppaQiMBgIATAdiWgAtRuTQU0gETYD/vXj05guEkEkBIVRS0owWoBZ6m1AAP7rfNn6+GxSxKRgXeQXMSQ+TP/1tUJ+Q1UEdpFOhwRovOMrJyLTpG2XsFZU7TW0UYnTcpBSBT576G9yhqEOYmulUsbpzII2GgCqOI9kOYqdsyJHT2mItFgcT+g/YX2JLJf72ousqmI9C3uGaDcoAmeGJWwKoXGpkO2l969oWQo62pqngsrUZ/tPAZyacmWJs3cu2JVg8g9phCTeUVevfQzfRjA/1YJLMKzml3l4SFeKSop4Obq/mS9Us8v9L19+5det3saWis5c3c27EKaFuGqA5tgAAA==",
+    "description_fancy": "Stejný postup, ale na vlastním kuřecím vývaru místo bujónu a s cibulí karamelizovanou dvakrát tak dlouho. Vývar si udělej klidně den předem.",
+    "time_fancy": "45 min (+ 3 h na vývar)",
+    "ingredients_fancy": [
+      "NA VÝVAR: 1 kg kuřecích kostí, křídel nebo krků",
+      "1 cibule, překrojená napůl (i se slupkou)",
+      "1 mrkev, nakrájená na velké kusy",
+      "1 řapík celeru nebo kus bulvy",
+      "6 kuliček celého pepře",
+      "2 bobkové listy",
+      "2,5 l studené vody",
+      "NA PASTU: 650 g kuřecích prsou",
+      "0,5 lžičky soli",
+      "0,5 lžičky pepře",
+      "0,5 lžičky česnekového prášku",
+      "1 lžička baking sody (jedlá soda)",
+      "1 lžíce másla",
+      "2 cibule, nakrájené na půlkolečka",
+      "2 lžíce cukru",
+      "1 lžíce balsamica",
+      "0,5 lžičky sušeného rozmarýnu",
+      "0,5 lžičky sušeného tymiánu",
+      "1 lžíce česnekového pretlaku",
+      "300 g pasty (farfalle nebo penne)",
+      "750 ml domácího kuřecího vývaru",
+      "150 ml smetany na vaření 12%",
+      "40 g cheddaru nebo parmazánu, strouhaného",
+      "120 g Eidamu nebo Carského, strouhaného",
+      "1 svazek jarní cibulky"
+    ],
+    "steps_fancy": [
+      "VÝVAR: 1 kg kuřecích kostí a křídel dej do velkého hrnce a zalij 2,5 l studené vody. Studená je důležitá — v horké se bílkoviny okamžitě srazí na povrchu masa a vývar zůstane kalný.",
+      "Přiveď pomalu k varu a hned stáhni na nejnižší plamen. Hladina se smí jen mírně chvět. Vroucí vývar rozmele tuk do zákalu, který už z něj nedostaneš.",
+      "První půlhodinu sbírej lžící šedou pěnu, která se tvoří na hladině. Pak přidej překrojenou cibuli, mrkev, celer, 6 kuliček pepře a 2 bobkové listy.",
+      "Nech táhnout 3 hodiny bez pokličky a nesol — vývar se bude odpařovat a sůl by se v něm zkoncentrovala.",
+      "Přeceď přes jemné síto a nech vychladnout. Pokud ho děláš den předem, ztuhlý tuk druhý den sundáš z povrchu lžící. Máš-li víc než 750 ml, nech ho odkrytý redukovat na tohle množství.",
+      "PASTA: Nakrájej 650 g kuřecích prsou na kousky. Přidej sůl, pepř, česnekový prášek a 1 lžičku baking sody, dobře promíchej a nech 5 minut odležet.",
+      "Na rozpálené pánvi na slunečnicovém oleji opékej kuře na středně vysokém ohni, dokud není asi z 90 % hotové — zvenku opečené, uvnitř mírně růžové. Vyndej z pánve a odlož stranou.",
+      "Do stejné pánve dej 1 lžíci másla, 2 cibule nakrájené na půlkolečka a 2 lžíce cukru. Míchej každých pár minut na středním ohni 40 minut. Prvních dvacet cibule jen změkne a zesklovatí, teprve v druhé půlce začne opravdu hnědnout a sládnout.",
+      "Až je cibule tmavě zlatá a scvrklá zhruba na třetinu objemu, přilij 1 lžíci balsamica a míchej, dokud se neodpaří.",
+      "Přidej rozmarýn, tymián a 1 lžíci česnekového pretlaku, zamíchej. Přisyp 300 g pasty přímo do pánve a zalij 750 ml domácího vývaru.",
+      "Vař 15 minut na středním ohni za občasného míchání, dokud pasta nenasaje vývar a není al dente. Míchej pravidelně — škrob, který pasta pustí, je celá omáčka.",
+      "Vrať kuře, přilij 150 ml smetany a přisyp oba sýry. Míchej na nízkém ohni, dokud se nerozpustí a omáčka není krémová.",
+      "Podávej ihned, posyp nakrájenou jarní cibulkou."
+    ],
+    "tip_fancy": "Vývar udělej ve větší dávce a zamraz ho po 750 ml. Příště je Fancy verze stejně rychlá jako Basic."
   },
   {
     "slug": "parkova-pasta-se-slaninou",
@@ -385,14 +430,50 @@
     "meal_type": [
       "večeře"
     ],
-    "blur": "data:image/webp;base64,UklGRuwAAABXRUJQVlA4IOAAAABQBgCdASoUABsAPu1qsFAppaUiqAqpMB2JbACdMoRwAkgPe8P/obXHr7ZboeOC65ZhTRLPwPzZOv40AAD+cZ5vNv9Wv08c+LZF+MlW7988d6oyfxhzUmc5OiNgZ4WEUAAh7c9p+dcWbicu2hRTbErDeK/ZrG6ZVNyy+HLoLWb3pfAawY32p6nYixatManfuYPcXs1twhH4YSmczlp9rnrsaDfz4lWqouCi6fdLg8+T7PwbgpTvmziO4988WsUIPDByiViJMPyDuugMvFuw2P3uqtqId1p5zVOZAivfX2AAAA=="
+    "blur": "data:image/webp;base64,UklGRuwAAABXRUJQVlA4IOAAAABQBgCdASoUABsAPu1qsFAppaUiqAqpMB2JbACdMoRwAkgPe8P/obXHr7ZboeOC65ZhTRLPwPzZOv40AAD+cZ5vNv9Wv08c+LZF+MlW7988d6oyfxhzUmc5OiNgZ4WEUAAh7c9p+dcWbicu2hRTbErDeK/ZrG6ZVNyy+HLoLWb3pfAawY32p6nYixatManfuYPcXs1twhH4YSmczlp9rnrsaDfz4lWqouCi6fdLg8+T7PwbgpTvmziO4988WsUIPDByiViJMPyDuugMvFuw2P3uqtqId1p5zVOZAivfX2AAAA==",
+    "description_fancy": "Ta samá pasta, ale cherry rajčata se nechají na prudkém ohni popraskat a zkaramelizovat do husté sladké hmoty. Těstoviny se dovařují přímo v omáčce, sýr jde dovnitř mimo oheň. Na závěr citron a čerstvá bazalka.",
+    "time_fancy": "40 min",
+    "ingredients_fancy": [
+      "200 g těstovin (farfalle nebo penne)",
+      "4 párky, nakrájené na kolečka",
+      "100 g slaniny, nakrájené na kostičky",
+      "1 cibule, nakrájená na půlkolečka",
+      "3 stroužky česneku, prolisované",
+      "1 červená paprika, nakrájená na proužky",
+      "200 g cherry rajčat",
+      "150 ml smetany 12%",
+      "70 g cheddaru v bloku",
+      "1 lžička sladké papriky",
+      "0,5 lžičky uzené papriky",
+      "špetka cukru",
+      "1 lžíce slunečnicového oleje",
+      "0,5 citronu",
+      "hrst čerstvé bazalky",
+      "sůl, pepř"
+    ],
+    "steps_fancy": [
+      "Postav hrnec s osolenou vodou na těstoviny, ale zatím je nevař — přijdou do omáčky až úplně nakonec, horké.",
+      "Na suché pánvi opékej 100 g slaniny nakrájené na kostičky na středním ohni, dokud není křupavá. Vyndej ji na talíř, vypečený tuk nech v pánvi.",
+      "Kolečka 4 párků naskládej do pánve v jedné vrstvě a nech je minutu ležet bez míchání, ať se zatáhnou. Otoč a opeč z druhé strany. Vyndej stranou.",
+      "Rozpal pánev na vysoký oheň, kápni 1 lžíci slunečnicového oleje a vhoď 200 g celých cherry rajčat. Nemíchej s nimi. Nech je 2–3 minuty ležet, dokud slupka zespodu nezčerná a nezačne praskat — potřebují přímý dotek s horkým dnem, míchání to zabije.",
+      "Protřepej pánví, ať se rajčata otočí, a nech je další 2 minuty. Až budou z většiny popraskaná a místy začouzená, stáhni na střední oheň.",
+      "Zmáčkni rajčata vidličkou, přisyp špetku cukru a soli a nech je 3–4 minuty rozvařit, dokud z nich není hustá sladká hmota. Vyndej stranou.",
+      "Do pánve dej cibuli a restuj ji 4–5 minut doměkka. Přidej česnek a proužky papriky a restuj další 3 minuty.",
+      "Teď hoď těstoviny do vroucí vody a vař je o dvě minuty kratší dobu, než uvádí obal. Před scezením odlij dva hrnky vody.",
+      "Do pánve přisyp 1 lžičku sladké a 0,5 lžičky uzené papriky a míchej 30 vteřin. Koření potřebuje tuk a horko, aby pustilo chuť — ale déle už ne, spálená paprika zhořkne.",
+      "Vrať rozvařená rajčata, přilij 150 ml smetany a naběračku vody od těstovin. Nech minutu probublat.",
+      "Přendej scezené těstoviny rovnou do pánve a vař je v omáčce poslední dvě minuty za stálého míchání. Postupně přilévej vodu od těstovin, dokud omáčka neobalí každý kus. Škrob z těstovin je to, co ji spojí.",
+      "Stáhni pánev z ohně a teprve teď vrať slaninu s párky a nastrouhej dovnitř 70 g cheddaru. Mimo oheň se sýr rozpustí do hladka — na plameni by se srazil a pustil tuk.",
+      "Vymačkej šťávu z půlky citronu, natrhej hrst bazalky a promíchej. Dochuť solí a pepřem."
+    ],
+    "tip_fancy": "Cherry rajčata dej do pánve celá a suchá. Nakrojená pustí šťávu, začnou se dusit místo pražit a slupka nikdy nezčerná."
   },
   {
     "slug": "chilli-con-carne",
     "title": "Chilli con Carne",
-    "description": "Klasické mexické chilli s mletým masem, fazolemi, kukuřicí a passatou. Vydatné, vysokoproteinové, skvělé i druhý den.",
+    "description": "Nejjednodušší možné chilli: maso, fazole, kukuřice a passata. Pět surovin, jeden hrnec, půl hodiny.",
     "image": "https://vorlis08.github.io/masterchef-vorlis/images/chilli-con-carne.webp",
-    "time": "40 min",
+    "time": "30 min",
     "servings": 4,
     "difficulty": "Snadné",
     "category": "Hlavní jídla",
@@ -402,6 +483,26 @@
       "meal-prep"
     ],
     "ingredients": [
+      "500 g mletého masa (vepřo-hovězí mix)",
+      "400 g červených fazolí z konzervy, slitých",
+      "285 g kukuřice z konzervy, slité (1 plechovka)",
+      "500 g passaty",
+      "1 lžíce slunečnicového oleje",
+      "0,5 lžičky chilli vloček (podle chuti)",
+      "sůl, pepř"
+    ],
+    "steps": [
+      "Na pánvi rozehřej 1 lžíci slunečnicového oleje. Přidej 500 g mletého masa a rozlom ho vidličkou na drobné kousky.",
+      "Opékej maso na středně vysokém ohni dozlatova. Osol a opepři.",
+      "Vsyp 0,5 lžičky chilli vloček a míchej půl minuty, ať se rozvoní v tuku.",
+      "Přilij 500 g passaty, přidej slité fazole a kukuřici. Promíchej a přiveď k varu.",
+      "Stáhni oheň a dus odkryté 15–20 minut, dokud omáčka nezhoustne. Dochuť solí a chilli a podávej s rýží nebo chlebem."
+    ],
+    "meal_type": [
+      "oběd"
+    ],
+    "blur": "data:image/webp;base64,UklGRqYAAABXRUJQVlA4IJoAAABwBACdASoUAA0APu1iqU2ppaOiMAgBMB2JbACdMoMgg0id27T/4DGWI/8LwAD+4IychakqXatZBpEM9+8/IZbxD66G4FIzLz1t3pludDO8y9o+qc5N+/vUDh05XM94Tu1pwVlt0ABtMESNYz5v73BfxQBNAthqGyePuYxd+SaDwxILln/ymH1J6blyr1tO4xpUEQkRG+ex0AAA",
+    "ingredients_fancy": [
       "500 g mletého masa (vepřo-hovězí mix)",
       "400 g červených fazolí z konzervy, slitých",
       "285 g kukuřice z konzervy, slité (1 plechovka)",
@@ -418,16 +519,14 @@
       "sůl, pepř",
       "60 g strouhaného cheddaru (na podávání)"
     ],
-    "steps": [
+    "steps_fancy": [
       "Na pánvi rozehřej 1 lžíci slunečnicového oleje. Přidej cibuli a orestuj 3–4 min dozlatova. Přidej česnek a papriku, restuj dalších 2–3 min.",
       "Přidej 500 g mletého masa, rozlom na drobné kousky a opeč ze všech stran dozlatova. Osoluj a opepři.",
       "Vmíchej sladkou papriku, uzenou papriku, kmín, chilli vločky a oregano. Restuj 1 min, aby se koření rozvonělo.",
       "Přilij 500 g passaty, přidej fazole a kukuřici. Promíchej, přiveď k varu, pak zmenši oheň a dus odkryté 15–20 minut, dokud omáčka nezhoustne.",
       "Ochutnaj, dolaď sůl, chilli nebo kmín. Podávej s rýží nebo chlebem, posyp strouhaným cheddarem."
     ],
-    "meal_type": [
-      "oběd"
-    ],
-    "blur": "data:image/webp;base64,UklGRqYAAABXRUJQVlA4IJoAAABwBACdASoUAA0APu1iqU2ppaOiMAgBMB2JbACdMoMgg0id27T/4DGWI/8LwAD+4IychakqXatZBpEM9+8/IZbxD66G4FIzLz1t3pludDO8y9o+qc5N+/vUDh05XM94Tu1pwVlt0ABtMESNYz5v73BfxQBNAthqGyePuYxd+SaDwxILln/ymH1J6blyr1tO4xpUEQkRG+ex0AAA"
+    "description_fancy": "Chilli se vším všudy — orestovaná cibule s česnekem a paprikou, kmín, uzená paprika a oregano. Podává se s čerstvě strouhaným čedarem.",
+    "time_fancy": "40 min"
   }
 ]
