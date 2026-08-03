@@ -162,7 +162,7 @@
     "slug": "peceny-bucek-s-bramborovou-kasi",
     "title": "Pečený bůček s bramborovou kaší",
     "description": "Šťavnatý pečený bůček s křupavou kůží, podávaný s klasickou bramborovou kaší.",
-    "image": "",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/peceny-bucek-s-bramborovou-kasi.webp",
     "time": "2 hod 35 min",
     "servings": 4,
     "difficulty": "Střední",
@@ -202,7 +202,8 @@
     "tip": "Kost se při krájení sama oddělí — bůček s kostí je šťavnatější. Mléko do kaše přidávej vždy ohřáté. Výpek ze dna je plný chuti, neházej ho pryč. Mini trouba (Tefal) peče pomaleji — případně zvyš na 180 °C v průběhu.",
     "meal_type": [
       "oběd"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRp4AAABXRUJQVlA4IJIAAABwBACdASoUAAsAPu1iqU2ppaOiMAgBMB2JYgCsMoAltxU7DZ1WU8DkAdXTgAD+tA64PDlJK99F2y6LlPIs8M1TlvtPuifg50rnvv/GldlNdyYlZSfQl8SAg83hhPChDl/9mdVbf1XQfZI4tPRDH6CsKdI5Vznd0+No8uaYw6QngYRQMZF92JUdRsRIu1ArovoAAA=="
   },
   {
     "slug": "creamy-garlic-beef-pasta",
@@ -253,7 +254,7 @@
     "slug": "sunko-eidamovy-wrap-airfryer",
     "title": "Zapečený wrap se šunkou, eidamem a karamelizovanou cibulkou",
     "description": "Crispy wrap se šunkou, eidamem a karamelizovanou cibulí, zapečený dokřupava v airfryeru. S hořčičným dipem.",
-    "image": "",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/sunko-eidamovy-wrap-airfryer.webp",
     "time": "30 min",
     "servings": 1,
     "difficulty": "Snadné",
@@ -290,7 +291,8 @@
     "meal_type": [
       "svačina",
       "večeře"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRpQAAABXRUJQVlA4IIgAAABQBACdASoUAAsAPu1iqU2ppaOiMAgBMB2JQBOgMXSW128A2y4tFflkaMvwAP4LHY7VsePU3k5uhbKuNFcEdtKLnTnuBnZqr+zwIw08IbfX00JwQd3CFTWw8YoGaPJgNqt3p+tdelUqIXhb6kXD6Y5NLrChUUkbDmINpkcIwKL+qVDG5AhegAAA"
   },
   {
     "slug": "caramelised-onion-pasta",
@@ -387,7 +389,7 @@
     "slug": "chilli-con-carne",
     "title": "Chilli con Carne",
     "description": "Klasické mexické chilli s mletým masem, fazolemi, kukuřicí a passatou. Vydatné, vysokoproteinové, skvělé i druhý den.",
-    "image": "",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/chilli-con-carne.webp",
     "time": "40 min",
     "servings": 4,
     "difficulty": "Snadné",
@@ -423,6 +425,7 @@
     ],
     "meal_type": [
       "oběd"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRqYAAABXRUJQVlA4IJoAAABwBACdASoUAA0APu1iqU2ppaOiMAgBMB2JbACdMoMgg0id27T/4DGWI/8LwAD+4IychakqXatZBpEM9+8/IZbxD66G4FIzLz1t3pludDO8y9o+qc5N+/vUDh05XM94Tu1pwVlt0ABtMESNYz5v73BfxQBNAthqGyePuYxd+SaDwxILln/ymH1J6blyr1tO4xpUEQkRG+ex0AAA"
   }
 ]
