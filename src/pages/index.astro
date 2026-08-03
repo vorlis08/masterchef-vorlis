@@ -546,7 +546,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     function renderHero() {
       const hero = document.getElementById('hero');
       if (!hero) return;
-      const browsing = activeCategory !== 'all' || searchInput.value.trim() !== '';
+      const browsing = activeCategory !== 'all'
+        || searchInput.value.trim() !== ''
+        || activeMeal !== ''
+        || activeTime !== '';
       if (browsing || recipes.length === 0) {
         hero.classList.add('hidden');
         hero.innerHTML = '';
@@ -625,7 +628,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     // --- Render grid ---
     function renderGrid() {
-      const query = searchInput.value.toLowerCase();
+      const query = fold(searchInput.value);
       let html = '';
       let visible = 0;
       recipes.forEach(r => {
@@ -633,9 +636,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         const matchCat = activeCategory === 'all'
           || (activeCategory === '__fav' && isFav)
           || r.category === activeCategory;
-        const haystack = (r.title + ' ' + (r.tags || []).join(' ') + ' ' + (r.ingredients || []).join(' ')).toLowerCase();
-        const matchSearch = !query || haystack.includes(query);
-        const matchTag  = !activeTag  || (r.tags || []).includes(activeTag);
+        // Czech declension: "slanina" should still find "se slaninou".
+        // Dropping the last letter of a longer query covers most case endings.
+        const hay = haystack(r);
+        const matchSearch = !query
+          || hay.includes(query)
+          || (query.length >= 5 && hay.includes(query.slice(0, -1)));
         const matchMeal = !activeMeal || (r.meal_type || []).includes(activeMeal);
         const mins = parseMinutes(r.time);
         const timeBuckets = [
@@ -646,7 +652,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         ];
         const bucket = timeBuckets.find(b => b.key === activeTime);
         const matchTime = !activeTime || (mins !== null && bucket && bucket.fn(mins));
-        if (!matchCat || !matchSearch || !matchTag || !matchMeal || !matchTime) return;
+        if (!matchCat || !matchSearch || !matchMeal || !matchTime) return;
         visible++;
         html += viewMode === 'grid' ? cardMarkup(r, isFav) : rowMarkup(r, isFav, visible);
       });
@@ -741,9 +747,25 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     // --- Filters ---
     // active secondary filters
-    let activeTag = '';
     let activeMeal = '';
     let activeTime = '';
+
+    // "kure" should find "kuře" — nobody reaches for háčky mid-search.
+    function fold(str) {
+      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    // Tags no longer have pills, but they still feed search — that is the
+    // whole point of dropping them from the bar.
+    function haystack(r) {
+      return fold([
+        r.title, r.description, r.category,
+        (r.tags || []).join(' '),
+        (r.meal_type || []).join(' '),
+        (r.ingredients || []).join(' '),
+        (r.ingredients_fancy || []).join(' ')
+      ].filter(Boolean).join(' '));
+    }
 
     function parseMinutes(t) {
       if (!t) return null;
@@ -767,8 +789,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         btn.addEventListener('click', () => { activeCategory = btn.dataset.category; updateFilters(); renderGrid(); });
       });
 
-      // Row 2: tags, meal_type, time buckets
-      const allTags  = [...new Set(recipes.flatMap(r => r.tags || []))].sort();
+      // Row 2: course and time only. Ingredient tags used to live here too,
+      // but sixteen of them wrapped onto three lines and buried the two
+      // filters worth scanning. Searching "kuře" does that job better.
       const allMeals = [...new Set(recipes.flatMap(r => r.meal_type || []))];
       const mealOrder = ['snídaně','svačina','oběd','večeře','dezert','polévka','příloha','ostatní'];
       allMeals.sort((a,b) => mealOrder.indexOf(a) - mealOrder.indexOf(b));
@@ -780,23 +803,16 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       ];
 
       let h2 = '';
-      allTags.forEach(tag => {
-        h2 += `<button class="filter-btn pill pill-sm ${activeTag === tag ? 'is-active' : ''}" data-tag="${tag}">${tag}</button>`;
+      allMeals.forEach(m => {
+        h2 += `<button class="filter-btn pill pill-sm ${activeMeal === m ? 'is-active' : ''}" data-meal="${m}">${m}</button>`;
       });
-      if (allMeals.length) {
-        h2 += `<span class="pill-sep"></span>`;
-        allMeals.forEach(m => {
-          h2 += `<button class="filter-btn pill pill-sm ${activeMeal === m ? 'is-active' : ''}" data-meal="${m}">${m}</button>`;
-        });
-      }
-      h2 += `<span class="pill-sep"></span>`;
+      if (allMeals.length) h2 += `<span class="pill-sep"></span>`;
       timeBuckets.forEach(b => {
         h2 += `<button class="filter-btn pill pill-sm ${activeTime === b.key ? 'is-active' : ''}" data-time="${b.key}">${b.label}</button>`;
       });
       bar2.innerHTML = h2;
       bar2.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          if (btn.dataset.tag  !== undefined) activeTag  = activeTag  === btn.dataset.tag  ? '' : btn.dataset.tag;
           if (btn.dataset.meal !== undefined) activeMeal = activeMeal === btn.dataset.meal ? '' : btn.dataset.meal;
           if (btn.dataset.time !== undefined) activeTime = activeTime === btn.dataset.time ? '' : btn.dataset.time;
           updateFilters(); renderGrid();
