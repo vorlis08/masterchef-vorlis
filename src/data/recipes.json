@@ -71,7 +71,7 @@
     "slug": "kremove-kureci-tagliatelle-meal-prep",
     "title": "Krémové kuřecí tagliatelle",
     "description": "Kořeněné kuřecí kostky v bohaté krémové rajčatové omáčce s tagliatelle. Ideální na meal-prep do krabiček.",
-    "image": "https://i.imgur.com/BwxxPaC.png",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/kremove-kureci-tagliatelle-meal-prep.webp",
     "time": "40 min",
     "servings": 4,
     "difficulty": "Střední",
@@ -111,13 +111,14 @@
     ],
     "meal_type": [
       "oběd"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRtoAAABXRUJQVlA4IM4AAADwBQCdASoUABQAPu1urlIppiQiqAgBMB2JbACdMoRwBtW0d4PGrxTSlDir9r3+P8cdqOOi1SFNIAD44yC8IaDDIO3LAs7rBzF5Cs68GiOjBsC1F1Zbrtz/D13oTC7Hz5HZb621IsFrFIEwGzEX0d+tdg+Cr/aqgndXwhmK/pViw4bXqf+qvHXsiCJcwWc/9JdbTDZ1O6aamTlgxLIE48B9r3xU2hfyvpHMbtzdQXneS9+yPd3sOzdq8ZC178fLfFtqaxv1xzi6Ogu2GAAAAA=="
   },
   {
     "slug": "kure-na-paprice",
     "title": "Kuře na paprice",
     "description": "Kuřecí maso vařené v papiňáku s cibulí a sladkou paprikou, zahuštěná moukou a dochucená smetanou.",
-    "image": "https://i.imgur.com/AeGSHAj.png",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/kure-na-paprice.webp",
     "time": "1 hod 15 min",
     "servings": 6,
     "difficulty": "Střední",
@@ -156,7 +157,8 @@
     ],
     "meal_type": [
       "oběd"
-    ]
+    ],
+    "blur": "data:image/webp;base64,UklGRpQAAABXRUJQVlA4IIgAAAAQBACdASoUAAsAPu1iqU2ppaOiMAgBMB2JaACdAYwwoSgkmL+J6XpsAAD+1PcdGLD76U+NMVdozzgTVxJnTyUb7MvE0PdrOPXEcRSrg840OJy+lYrx4YN0lfy6pXMdSd8Ygoe8p7llVyL4MxLRSvF4z/HXb1mdDE7bLa0oeGX+5UnJnkncp4AA"
   },
   {
     "slug": "peceny-bucek-s-bramborovou-kasi",
