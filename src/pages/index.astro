@@ -888,7 +888,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     // ---- Basic / Fancy -------------------------------------------------
-    let fancyMode = localStorage.getItem('recipeMode') === 'fancy';
+    let fancyMode = false; // vždy začíná v basic módu
 
     // A recipe may carry a second, more involved version of itself.
     // Missing pieces fall back to the basic ones, so the switch works everywhere.
