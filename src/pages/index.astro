@@ -2091,6 +2091,22 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     renderGrid();
 
 
+
+    // --- Markdown renderer (lightweight) ---
+    function renderMarkdown(text) {
+      return text
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/`(.+?)`/g, '<code class="bg-surface px-1 rounded text-accent text-[13px]">$1</code>')
+        .replace(/^### (.+)$/gm, '<h3 class="font-semibold text-text mt-3 mb-1">$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2 class="font-semibold text-text mt-3 mb-1">$2</h2>')
+        .replace(/^\d+\. (.+)$/gm, '<div class="flex gap-2 my-1"><span class="text-accent shrink-0">•</span><span>$1</span></div>')
+        .replace(/^- (.+)$/gm, '<div class="flex gap-2 my-1"><span class="text-text-muted shrink-0">–</span><span>$1</span></div>')
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+    }
+
     // --- AI ingredient substitution ---
     const substOverlay = document.getElementById('subst-overlay');
     const substModal = document.getElementById('subst-modal');
@@ -2131,18 +2147,18 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
       if (!ingredient || !replacement) return;
 
       const r = recipes.find(x => x.slug === currentSlug);
-      const prompt = `Jsi kuchařský asistent. Odpovídej česky, stručně, prakticky. Tykáš.
+      const prompt = `Jsi kamarádský kuchařský asistent. Odpovídej česky, uvolněně a přátelsky – jako bys radil kamarádovi v kuchyni. Tykáš, používej emoji tam kde to sedí, buď konkrétní.
 
 Recept: ${r ? r.title : 'neznámý'}
 Ingredience k nahrazení: ${ingredient}
-Co mám místo ní: ${replacement}
+Co má místo ní: ${replacement}
 
-Odpověz ve 3 bodech:
-1. Zda náhrada funguje a proč
-2. V jakém poměru použít (pokud se liší)
-3. Co se změní ve výsledném pokrmu (chuť, textura)
+Odpověz ve 3 bodech s markdown formátováním (použij **tučně** pro důležité věci):
+1. **Funguje to?** – zda náhrada dává smysl a proč
+2. **Poměr** – v jakém množství použít (pokud se liší)
+3. **Co se změní** – chuť, textura, výsledek
 
-Buď konkrétní a přímý.`;
+Buď přímý, stručný a přátelský.`;
 
       substLoading.classList.remove('hidden');
       substResult.classList.add('hidden');
@@ -2166,6 +2182,7 @@ Buď konkrétní a přímý.`;
         substResult.classList.remove('hidden');
         substResult.innerHTML = '';
 
+        let rawText = '';
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
@@ -2183,7 +2200,10 @@ Buď konkrétní a přímý.`;
             try {
               const json = JSON.parse(data);
               const delta = json.delta?.text || json.choices?.[0]?.delta?.content || '';
-              if (delta) substResult.innerHTML += delta.replace(/\n/g, '<br>');
+              if (delta) {
+                rawText += delta;
+                substResult.innerHTML = renderMarkdown(rawText);
+              }
             } catch {}
           }
         }
