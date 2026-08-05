@@ -940,3 +940,6 @@ body {
 .nutr-bar { height: 100%; border-radius: 99px; transition: width 0.4s ease; width: 0%; }
 .nutr-val { font-size: 13px; font-weight: 500; color: var(--color-text); text-align: right; }
 .nutr-unit { font-size: 11px; color: var(--color-text-muted); }
+
+/* Rating stars in menu rows */
+.menu-stars { color: var(--color-accent); font-size: 0.8em; margin-left: 4px; }
