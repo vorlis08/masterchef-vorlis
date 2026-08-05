@@ -165,6 +165,27 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <span id="modal-tip-text" class="text-text-muted"></span>
           </p>
         </div>
+
+        <div id="modal-rating" class="mt-6 pt-6 border-t border-border">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="label text-accent">Moje hodnocení</h3>
+            <button id="cooked-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Uvařil jsem to
+            </button>
+          </div>
+          <div class="flex items-center gap-1 mb-4" id="star-row">
+            <button class="star-btn text-[28px] leading-none transition-transform hover:scale-110" data-star="1">☆</button>
+            <button class="star-btn text-[28px] leading-none transition-transform hover:scale-110" data-star="2">☆</button>
+            <button class="star-btn text-[28px] leading-none transition-transform hover:scale-110" data-star="3">☆</button>
+            <button class="star-btn text-[28px] leading-none transition-transform hover:scale-110" data-star="4">☆</button>
+            <button class="star-btn text-[28px] leading-none transition-transform hover:scale-110" data-star="5">☆</button>
+            <span id="cook-stats" class="ml-3 text-[12px] text-text-muted"></span>
+          </div>
+          <textarea id="personal-note" rows="3" placeholder="Osobní poznámky, úpravy, co bych příště změnil..." class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[14px] placeholder:text-text-muted focus:outline-none focus:border-accent transition-colors resize-none"></textarea>
+          <button id="save-note-btn" class="mt-2 px-4 py-2 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">Uložit poznámku</button>
+          <p id="note-saved" class="hidden mt-1.5 text-[11px] text-green-400">Uloženo</p>
+        </div>
       </div>
     </div>
   </div>
@@ -614,6 +635,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <div class="meta text-text-muted flex items-center gap-2">
               ${r.time ? `<span>${r.time}</span><span class="opacity-40">/</span>` : ''}
               <span>${r.servings || '?'} porcí</span>
+              ${getUserRating(r.slug) ? `<span class="text-amber-400 text-[13px]">${'★'.repeat(getUserRating(r.slug))}</span>` : ''}
             </div>
           </article>`;
     }
@@ -626,7 +648,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <span class="menu-title">${r.title}${isFav ? ' <span class="text-accent align-middle" style="font-size:0.42em">♥</span>' : ''}</span>
             <span class="menu-time hidden sm:inline">${r.time || ''}</span>
             ${r.image ? photoTag(r, { cls: 'menu-thumb sm:hidden', alt: '', style: 'grid-row:1/span 2;grid-column:3' }) : ''}
-            <span class="menu-sub">${[r.category, r.difficulty, (r.servings || '?') + ' porcí'].filter(Boolean).join(' · ')}</span>
+            <span class="menu-sub">${[r.category, r.difficulty, (r.servings || '?') + ' porcí'].filter(Boolean).join(' · ')} ${getUserRating(r.slug) ? '<span class=\'menu-stars\'>' + '★'.repeat(getUserRating(r.slug)) + '</span>' : ''}</span>
           </div>`;
     }
 
@@ -1093,6 +1115,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       renderIngredients(r);
       renderSteps(r);
       renderModeChrome(r);
+      renderStars(slug);
+      setTimeout(() => bindRatingEvents(slug), 50);
 
       overlay.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
@@ -1957,6 +1981,89 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
       else if (!editOverlay.classList.contains('hidden')) closeEditModal();
       else if (!overlay.classList.contains('hidden')) closeDetailModal();
     });
+
+
+    // --- Rating & notes ---
+    function getReview(slug) {
+      return JSON.parse(localStorage.getItem('review_' + slug) || 'null') || { stars: 0, note: '', cooked: 0, lastCooked: null };
+    }
+    function saveReview(slug, review) {
+      localStorage.setItem('review_' + slug, JSON.stringify(review));
+    }
+    function getUserRating(slug) {
+      return getReview(slug).stars || 0;
+    }
+
+    function renderStars(slug) {
+      const review = getReview(slug);
+      const stars = review.stars || 0;
+      const row = document.getElementById('star-row');
+      if (!row) return;
+      row.querySelectorAll('.star-btn').forEach(btn => {
+        const n = parseInt(btn.dataset.star);
+        btn.textContent = n <= stars ? '★' : '☆';
+        btn.style.color = n <= stars ? 'var(--color-accent)' : 'var(--color-text-muted)';
+      });
+      const stats = document.getElementById('cook-stats');
+      if (stats) {
+        const parts = [];
+        if (review.cooked) parts.push('Uvařeno ' + review.cooked + '×');
+        if (review.lastCooked) {
+          const d = new Date(review.lastCooked);
+          parts.push('naposledy ' + d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' }));
+        }
+        stats.textContent = parts.join(', ');
+      }
+      const noteEl = document.getElementById('personal-note');
+      if (noteEl) noteEl.value = review.note || '';
+    }
+
+    function bindRatingEvents(slug) {
+      const row = document.getElementById('star-row');
+      if (!row) return;
+
+      row.querySelectorAll('.star-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+          const n = parseInt(btn.dataset.star);
+          row.querySelectorAll('.star-btn').forEach(b => {
+            const bn = parseInt(b.dataset.star);
+            b.textContent = bn <= n ? '★' : '☆';
+            b.style.color = bn <= n ? 'var(--color-accent)' : 'var(--color-text-muted)';
+          });
+        });
+        btn.addEventListener('mouseleave', () => renderStars(slug));
+        btn.addEventListener('click', () => {
+          const review = getReview(slug);
+          const n = parseInt(btn.dataset.star);
+          review.stars = review.stars === n ? 0 : n;
+          saveReview(slug, review);
+          renderStars(slug);
+          renderGrid();
+        });
+      });
+
+      document.getElementById('cooked-btn').addEventListener('click', () => {
+        const review = getReview(slug);
+        review.cooked = (review.cooked || 0) + 1;
+        review.lastCooked = new Date().toISOString();
+        saveReview(slug, review);
+        renderStars(slug);
+        const btn = document.getElementById('cooked-btn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg> Zaznamenáno!';
+        btn.style.color = 'var(--color-accent)';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+      });
+
+      document.getElementById('save-note-btn').addEventListener('click', () => {
+        const review = getReview(slug);
+        review.note = document.getElementById('personal-note').value;
+        saveReview(slug, review);
+        const saved = document.getElementById('note-saved');
+        saved.classList.remove('hidden');
+        setTimeout(() => saved.classList.add('hidden'), 2000);
+      });
+    }
 
     // --- Init ---
     updateFilters();
