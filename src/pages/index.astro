@@ -150,6 +150,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
             Nutriční hodnoty
           </button>
+          <button id="subst-btn" class="flex items-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] font-medium active:scale-[0.98] hover:text-accent hover:border-accent transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+            Nahradit
+          </button>
         </div>
         <div class="mb-8">
           <h3 id="head-ingredients" class="label text-accent mb-4">Ingredience</h3>
@@ -410,7 +414,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         </div>
         <ul id="shopping-items" class="space-y-2 mb-6"></ul>
         <p id="shopping-empty" class="text-text-muted text-[14px] text-center py-6">Seznam je prázdný. Přidej ingredience z receptu tlačítkem „Do nákupu".</p>
-        <button id="shopping-clear" class="hidden w-full py-2.5 rounded-lg bg-surface border border-border text-text-muted text-[13px] font-medium hover:text-red-400 hover:border-red-400/50 transition-colors">Vymazat vše</button>
+        <div class="flex gap-2">
+          <button id="shopping-copy" class="hidden flex-1 py-2.5 rounded-lg bg-surface border border-border text-text-muted text-[13px] font-medium hover:text-accent hover:border-accent transition-colors">Kopírovat</button>
+          <button id="shopping-clear" class="hidden flex-1 py-2.5 rounded-lg bg-surface border border-border text-text-muted text-[13px] font-medium hover:text-red-400 hover:border-red-400/50 transition-colors">Vymazat vše</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1908,6 +1915,8 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     function renderShopList() {
       shoppingEmpty.classList.toggle('hidden', shopList.length > 0);
       shoppingClear.classList.toggle('hidden', shopList.length === 0);
+      const copyBtn = document.getElementById('shopping-copy');
+      if (copyBtn) copyBtn.classList.toggle('hidden', shopList.filter(i => !i.done).length === 0);
       shoppingItems.innerHTML = shopList.map((item, i) => `
         <li class="flex items-center gap-3 group">
           <button class="shop-toggle w-[18px] h-[18px] shrink-0 rounded border ${item.done ? 'border-accent bg-accent' : 'border-border'} flex items-center justify-center transition-colors" data-i="${i}">
@@ -1940,6 +1949,17 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     shoppingOverlay.addEventListener('click', e => { if (e.target === shoppingOverlay) closeShopping(); });
     shoppingClear.addEventListener('click', () => { shopList = []; saveShopList(); renderShopList(); });
 
+    document.getElementById('shopping-copy').addEventListener('click', () => {
+      const text = shopList.filter(i => !i.done).map(i => '• ' + i.text).join('\n');
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('shopping-copy');
+        const orig = btn.textContent;
+        btn.textContent = 'Zkopírováno ✓';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+      });
+    });
+
     document.getElementById('add-shop-btn').addEventListener('click', () => {
       const r = recipes.find(x => x.slug === currentSlug);
       if (!r) return;
@@ -1947,7 +1967,8 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
       const factor = currentServings / base;
       variantOf(r).ingredients.forEach(raw => {
         const text = scaleIngredient(raw, factor);
-        if (!shopList.some(i => i.text === text)) shopList.push({ text, done: false });
+        const norm = text.toLowerCase().trim();
+        if (!shopList.some(i => i.text.toLowerCase().trim() === norm)) shopList.push({ text, done: false });
       });
       saveShopList();
       const btn = document.getElementById('add-shop-btn');
@@ -2069,6 +2090,110 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     updateFilters();
     renderGrid();
 
+
+    // --- AI ingredient substitution ---
+    const substOverlay = document.getElementById('subst-overlay');
+    const substModal = document.getElementById('subst-modal');
+    const substSelect = document.getElementById('subst-select');
+    const substResult = document.getElementById('subst-result');
+    const substLoading = document.getElementById('subst-loading');
+
+    function openSubst() {
+      const r = recipes.find(x => x.slug === currentSlug);
+      if (!r) return;
+      const ings = variantOf(r).ingredients;
+      substSelect.innerHTML = '<option value="">— vyber ingredienci —</option>' +
+        ings.map(i => `<option value="${i.replace(/"/g, '&quot;')}">${i}</option>`).join('');
+      substResult.classList.add('hidden');
+      substResult.innerHTML = '';
+      substLoading.classList.add('hidden');
+      document.getElementById('subst-replacement').value = '';
+      substOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        substOverlay.classList.remove('opacity-0');
+        substModal.classList.remove('scale-95', 'opacity-0');
+      });
+    }
+
+    function closeSubst() {
+      substOverlay.classList.add('opacity-0');
+      substModal.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => substOverlay.classList.add('hidden'), 200);
+    }
+
+    document.getElementById('subst-btn').addEventListener('click', openSubst);
+    document.getElementById('subst-close').addEventListener('click', closeSubst);
+    substOverlay.addEventListener('click', e => { if (e.target === substOverlay) closeSubst(); });
+
+    document.getElementById('subst-ask').addEventListener('click', async () => {
+      const ingredient = substSelect.value;
+      const replacement = document.getElementById('subst-replacement').value.trim();
+      if (!ingredient || !replacement) return;
+
+      const r = recipes.find(x => x.slug === currentSlug);
+      const prompt = `Jsi kuchařský asistent. Odpovídej česky, stručně, prakticky. Tykáš.
+
+Recept: ${r ? r.title : 'neznámý'}
+Ingredience k nahrazení: ${ingredient}
+Co mám místo ní: ${replacement}
+
+Odpověz ve 3 bodech:
+1. Zda náhrada funguje a proč
+2. V jakém poměru použít (pokud se liší)
+3. Co se změní ve výsledném pokrmu (chuť, textura)
+
+Buď konkrétní a přímý.`;
+
+      substLoading.classList.remove('hidden');
+      substResult.classList.add('hidden');
+      substResult.innerHTML = '';
+
+      try {
+        const res = await fetch('https://masterchef-ai.honzavorel0.workers.dev', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 600,
+            stream: true,
+            messages: [{ role: 'user', content: prompt }]
+          })
+        });
+
+        if (!res.ok) throw new Error('Worker chyba ' + res.status);
+
+        substLoading.classList.add('hidden');
+        substResult.classList.remove('hidden');
+        substResult.innerHTML = '';
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') break;
+            try {
+              const json = JSON.parse(data);
+              const delta = json.delta?.text || json.choices?.[0]?.delta?.content || '';
+              if (delta) substResult.innerHTML += delta.replace(/\n/g, '<br>');
+            } catch {}
+          }
+        }
+      } catch (err) {
+        substLoading.classList.add('hidden');
+        substResult.classList.remove('hidden');
+        substResult.innerHTML = '<span class="text-red-400">Chyba: ' + err.message + '</span>';
+      }
+    });
+
     // --- Nutrition modal ---
     const nutritionOverlay = document.getElementById('nutrition-overlay');
     const nutritionModal = document.getElementById('nutrition-modal');
@@ -2135,6 +2260,43 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
 
     }); // DOMContentLoaded
   </script>
+
+
+  <!-- Ingredient substitution modal -->
+  <div id="subst-overlay" class="fixed inset-0 bg-black/70 z-[70] hidden opacity-0 transition-opacity duration-200">
+    <div class="fixed inset-0 flex items-center justify-center p-6">
+      <div id="subst-modal" class="bg-bg border border-border rounded-2xl w-full max-w-md p-6 scale-95 opacity-0 transition-all duration-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-[18px] font-semibold text-text flex items-center gap-2">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+            Nahradit ingredienci
+          </h2>
+          <button id="subst-close" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div class="mb-4">
+          <label class="block text-[12px] font-medium text-text-muted mb-1.5">Kterou ingredienci chceš nahradit?</label>
+          <select id="subst-select" class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[14px] focus:outline-none focus:border-accent transition-colors">
+            <option value="">— vyber ingredienci —</option>
+          </select>
+        </div>
+        <div class="mb-5">
+          <label class="block text-[12px] font-medium text-text-muted mb-1.5">Co máš místo ní?</label>
+          <input id="subst-replacement" type="text" placeholder="např. řecký jogurt, kokosové mléko..." class="w-full bg-surface border border-border rounded-lg py-2.5 px-4 text-text text-[14px] focus:outline-none focus:border-accent transition-colors" />
+        </div>
+        <button id="subst-ask" class="w-full py-3 rounded-xl bg-accent text-white font-medium text-[14px] hover:bg-accent-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+          Zeptat se AI
+        </button>
+        <div id="subst-result" class="hidden mt-5 p-4 rounded-xl bg-surface border border-border text-[14px] text-text leading-relaxed min-h-[60px]"></div>
+        <div id="subst-loading" class="hidden mt-5 flex items-center gap-3 text-text-muted text-[13px]">
+          <div class="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0"></div>
+          AI přemýšlí...
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Nutrition modal -->
   <div id="nutrition-overlay" class="fixed inset-0 bg-black/70 z-[70] hidden opacity-0 transition-opacity duration-200">
