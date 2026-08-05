@@ -932,3 +932,11 @@ body {
 }
 #cook-overlay.is-fancy .timer-chip::before { background: rgba(216, 178, 106, 0.18); }
 #cook-overlay.is-fancy .timer-chip.is-done { border-color: var(--f-gold); color: var(--f-gold); }
+
+/* Nutrition table */
+.nutr-row { display: grid; grid-template-columns: 110px 1fr 36px 24px; align-items: center; gap: 8px; padding: 9px 14px; }
+.nutr-label { font-size: 13px; color: var(--color-text-muted); }
+.nutr-bar-wrap { height: 5px; background: var(--color-border); border-radius: 99px; overflow: hidden; }
+.nutr-bar { height: 100%; border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+.nutr-val { font-size: 13px; font-weight: 500; color: var(--color-text); text-align: right; }
+.nutr-unit { font-size: 11px; color: var(--color-text-muted); }
