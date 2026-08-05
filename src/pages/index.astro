@@ -146,6 +146,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <button id="add-shop-btn" class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] font-medium active:scale-[0.98] hover:text-accent hover:border-accent transition-all">
             Do nákupu
           </button>
+          <button id="nutrition-btn" class="flex items-center gap-1.5 px-4 py-2.5 sm:py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] font-medium active:scale-[0.98] hover:text-accent hover:border-accent transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            Nutriční hodnoty
+          </button>
         </div>
         <div class="mb-8">
           <h3 id="head-ingredients" class="label text-accent mb-4">Ingredience</h3>
@@ -1957,7 +1961,162 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
     // --- Init ---
     updateFilters();
     renderGrid();
+
+    // --- Nutrition modal ---
+    const nutritionOverlay = document.getElementById('nutrition-overlay');
+    const nutritionModal = document.getElementById('nutrition-modal');
+
+    const NUTR_MAX = { protein: 80, carbs: 120, sugar: 60, fat: 60, fiber: 15, sodium: 2000, calcium: 400, iron: 10, vitamin_c: 60 };
+
+    function setNutrBar(id, value, max) {
+      const el = document.getElementById(id);
+      if (el) el.style.width = Math.min(Math.round((value / max) * 100), 100) + '%';
+    }
+
+    function openNutrition() {
+      const r = recipes.find(x => x.slug === currentSlug);
+      const noData = document.getElementById('nutrition-no-data');
+      const content = document.getElementById('nutrition-content');
+      const label = document.getElementById('nutrition-serving-label');
+
+      if (!r || !r.nutrition) {
+        noData.classList.remove('hidden');
+        content.classList.add('hidden');
+        label.textContent = '';
+      } else {
+        const n = r.nutrition;
+        noData.classList.add('hidden');
+        content.classList.remove('hidden');
+        label.textContent = 'na 1 porci (' + (n.serving_g || '?') + ' g)';
+        document.getElementById('nutr-calories').textContent = n.calories ?? '—';
+        document.getElementById('nutr-protein').textContent = n.protein ?? '—';
+        document.getElementById('nutr-carbs').textContent = n.carbs ?? '—';
+        document.getElementById('nutr-sugar').textContent = n.sugar ?? '—';
+        document.getElementById('nutr-fat').textContent = n.fat ?? '—';
+        document.getElementById('nutr-fiber').textContent = n.fiber ?? '—';
+        document.getElementById('nutr-sodium').textContent = n.sodium ?? '—';
+        document.getElementById('nutr-calcium').textContent = n.calcium ?? '—';
+        document.getElementById('nutr-iron').textContent = n.iron ?? '—';
+        document.getElementById('nutr-vitc').textContent = n.vitamin_c ?? '—';
+        setNutrBar('nutr-bar-protein', n.protein, NUTR_MAX.protein);
+        setNutrBar('nutr-bar-carbs', n.carbs, NUTR_MAX.carbs);
+        setNutrBar('nutr-bar-sugar', n.sugar, NUTR_MAX.sugar);
+        setNutrBar('nutr-bar-fat', n.fat, NUTR_MAX.fat);
+        setNutrBar('nutr-bar-fiber', n.fiber, NUTR_MAX.fiber);
+        setNutrBar('nutr-bar-sodium', n.sodium, NUTR_MAX.sodium);
+        setNutrBar('nutr-bar-calcium', n.calcium, NUTR_MAX.calcium);
+        setNutrBar('nutr-bar-iron', n.iron * 10, NUTR_MAX.iron * 10);
+        setNutrBar('nutr-bar-vitc', n.vitamin_c, NUTR_MAX.vitamin_c);
+      }
+
+      nutritionOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        nutritionOverlay.classList.remove('opacity-0');
+        nutritionModal.classList.remove('scale-95', 'opacity-0');
+      });
+    }
+
+    function closeNutrition() {
+      nutritionOverlay.classList.add('opacity-0');
+      nutritionModal.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => nutritionOverlay.classList.add('hidden'), 200);
+    }
+
+    document.getElementById('nutrition-btn').addEventListener('click', openNutrition);
+    document.getElementById('nutrition-close').addEventListener('click', closeNutrition);
+    nutritionOverlay.addEventListener('click', e => { if (e.target === nutritionOverlay) closeNutrition(); });
+
     }); // DOMContentLoaded
   </script>
+
+  <!-- Nutrition modal -->
+  <div id="nutrition-overlay" class="fixed inset-0 bg-black/70 z-[70] hidden opacity-0 transition-opacity duration-200">
+    <div class="fixed inset-0 flex items-center justify-center p-6">
+      <div id="nutrition-modal" class="bg-bg border border-border rounded-2xl w-full max-w-sm p-6 scale-95 opacity-0 transition-all duration-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="text-[18px] font-semibold text-text">Nutriční hodnoty</h2>
+            <p id="nutrition-serving-label" class="text-[12px] text-text-muted mt-0.5"></p>
+          </div>
+          <button id="nutrition-close" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div id="nutrition-no-data" class="hidden py-6 text-center text-text-muted text-[14px]">Pro tento recept nejsou nutriční hodnoty k dispozici.</div>
+        <div id="nutrition-content">
+          <!-- Calories hero -->
+          <div class="flex items-center justify-between p-4 rounded-xl bg-surface border border-border mb-4">
+            <span class="text-[14px] text-text-muted">Energie</span>
+            <span class="text-[26px] font-semibold text-accent" id="nutr-calories">—</span>
+            <span class="text-[13px] text-text-muted self-end mb-1">kcal</span>
+          </div>
+          <!-- Macros -->
+          <div class="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">Makronutrienty</div>
+          <div class="rounded-xl border border-border overflow-hidden mb-4">
+            <div class="nutr-row border-b border-border">
+              <span class="nutr-label">Bílkoviny</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-blue-400" id="nutr-bar-protein"></div></div>
+              <span class="nutr-val" id="nutr-protein">—</span>
+              <span class="nutr-unit">g</span>
+            </div>
+            <div class="nutr-row border-b border-border">
+              <span class="nutr-label">Sacharidy</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-amber-400" id="nutr-bar-carbs"></div></div>
+              <span class="nutr-val" id="nutr-carbs">—</span>
+              <span class="nutr-unit">g</span>
+            </div>
+            <div class="nutr-row border-b border-border">
+              <span class="nutr-label text-text-muted/70 pl-6 text-[12px]">z toho cukry</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-amber-300/60" id="nutr-bar-sugar"></div></div>
+              <span class="nutr-val text-text-muted" id="nutr-sugar">—</span>
+              <span class="nutr-unit text-text-muted">g</span>
+            </div>
+            <div class="nutr-row border-b border-border">
+              <span class="nutr-label">Tuky</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-rose-400" id="nutr-bar-fat"></div></div>
+              <span class="nutr-val" id="nutr-fat">—</span>
+              <span class="nutr-unit">g</span>
+            </div>
+            <div class="nutr-row">
+              <span class="nutr-label">Vláknina</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-green-400" id="nutr-bar-fiber"></div></div>
+              <span class="nutr-val" id="nutr-fiber">—</span>
+              <span class="nutr-unit">g</span>
+            </div>
+          </div>
+          <!-- Micros -->
+          <div class="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">Mikronutrienty</div>
+          <div class="rounded-xl border border-border overflow-hidden">
+            <div class="nutr-row border-b border-border">
+              <span class="nutr-label">Sodík</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-purple-400" id="nutr-bar-sodium"></div></div>
+              <span class="nutr-val" id="nutr-sodium">—</span>
+              <span class="nutr-unit">mg</span>
+            </div>
+            <div class="nutr-row border-b border-border">
+              <span class="nutr-label">Vápník</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-cyan-400" id="nutr-bar-calcium"></div></div>
+              <span class="nutr-val" id="nutr-calcium">—</span>
+              <span class="nutr-unit">mg</span>
+            </div>
+            <div class="nutr-row border-b border-border">
+              <span class="nutr-label">Železo</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-orange-400" id="nutr-bar-iron"></div></div>
+              <span class="nutr-val" id="nutr-iron">—</span>
+              <span class="nutr-unit">mg</span>
+            </div>
+            <div class="nutr-row">
+              <span class="nutr-label">Vitamín C</span>
+              <div class="nutr-bar-wrap"><div class="nutr-bar bg-yellow-400" id="nutr-bar-vitc"></div></div>
+              <span class="nutr-val" id="nutr-vitc">—</span>
+              <span class="nutr-unit">mg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </Layout>
+
 
