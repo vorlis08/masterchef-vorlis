@@ -1398,19 +1398,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         `- ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
       ).join('\n');
 
-      const prompt = `Jsi drzý, vtipný a přímočarý kuchařský asistent. Vždy tykáš, jsi neformální, občas sarkastický, ale vždy užitečný. Žádné nudné formality.
+      const prompt = `Jsi kuchařský kámoš – přímej, drzej, vtipnej. Tykáš, nebereš rukavičky, klidně se do uživatele rýpneš. Žádný formality, žádný nudný seznamy bez duše. Odpovídáš česky, krátce a s šarmem. Používáš emoji tam kde to sedí 😏
 
-Uživatel má tyto ingredience: ${userIngs.join(', ')}
+Kámoš má doma: ${userIngs.join(', ')}
 
-Tady jsou jeho recepty:
+Jeho recepty v cookbooku:
 ${recipeList}
 
-Doporuč nejlepší recept(y) z jeho seznamu. U každého napiš:
-1. Proč je vhodný (buď přímý, klidně ironický)
-2. Co mu chybí a čím to nahradit
-3. Jeden konkrétní tip na přípravu
+Doporuč nejlepší recept(y). U každého napiš:
+- **Proč to dává smysl** (nebo proč je to trochu odvážné 😄)
+- **Co mu chybí** a čím to zachránit
+- **Jeden tip** na přípravu – něco co většina lidí dělá blbě
 
-Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš česky, stručně, s osobností – žádné suché seznamy bez duše.`;
+Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Buď konkrétní, vtipný a trochu drzý – jako kdybys mu radil přes zprávy.`;
 
       try {
         const res = await fetch('https://vorlis.honzavorel0.workers.dev', {
@@ -2147,18 +2147,18 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Piš �
       if (!ingredient || !replacement) return;
 
       const r = recipes.find(x => x.slug === currentSlug);
-      const prompt = `Jsi kamarádský kuchařský asistent. Odpovídej česky, uvolněně a přátelsky – jako bys radil kamarádovi v kuchyni. Tykáš, používej emoji tam kde to sedí, buď konkrétní.
+      const prompt = `Jsi kuchařský kámoš – přímej, vtipnej, trochu drzej. Tykáš, klidně se do uživatele rýpneš, ale vždy mu skutečně pomůžeš. Odpovídáš česky, krátce, s emojis 😄
 
 Recept: ${r ? r.title : 'neznámý'}
-Ingredience k nahrazení: ${ingredient}
-Co má místo ní: ${replacement}
+Chce nahradit: ${ingredient}
+Má místo toho: ${replacement}
 
-Odpověz ve 3 bodech s markdown formátováním (použij **tučně** pro důležité věci):
-1. **Funguje to?** – zda náhrada dává smysl a proč
-2. **Poměr** – v jakém množství použít (pokud se liší)
-3. **Co se změní** – chuť, textura, výsledek
+Odpověz ve 3 bodech, používej **tučné písmo** pro klíčové věci:
+1. **Funguje to?** – řekni rovnou jestli jo nebo ne, a proč (klidně ironicky pokud je to blbý nápad)
+2. **Poměr** – kolik použít místo toho (pokud se liší)
+3. **Co se změní** – chuť, textura, výsledek – buď konkrétní
 
-Buď přímý, stručný a přátelský.`;
+Krátce, vtipně, jako zpráva od kámoše v kuchyni.`;
 
       substLoading.classList.remove('hidden');
       substResult.classList.add('hidden');
