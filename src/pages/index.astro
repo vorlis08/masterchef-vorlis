@@ -1415,23 +1415,47 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Buď k
       try {
         const res = await fetch('https://vorlis.honzavorel0.workers.dev', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: 'claude-sonnet-4-6',
             max_tokens: 1024,
+            stream: true,
             messages: [{ role: 'user', content: prompt }],
           })
         });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error?.message || 'API chyba');
+        if (!res.ok) throw new Error('Worker chyba ' + res.status);
+
+        chefAiResult.classList.remove('hidden');
+        chefAiText.innerHTML = '';
+
+        let chefRawText = '';
+        const chefReader = res.body.getReader();
+        const chefDecoder = new TextDecoder();
+        let chefBuffer = '';
+
+        while (true) {
+          const { done, value } = await chefReader.read();
+          if (done) break;
+          chefBuffer += chefDecoder.decode(value, { stream: true });
+          const chefLines = chefBuffer.split('\n');
+          chefBuffer = chefLines.pop();
+          for (const line of chefLines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') break;
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.delta?.text || parsed.choices?.[0]?.delta?.content || '';
+              if (delta) {
+                chefRawText += delta;
+                chefAiText.innerHTML = renderMarkdown(chefRawText);
+              }
+            } catch {}
+          }
         }
 
-        const data = await res.json();
-        const text = data.content?.[0]?.text;
+        const text = chefRawText;
         if (!text) throw new Error('Prázdná odpověď od AI.');
         function renderMarkdown(md) {
           const lines = md.split("\n");
@@ -1487,8 +1511,7 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Buď k
           if (inList) html += '</ul>';
           return html;
         }
-        chefAiText.innerHTML = renderMarkdown(text);
-        chefAiResult.classList.remove('hidden');
+        // text již zobrazen průběžně streamem
       } catch (err) {
         chefAiText.textContent = 'Chyba: ' + err.message;
         chefAiResult.classList.remove('hidden');
