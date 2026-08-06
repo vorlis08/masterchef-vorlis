@@ -309,7 +309,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             </svg>
             AI doporučení
           </h3>
-          <div id="chef-ai-text" class="p-5 rounded-xl bg-surface border border-border text-[15px] text-text leading-relaxed whitespace-pre-wrap"></div>
+          <div id="chef-ai-text" class="text-[15px] text-text leading-relaxed"></div>
         </div>
 
         <div id="chef-loading" class="hidden py-8 text-center">
@@ -1395,7 +1395,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       chefAiResult.classList.add('hidden');
 
       const recipeList = recipes.map(r =>
-        `- ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
+        `- slug:${r.slug} | ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
       ).join('\n');
 
       const prompt = `Jsi kuchařský kámoš – přímej, drzej, vtipnej. Tykáš, nebereš rukavičky, klidně se do uživatele rýpneš. Žádný formality, žádný nudný seznamy bez duše. Odpovídáš česky, krátce a s šarmem. Používáš emoji tam kde to sedí 😏
