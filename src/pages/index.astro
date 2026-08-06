@@ -1458,32 +1458,43 @@ Slugy musí být přesně tak jak jsou v seznamu (za textem 'slug:'). Příklad:
 
         if (!chefRawText) throw new Error('Prázdná odpověď od AI.');
 
-        // Po dokončení parsuj SLUGS tag a přidej kartičky
-        const slugMatch = chefRawText.match(/\[SLUGS:([^\]]+)\]/);
-        const cleanText = chefRawText.replace(/\[SLUGS:[^\]]+\]/, '').trimEnd();
+        // Po dokončení – najdi zmíněné recepty v textu a přidej kartičky
+        const cleanText = chefRawText.replace(/\[SLUGS:[^\]]+\]/g, '').trimEnd();
         let finalHtml = renderMarkdown(cleanText);
 
-        if (slugMatch) {
-          const slugs = slugMatch[1].split(',').map(s => s.trim()).filter(Boolean);
-          if (slugs.length > 0) {
-            finalHtml += '<div class="mt-5 space-y-3">';
-            slugs.forEach(slug => {
-              const recipe = recipes.find(r => r.slug === slug);
-              if (!recipe) return;
-              const img = recipe.image || '';
-              finalHtml += '<div class="rounded-xl border border-border overflow-hidden bg-surface flex cursor-pointer hover:border-accent transition-colors group" onclick="closeChef(); setTimeout(() => openDetailModal(\'' + recipe.slug + '\'), 350)">';
-              if (img) finalHtml += '<img src="' + img + '" alt="' + recipe.title + '" class="w-20 h-20 object-cover shrink-0" />';
-              finalHtml += '<div class="p-3 flex flex-col justify-center gap-0.5">';
-              finalHtml += '<span class="text-[15px] font-semibold text-text group-hover:text-accent transition-colors">' + recipe.title + ' →</span>';
-              const meta = [recipe.time, recipe.difficulty].filter(Boolean).join(' · ');
-              if (meta) finalHtml += '<span class="text-[12px] text-text-muted">' + meta + '</span>';
-              finalHtml += '</div></div>';
-            });
-            finalHtml += '</div>';
-          }
+        // Priorita: SLUGS tag → fallback: hledej slug v textu
+        let foundSlugs = [];
+        const slugTagMatch = chefRawText.match(/\[SLUGS:([^\]]+)\]/);
+        if (slugTagMatch) {
+          foundSlugs = slugTagMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+          // Fallback – hledej každý slug z recipes v textu AI
+          recipes.forEach(r => {
+            if (chefRawText.includes(r.slug) || chefRawText.toLowerCase().includes(r.title.toLowerCase())) {
+              foundSlugs.push(r.slug);
+            }
+          });
+        }
+
+        if (foundSlugs.length > 0) {
+          finalHtml += '<div class="mt-5 space-y-3">';
+          foundSlugs.forEach(slug => {
+            const recipe = recipes.find(r => r.slug === slug);
+            if (!recipe) return;
+            const img = recipe.image || '';
+            finalHtml += '<div class="rounded-xl border border-border overflow-hidden bg-surface flex cursor-pointer hover:border-accent transition-colors group" onclick="closeChef(); setTimeout(() => openDetailModal(\'' + recipe.slug + '\'), 350)">';
+            if (img) finalHtml += '<img src="' + img + '" alt="' + recipe.title + '" class="w-20 h-20 object-cover shrink-0" />';
+            finalHtml += '<div class="p-3 flex flex-col justify-center gap-0.5">';
+            finalHtml += '<span class="text-[15px] font-semibold text-text group-hover:text-accent transition-colors">' + recipe.title + ' →</span>';
+            const meta = [recipe.time, recipe.difficulty].filter(Boolean).join(' · ');
+            if (meta) finalHtml += '<span class="text-[12px] text-text-muted">' + meta + '</span>';
+            finalHtml += '</div></div>';
+          });
+          finalHtml += '</div>';
         }
 
         chefAiText.innerHTML = finalHtml;
+        // text již zobrazen průběžně streamem
         // text již zobrazen průběžně streamem
       } catch (err) {
         chefAiText.textContent = 'Chyba: ' + err.message;
