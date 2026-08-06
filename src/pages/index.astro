@@ -1395,22 +1395,23 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       chefAiResult.classList.add('hidden');
 
       const recipeList = recipes.map(r =>
-        `- slug:${r.slug} | ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
+        `SLUG=${r.slug} NAZEV=${r.title} INGREDIENCE=${(r.ingredients || []).join(', ')}`
       ).join('\n');
 
       const prompt = `Jsi kuchařský kámoš – přímej, drzej, vtipnej. Tykáš, nebereš rukavičky, klidně se rýpneš. Žádný formality. Odpovídáš česky s šarmem a emojis 😏
 
 Kámoš má doma: ${userIngs.join(', ')}
 
-Jeho recepty v cookbooku (každý má slug):
+Jeho recepty (každý má SLUG):
 ${recipeList}
 
-Napiš doporučení volným textem – vtipně, s osobností. U každého doporučeného receptu popiš proč to dává smysl, co mu chybí a jeden konkrétní tip.
+Napiš doporučení volným textem – vtipně, s osobností. U každého doporučeného receptu popiš proč to dává smysl, co mu chybí a jeden tip.
 
-Na ÚPLNÝ KONEC odpovědi přidej PŘESNĚ tento řádek (nic za ním):
-[SLUGS:slug1,slug2]
+POVINNĚ: na absolutní konec odpovědi napiš tento řádek se slugy receptů které doporučuješ:
+%%SLUGS:slug1,slug2%%
 
-Slugy musí být přesně tak jak jsou v seznamu (za textem 'slug:'). Příklad: [SLUGS:creamy-garlic-beef-pasta,kure-na-paprice]`;
+Příklad: %%SLUGS:kure-na-paprice,caramelised-onion-pasta%%
+Slug vezmi přesně z pole SLUG= u každého receptu. Tento řádek musí být POSLEDNÍ.\`;
 
 
       try {
@@ -1452,19 +1453,19 @@ Slugy musí být přesně tak jak jsou v seznamu (za textem 'slug:'). Příklad:
             } catch {}
           }
           // Zobraz průběžně bez SLUGS řádku
-          const displayText = chefRawText.replace(/\[SLUGS:[^\]]*\]?\s*$/, '').trimEnd();
+          const displayText = chefRawText.replace(/%%SLUGS:[^%]*%%?\s*$/, '').trimEnd();
           chefAiText.innerHTML = renderMarkdown(displayText);
         }
 
         if (!chefRawText) throw new Error('Prázdná odpověď od AI.');
 
         // Po dokončení – najdi zmíněné recepty v textu a přidej kartičky
-        const cleanText = chefRawText.replace(/\[SLUGS:[^\]]+\]/g, '').trimEnd();
+        const cleanText = chefRawText.replace(/%%SLUGS:[^%]+%%/g, '').trimEnd();
         let finalHtml = renderMarkdown(cleanText);
 
         // Priorita: SLUGS tag → fallback: hledej slug v textu
         let foundSlugs = [];
-        const slugTagMatch = chefRawText.match(/\[SLUGS:([^\]]+)\]/);
+        const slugTagMatch = chefRawText.match(/%%SLUGS:([^%]+)%%/);
         if (slugTagMatch) {
           foundSlugs = slugTagMatch[1].split(',').map(s => s.trim()).filter(Boolean);
         } else {
