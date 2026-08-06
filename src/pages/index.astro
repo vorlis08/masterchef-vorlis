@@ -1398,19 +1398,20 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         `- slug:${r.slug} | ${r.title} (ingredience: ${(r.ingredients || []).join(', ')})`
       ).join('\n');
 
-      const prompt = `Jsi kuchařský kámoš – přímej, drzej, vtipnej. Tykáš, nebereš rukavičky, klidně se do uživatele rýpneš. Žádný formality, žádný nudný seznamy bez duše. Odpovídáš česky, krátce a s šarmem. Používáš emoji tam kde to sedí 😏
+      const prompt = `Jsi kuchařský kámoš – přímej, drzej, vtipnej. Tykáš, nebereš rukavičky, klidně se rýpneš. Žádný formality. Odpovídáš česky s šarmem a emojis 😏
 
 Kámoš má doma: ${userIngs.join(', ')}
 
-Jeho recepty v cookbooku:
+Jeho recepty v cookbooku (každý má slug):
 ${recipeList}
 
-Doporuč nejlepší recept(y). U každého napiš:
-- **Proč to dává smysl** (nebo proč je to trochu odvážné 😄)
-- **Co mu chybí** a čím to zachránit
-- **Jeden tip** na přípravu – něco co většina lidí dělá blbě
+Napiš doporučení volným textem – vtipně, s osobností. U každého doporučeného receptu popiš proč to dává smysl, co mu chybí a jeden konkrétní tip.
 
-Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Buď konkrétní, vtipný a trochu drzý – jako kdybys mu radil přes zprávy.`;
+Na ÚPLNÝ KONEC odpovědi přidej PŘESNĚ tento řádek (nic za ním):
+[SLUGS:slug1,slug2]
+
+Slugy musí být přesně tak jak jsou v seznamu (za textem 'slug:'). Příklad: [SLUGS:creamy-garlic-beef-pasta,kure-na-paprice]`;
+
 
       try {
         const res = await fetch('https://vorlis.honzavorel0.workers.dev', {
@@ -1447,70 +1448,42 @@ Pokud žádný recept nesedí, navrhni něco jednoduchého z toho co má. Buď k
             try {
               const parsed = JSON.parse(data);
               const delta = parsed.delta?.text || parsed.choices?.[0]?.delta?.content || '';
-              if (delta) {
-                chefRawText += delta;
-                chefAiText.innerHTML = renderMarkdown(chefRawText);
-              }
+              if (delta) chefRawText += delta;
             } catch {}
+          }
+          // Zobraz průběžně bez SLUGS řádku
+          const displayText = chefRawText.replace(/\[SLUGS:[^\]]*\]?\s*$/, '').trimEnd();
+          chefAiText.innerHTML = renderMarkdown(displayText);
+        }
+
+        if (!chefRawText) throw new Error('Prázdná odpověď od AI.');
+
+        // Po dokončení parsuj SLUGS tag a přidej kartičky
+        const slugMatch = chefRawText.match(/\[SLUGS:([^\]]+)\]/);
+        const cleanText = chefRawText.replace(/\[SLUGS:[^\]]+\]/, '').trimEnd();
+        let finalHtml = renderMarkdown(cleanText);
+
+        if (slugMatch) {
+          const slugs = slugMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+          if (slugs.length > 0) {
+            finalHtml += '<div class="mt-5 space-y-3">';
+            slugs.forEach(slug => {
+              const recipe = recipes.find(r => r.slug === slug);
+              if (!recipe) return;
+              const img = recipe.image || '';
+              finalHtml += '<div class="rounded-xl border border-border overflow-hidden bg-surface flex cursor-pointer hover:border-accent transition-colors group" onclick="closeChef(); setTimeout(() => openDetailModal(\'' + recipe.slug + '\'), 350)">';
+              if (img) finalHtml += '<img src="' + img + '" alt="' + recipe.title + '" class="w-20 h-20 object-cover shrink-0" />';
+              finalHtml += '<div class="p-3 flex flex-col justify-center gap-0.5">';
+              finalHtml += '<span class="text-[15px] font-semibold text-text group-hover:text-accent transition-colors">' + recipe.title + ' →</span>';
+              const meta = [recipe.time, recipe.difficulty].filter(Boolean).join(' · ');
+              if (meta) finalHtml += '<span class="text-[12px] text-text-muted">' + meta + '</span>';
+              finalHtml += '</div></div>';
+            });
+            finalHtml += '</div>';
           }
         }
 
-        const text = chefRawText;
-        if (!text) throw new Error('Prázdná odpověď od AI.');
-        function renderMarkdown(md) {
-          const lines = md.split("\n");
-          let html = '';
-          let inList = false;
-          let inTable = false;
-          let tableRows = [];
-          for (let i = 0; i < lines.length; i++) {
-            let line = lines[i]
-              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-              .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-              .replace(/\*(.+?)\*/g, '<em>$1</em>');
-            if (line.startsWith('|') && line.endsWith('|')) {
-              if (!inTable) { inTable = true; tableRows = []; }
-              tableRows.push(line); continue;
-            } else if (inTable) {
-              const filtered = tableRows.filter(r => !r.match(/^\|[-| ]+\|$/));
-              html += '<div class="overflow-x-auto my-3"><table class="w-full text-[14px]">';
-              filtered.forEach((row, ri) => {
-                const cells = row.split('|').filter((_, ci) => ci > 0 && ci < row.split('|').length - 1);
-                const tag = ri === 0 ? 'th' : 'td';
-                const cls = ri === 0 ? 'font-semibold text-text pb-2 text-left' : 'text-text-muted py-1 pr-4';
-                html += '<tr>' + cells.map(c => `<${tag} class="${cls}">${c.trim()}</${tag}>`).join('') + '</tr>';
-              });
-              html += '</table></div>';
-              inTable = false; tableRows = [];
-            }
-            if (line.startsWith('# ')) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<h2 class="text-[18px] font-semibold text-text mt-5 mb-2">${line.slice(2)}</h2>`;
-            } else if (line.startsWith('## ')) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<h3 class="text-[16px] font-semibold text-text mt-4 mb-2">${line.slice(3)}</h3>`;
-            } else if (line.startsWith('### ')) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<h4 class="text-[14px] font-semibold text-accent mt-4 mb-1">${line.slice(4)}</h4>`;
-            } else if (line.match(/^---+$/)) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += '<hr class="border-border my-3">';
-            } else if (line.startsWith('> ')) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<blockquote class="border-l-2 border-accent pl-4 text-text-muted italic my-2">${line.slice(2)}</blockquote>`;
-            } else if (line.match(/^[-*] /)) {
-              if (!inList) { html += '<ul class="space-y-1 my-2 ml-4 list-disc text-text-muted">'; inList = true; }
-              html += `<li>${line.slice(2)}</li>`;
-            } else if (line.trim() === '') {
-              if (inList) { html += '</ul>'; inList = false; }
-            } else {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<p class="text-text-muted leading-relaxed mb-2">${line}</p>`;
-            }
-          }
-          if (inList) html += '</ul>';
-          return html;
-        }
+        chefAiText.innerHTML = finalHtml;
         // text již zobrazen průběžně streamem
       } catch (err) {
         chefAiText.textContent = 'Chyba: ' + err.message;
