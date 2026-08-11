@@ -645,5 +645,94 @@
       "iron": 5.4,
       "vitamin_c": 10
     }
+  },
+  {
+    "slug": "chicken-burrito",
+    "title": "Chicken Burrito",
+    "description": "Tortilly plněné kuřecím masem, karamelizovanou paprikou, cibulí a rýží, podávané s medovo-majonézovým dresinkem.",
+    "description_fancy": "Tortilly s marinovaným kuřecím masem, karamelizovanou paprikou a cibulí, cilantro rýží s limetkou a zapečeným cheddarem, podávané s medovo-majonézovým dresinkem.",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/chicken-burrito.webp",
+    "time": "45 min",
+    "time_fancy": "1 hod (+ 30 min marinování)",
+    "servings": 3,
+    "difficulty": "Střední",
+    "category": "Hlavní jídla",
+    "tags": [
+      "kuře",
+      "tortilla",
+      "mexické"
+    ],
+    "meal_type": [
+      "oběd",
+      "večeře"
+    ],
+    "ingredients": [
+      "3 tortilly (25 cm)",
+      "400 g kuřecích prsou",
+      "2 papriky",
+      "1 velká cibule",
+      "100 g suché basmati nebo jasmínové rýže",
+      "1,5 lžíce cukru",
+      "sůl",
+      "pepř",
+      "olej na smažení",
+      "dresink dle chuti (medová majonéza, nebo nálev z okurek + Kremžská hořčice)"
+    ],
+    "steps": [
+      "Uvař 100 g rýže dle návodu na obalu, odstav a nech mírně vychladnout.",
+      "Kuřecí prsa nakrájej na proužky, osol a opepři.",
+      "Papriky a cibuli nakrájej na proužky.",
+      "Na pánvi na oleji orestuj kuřecí maso dozlatova, vyndej stranou.",
+      "Na stejné pánvi restuj papriku a cibuli, přidej 1,5 lžíce cukru a nech karamelizovat na středním ohni.",
+      "Zkombinuj kuře zpět se zeleninou, krátce protřepej na pánvi.",
+      "Tortillu naplň rýží, kuřecí směsí se zeleninou a poteč dresinkem dle výběru.",
+      "Zabal do burrita a případně zabal do alobalu, ať drží teplo."
+    ],
+    "ingredients_fancy": [
+      "3 tortilly (25 cm)",
+      "400 g kuřecích prsou",
+      "šťáva z 1 limetky",
+      "1 tsp mletý kmín",
+      "1 tsp chilli prášek",
+      "2 stroužky česneku, prolisované",
+      "1 lžíce olivového oleje",
+      "2 papriky",
+      "1 velká cibule",
+      "100 g suché basmati nebo jasmínové rýže",
+      "šťáva z 1/2 limetky (do rýže)",
+      "hrst čerstvého koriandru, nasekaného",
+      "1,5 lžíce cukru",
+      "80 g cheddaru, strouhaného",
+      "sůl",
+      "pepř",
+      "olej na smažení",
+      "dresink dle chuti (medová majonéza, nebo nálev z okurek + Kremžská hořčice)"
+    ],
+    "steps_fancy": [
+      "Kuřecí prsa nakrájej na proužky a smíchej s limetkovou šťávou, kmínem, chilli práškem, prolisovaným česnekem, olivovým olejem, solí a pepřem. Nech marinovat alespoň 30 minut, ideálně přes noc v lednici.",
+      "Uvař 100 g rýže dle návodu na obalu. Po uvaření vmíchej šťávu z 1/2 limetky a nasekaný koriandr.",
+      "Papriky a cibuli nakrájej na proužky.",
+      "Na pánvi na oleji orestuj marinované kuřecí maso dozlatova, vyndej stranou.",
+      "Na stejné pánvi restuj papriku a cibuli, přidej 1,5 lžíce cukru a nech karamelizovat na středním ohni.",
+      "Zkombinuj kuře zpět se zeleninou, krátce protřepej na pánvi.",
+      "Tortillu polož na pánev, na polovinu nasyp strouhaný cheddar a nech lehce zapéct/rozpustit přímo na plotně, než ji naplníš.",
+      "Naplň cilantro rýží, kuřecí směsí se zeleninou a poteč dresinkem dle výběru.",
+      "Zabal do burrita a případně zabal do alobalu, ať drží teplo."
+    ],
+    "tip": "Na 4 tortilly navyš vše o cca 25 %.",
+    "tip_fancy": "Marinádu klidně připrav den dopředu, chuť kuřete se tím ještě prohloubí.",
+    "nutrition": {
+      "serving_g": 350,
+      "calories": 480,
+      "protein": 38,
+      "carbs": 45,
+      "fat": 15,
+      "fiber": 3,
+      "sugar": 8,
+      "sodium": 620,
+      "calcium": 60,
+      "iron": 2.5,
+      "vitamin_c": 45
+    }
   }
 ]
