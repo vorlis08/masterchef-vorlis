@@ -195,7 +195,7 @@
       "sugar": 4,
       "sodium": 580,
       "calcium": 65,
-      "iron": 2.0,
+      "iron": 2,
       "vitamin_c": 8
     }
   },
@@ -733,6 +733,7 @@
       "calcium": 60,
       "iron": 2.5,
       "vitamin_c": 45
-    }
+    },
+    "blur": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACQBgCdASoUABsAPu1osFAppaSiqAqpMB2JagCdMzRA/2Hh/l2CLyDF6K8/Y3jKs8gvVdSiceLdmFB3/fHAAP5Y+HXgZOpqkbMUHFfLay5VA8DYpEwpPUGw6Yf5y7UZXsHkuiFnxZIXy6fOytbPgLKK8y59zj6t+OJ2xu7Wss3zd2xP7Bcs3L3lPENU59KNS/V72EHHWM/V59AujQ1S6/EajyaxqGXM4LaJEfsEhYQug2O+o31Az7CTq2eL7wylBaxTXIjV+FGCkr6yvImh9lIZxmvM1y3b85LAVVBpGxukKsw+ChMmZjo6NlbVF5t4c6y5pkmTNmXzAD0AAAA="
   }
 ]
