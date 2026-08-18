@@ -266,9 +266,20 @@ Rozhodování, **které** recepty se zobrazí, oddělené od toho, **jak** se vy
 Do té doby existoval jen lokálně a `main` ho neměl — pozor na tenhle rozpor,
 sekce 7 tvrdila hotovo dřív, než to bylo nahrané.
 
-### Zbývá
+**Krok 4 — `src/lib/cook-session.js` + `src/lib/cook-timers.js`**
+Cook mode byl slepenec dvou nesouvisejících věcí. Rozdělen na krokování
+receptem a časovače (`test-cook.mjs`, 46 testů).
 
-- [ ] **Cook mode a časovače** do mozku
+Dvě rozhodnutí, která stojí za zapamatování:
+- **Stav je neměnný** — každá funkce vrací nový stav místo aby přepsala starý.
+  Díky tomu jde kterýkoli krok v testu zopakovat.
+- **Engine si sám nespouští hodiny.** Nemá v sobě `setInterval`, má `tick()`,
+  který volá vzhled. Test tak „přetočí" pět minut okamžitě, místo aby čekal.
+
+Ve vzhledu záměrně zůstalo: pípání, vibrace, notifikace, wake lock, konfety,
+animace přechodu, gesta a zásuvka s ingrediencemi.
+
+### Zbývá
 - [ ] **Vykreslování** (`cardMarkup`, `rowMarkup`, `renderGrid`) → kontrakt pro skiny
 - [ ] **Token do Workeru** (viz 8.2)
 - [ ] **Přihlašování + D1** → výměna vnitřku `Store`
@@ -412,6 +423,20 @@ názvem a spustil se cizí kód — a ten by měl přístup ke `gh_token` v loca
   patří `escAttr()`, ne `esc()`
 - Do HTML se nikdy nepíše `onclick="..."` s vloženým textem — použít
   `data-slug` a posluchač
+
+### 8.12 Cook mode nejde otestovat ve skrytém okně
+
+Přechod mezi kroky používá `requestAnimationFrame`. Ve **skrytém** okně
+prohlížeče (`document.visibilityState === 'hidden'`) se rAF **vůbec nespustí**
+→ `cookAnimating` zůstane `true` a krokování se zasekne po prvním kroku.
+
+**Není to chyba v appce** — u skutečného uživatele je okno vidět, a když appku
+odloží na pozadí, rAF se po návratu dožene. Ale při automatickém testování
+to vypadá jako rozbité krokování.
+
+**Jak testovat cook mode bez okna:** vybrat recept, který má odpočet
+**hned v prvním kroku** (`caramelised-onion-pasta`) — časovače na rAF nezávisí.
+Logika krokování je pokrytá v `test-cook.mjs`, bez prohlížeče.
 
 ### 8.9 Obrázky
 
