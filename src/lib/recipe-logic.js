@@ -36,6 +36,15 @@ export function esc(t) {
   return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/**
+ * Jako esc, navic osetri uvozovky. Pouzij vzdy, kdyz text vklada
+ * do HTML atributu (src="...", alt="..."), jinak by uvozovka v textu
+ * mohla z atributu "utect" a vlozit do stranky cizi kod.
+ */
+export function escAttr(t) {
+  return esc(t).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 /** Zaokrouhli na dve desetinna mista a pouzije desetinnou carku. */
 export function formatNum(n) {
   const rounded = Math.round(n * 100) / 100;

@@ -1,6 +1,6 @@
 // Test vytazene logiky - bez prohlizece, bez appky.
 import {
-  fold, normalizeWord, slugify, parseMinutes, esc, formatNum, splitQty,
+  fold, normalizeWord, slugify, parseMinutes, esc, escAttr, formatNum, splitQty,
   scaleIngredient, roman, haystack, parseDurations, fmtClock,
   parseIngredients, ingredientMatch
 } from './src/lib/recipe-logic.js';
@@ -18,6 +18,9 @@ t('fold odstrani diakritiku', fold('Kuře na Paprice'), 'kure na paprice');
 t('normalizeWord stejne', normalizeWord('Žížala'), 'zizala');
 t('slugify', slugify('Kuře na paprice!'), 'kure-na-paprice');
 t('esc osetri HTML', esc('<b>&</b>'), '&lt;b&gt;&amp;&lt;/b&gt;');
+t('escAttr osetri uvozovky', escAttr('a" onerror="x'), 'a&quot; onerror&#61;&quot;x'.replace('&#61;', '='));
+t('escAttr osetri apostrof', escAttr("a'b"), 'a&#39;b');
+t('escAttr osetri i HTML', escAttr('<b>'), '&lt;b&gt;');
 
 console.log('\n--- Cas ---');
 t('parseMinutes hod+min', parseMinutes('1 hod 30 min'), 90);
