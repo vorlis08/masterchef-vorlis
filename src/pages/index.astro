@@ -537,6 +537,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     const recipesData = JSON.parse(document.getElementById('recipes-data').textContent);
 
+    // Adresa AI proxy. Klic k Anthropicu je uvnitr Workeru, ne tady.
+    const AI_WORKER = 'https://vorlis.honzavorel0.workers.dev';
+
     // ==========================================================================
     // Store - jednotna vrstva pro ukladani dat.
     // Dnes pod tim bezi localStorage. Az prijde prihlasovani a databaze,
@@ -1368,35 +1371,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       chefLoading.classList.remove('hidden');
       chefAiResult.classList.add('hidden');
 
-      const recipeList = recipes.map(r =>
-        `SLUG=${r.slug} NAZEV=${r.title} INGREDIENCE=${(r.ingredients || []).join(', ')}`
-      ).join('\n');
-
-      const prompt = `Jsi kuchařský kámoš – přímej, drzej, vtipnej. Tykáš, nebereš rukavičky, klidně se rýpneš. Žádný formality. Odpovídáš česky s šarmem a emojis 😏
-
-Kámoš má doma: ${userIngs.join(', ')}
-
-Jeho recepty (každý má SLUG):
-${recipeList}
-
-Napiš doporučení volným textem – vtipně, s osobností. U každého doporučeného receptu popiš proč to dává smysl, co mu chybí a jeden tip.
-
-POVINNĚ: na absolutní konec odpovědi napiš tento řádek se slugy receptů které doporučuješ:
-%%SLUGS:slug1,slug2%%
-
-Příklad: %%SLUGS:kure-na-paprice,caramelised-onion-pasta%%
-Slug vezmi přesně z pole SLUG= u každého receptu. Tento řádek musí být POSLEDNÍ.`;
-
-
+      // Text dotazu sklada Worker. Odsud jdou ven jen data.
       try {
-        const res = await fetch('https://vorlis.honzavorel0.workers.dev', {
+        const res = await fetch(AI_WORKER, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1024,
-            stream: true,
-            messages: [{ role: 'user', content: prompt }],
+            action: 'recommend',
+            ingredients: userIngs.join(', '),
+            recipes: recipes.map(r => ({
+              slug: r.slug,
+              title: r.title,
+              ingredients: r.ingredients || [],
+            })),
           })
         });
 
@@ -2115,32 +2102,20 @@ Slug vezmi přesně z pole SLUG= u každého receptu. Tento řádek musí být P
       if (!ingredient || !replacement) return;
 
       const r = recipes.find(x => x.slug === currentSlug);
-      const prompt = `Jsi kuchařský kámoš – přímej, vtipnej, trochu drzej. Tykáš, klidně se do uživatele rýpneš, ale vždy mu skutečně pomůžeš. Odpovídáš česky, krátce, s emojis 😄
-
-Recept: ${r ? r.title : 'neznámý'}
-Chce nahradit: ${ingredient}
-Má místo toho: ${replacement}
-
-Odpověz ve 3 bodech, používej **tučné písmo** pro klíčové věci:
-1. **Funguje to?** – řekni rovnou jestli jo nebo ne, a proč (klidně ironicky pokud je to blbý nápad)
-2. **Poměr** – kolik použít místo toho (pokud se liší)
-3. **Co se změní** – chuť, textura, výsledek – buď konkrétní
-
-Krátce, vtipně, jako zpráva od kámoše v kuchyni.`;
-
+      // Text dotazu sklada Worker. Odsud jdou ven jen data.
       substLoading.classList.remove('hidden');
       substResult.classList.add('hidden');
       substResult.innerHTML = '';
 
       try {
-        const res = await fetch('https://vorlis.honzavorel0.workers.dev', {
+        const res = await fetch(AI_WORKER, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 600,
-            stream: true,
-            messages: [{ role: 'user', content: prompt }]
+            action: 'substitute',
+            recipeTitle: r ? r.title : '',
+            ingredient: ingredient,
+            replacement: replacement,
           })
         });
 

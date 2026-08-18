@@ -25,3 +25,7 @@ pnpm-debug.log*
 
 # Original photos — converted to WebP by `npm run images`
 photos-raw/
+
+# wrangler
+.wrangler/
+worker/.wrangler/
