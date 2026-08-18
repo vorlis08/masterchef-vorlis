@@ -533,6 +533,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       splitQty, scaleIngredient, roman, haystack, parseDurations, fmtClock,
       parseIngredients, ingredientMatch
     } from '../lib/recipe-logic.js';
+    import { filterRecipes, headingFor, countLabel } from '../lib/filters.js';
 
     const recipesData = JSON.parse(document.getElementById('recipes-data').textContent);
 
@@ -714,31 +715,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     // --- Render grid ---
     function renderGrid() {
-      const query = fold(searchInput.value);
+      // Mozek vybere recepty, vzhled je jen vykresli.
+      const matched = filterRecipes(recipes, {
+        query: searchInput.value,
+        category: activeCategory,
+        meal: activeMeal,
+        time: activeTime,
+        favorites: favorites,
+      });
+
       let html = '';
       let visible = 0;
-      recipes.forEach(r => {
+      matched.forEach(r => {
         const isFav = favorites.includes(r.slug);
-        const matchCat = activeCategory === 'all'
-          || (activeCategory === '__fav' && isFav)
-          || r.category === activeCategory;
-        // Czech declension: "slanina" should still find "se slaninou".
-        // Dropping the last letter of a longer query covers most case endings.
-        const hay = haystack(r);
-        const matchSearch = !query
-          || hay.includes(query)
-          || (query.length >= 5 && hay.includes(query.slice(0, -1)));
-        const matchMeal = !activeMeal || (r.meal_type || []).includes(activeMeal);
-        const mins = parseMinutes(r.time);
-        const timeBuckets = [
-          { key: '20',  fn: m => m <= 20 },
-          { key: '45',  fn: m => m <= 45 },
-          { key: '90',  fn: m => m <= 90 },
-          { key: '90+', fn: m => m > 90  },
-        ];
-        const bucket = timeBuckets.find(b => b.key === activeTime);
-        const matchTime = !activeTime || (mins !== null && bucket && bucket.fn(mins));
-        if (!matchCat || !matchSearch || !matchMeal || !matchTime) return;
         visible++;
         html += viewMode === 'grid' ? cardMarkup(r, isFav) : rowMarkup(r, isFav, visible);
       });
@@ -756,8 +745,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         gh.classList.toggle('hidden', visible === 0);
         if (visible > 0) gh.classList.add('flex');
       }
-      if (gt) gt.textContent = activeCategory === '__fav' ? 'Oblíbené' : (activeCategory === 'all' ? 'Rejstřík' : activeCategory);
-      if (gc) gc.textContent = visible === 1 ? '1 recept' : (visible < 5 ? visible + ' recepty' : visible + ' receptů');
+      if (gt) gt.textContent = headingFor(activeCategory);
+      if (gc) gc.textContent = countLabel(visible);
 
       grid.querySelectorAll('.recipe-card, .menu-row').forEach(c =>
         c.addEventListener('click', () => openDetailModal(c.dataset.slug))
