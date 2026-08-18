@@ -5,8 +5,7 @@
       "name": "dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 4321,
-      "cwd": "C:\\Temp\\masterchef-vorlis"
+      "port": 4321
     }
   ]
 }
