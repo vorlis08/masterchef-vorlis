@@ -525,7 +525,60 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
-  <script define:vars={{ recipesData }}>
+  <script type="application/json" id="recipes-data" set:html={JSON.stringify(recipesData).replace(/</g, '\\u003c')}></script>
+
+  <script>
+    import {
+      QTY_UNITS, fold, normalizeWord, slugify, parseMinutes, esc, formatNum,
+      splitQty, scaleIngredient, roman, haystack, parseDurations, fmtClock,
+      parseIngredients, ingredientMatch
+    } from '../lib/recipe-logic.js';
+
+    const recipesData = JSON.parse(document.getElementById('recipes-data').textContent);
+
+    // ==========================================================================
+    // Store - jednotna vrstva pro ukladani dat.
+    // Dnes pod tim bezi localStorage. Az prijde prihlasovani a databaze,
+    // meni se jen telo tehle jedine vrstvy, zbytek appky zustava beze zmeny.
+    // ==========================================================================
+    const Store = {
+      _raw(key, fallback) {
+        try { const v = localStorage.getItem(key); return v === null ? fallback : v; }
+        catch (e) { return fallback; }
+      },
+      _json(key, fallback) {
+        try { const v = localStorage.getItem(key); if (v === null) return fallback; const p = JSON.parse(v); return p === null ? fallback : p; }
+        catch (e) { return fallback; }
+      },
+      _write(key, value) { try { localStorage.setItem(key, value); } catch (e) {} },
+      _writeJson(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} },
+      _remove(key) { try { localStorage.removeItem(key); } catch (e) {} },
+
+      getFavorites()      { return this._json('favorites', []); },
+      setFavorites(list)  { this._writeJson('favorites', list); },
+
+      getViewMode()       { return this._raw('viewMode', 'menu'); },
+      setViewMode(mode)   { this._write('viewMode', mode); },
+
+      getRecipeMode()     { return this._raw('recipeMode', 'basic'); },
+      setRecipeMode(mode) { this._write('recipeMode', mode); },
+
+      getTheme()          { return this._raw('theme', ''); },
+      setTheme(theme)     { if (theme) this._write('theme', theme); else this._remove('theme'); },
+
+      getToken()          { return this._raw('gh_token', ''); },
+      setToken(token)     { this._write('gh_token', token); },
+
+      getShoppingList()     { return this._json('shopping_list', []); },
+      setShoppingList(list) { this._writeJson('shopping_list', list); },
+
+      getReview(slug) {
+        const r = this._json('review_' + slug, null);
+        return r || { stars: 0, note: '', cooked: 0, lastCooked: null };
+      },
+      setReview(slug, review) { this._writeJson('review_' + slug, review); },
+    };
+
     document.addEventListener("DOMContentLoaded", function() {
     const REPO = 'vorlis08/masterchef-vorlis';
     const FILE_PATH = 'src/data/recipes.json';
@@ -542,13 +595,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     const unsavedBadge = document.getElementById('unsaved-badge');
     const saveBtn = document.getElementById('save-btn');
     let activeCategory = 'all';
-    let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    let favorites = Store.getFavorites();
 
     function toggleFavorite(slug) {
       const i = favorites.indexOf(slug);
       if (i >= 0) favorites.splice(i, 1);
       else favorites.push(slug);
-      localStorage.setItem('favorites', JSON.stringify(favorites));
+      Store.setFavorites(favorites);
       renderGrid();
     }
 
@@ -623,7 +676,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     // --- View mode ------------------------------------------------------
-    let viewMode = localStorage.getItem('viewMode') || 'menu';
+    let viewMode = Store.getViewMode();
 
     function cardMarkup(r, isFav) {
       return `
@@ -760,7 +813,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         b.classList.toggle('on', b.dataset.view === viewMode);
         b.addEventListener('click', () => {
           viewMode = b.dataset.view;
-          localStorage.setItem('viewMode', viewMode);
+          Store.setViewMode(viewMode);
           viewToggle.querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.view === viewMode));
           preview.classList.remove('on');
           renderGrid();
@@ -774,9 +827,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       saveBtn.classList.toggle('hidden', !dirty);
     }
 
-    function slugify(text) {
-      return text.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    }
 
     // --- Filters ---
     // active secondary filters
@@ -784,27 +834,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     let activeTime = '';
 
     // "kure" should find "kuře" — nobody reaches for háčky mid-search.
-    function fold(str) {
-      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    }
 
     // Tags no longer have pills, but they still feed search — that is the
     // whole point of dropping them from the bar.
-    function haystack(r) {
-      return fold([
-        r.title, r.description, r.category,
-        (r.tags || []).join(' '),
-        (r.meal_type || []).join(' '),
-        (r.ingredients || []).join(' '),
-        (r.ingredients_fancy || []).join(' ')
-      ].filter(Boolean).join(' '));
-    }
 
-    function parseMinutes(t) {
-      if (!t) return null;
-      const h = t.match(/(\d+)\s*hod/); const m = t.match(/(\d+)\s*min/);
-      return (h ? parseInt(h[1]) * 60 : 0) + (m ? parseInt(m[1]) : 0) || null;
-    }
 
     function updateFilters() {
       const bar  = document.getElementById('filter-bar');
@@ -864,10 +897,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     let currentServings = 4;
 
-    function formatNum(n) {
-      const rounded = Math.round(n * 100) / 100;
-      return String(rounded).replace('.', ',');
-    }
 
     // A blurred 20px stand-in rides along in the JSON, so a card never sits
     // empty while its photo downloads. The real photo paints straight over it.
@@ -911,42 +940,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       };
     }
 
-    const QTY_UNITS = ['g','kg','mg','ml','l','dl','cl','ks','kus','kusy','kusů','lžíce','lžíci','lžic','lžička','lžičky','lžiček','stroužek','stroužky','stroužku','stroužků','balení','plátek','plátky','plátků','špetka','špetky','hrst','hrsti','šálek','šálky','sklenice','sklenici','porce','porcí','konzerva','konzervy','kelímek','kelímky','svazek','snítka','snítky','větvička','list','listy','listů'];
 
     // Splits "800 g kuřecích prsou" into a menu line: name left, quantity right.
-    function splitQty(text) {
-      const m = text.match(/^(\d+(?:[.,]\d+)?(?:\s*[–\/-]\s*\d+(?:[.,]\d+)?)?)\s*(\S+)?\s*(.*)$/);
-      if (!m) return { qty: '', name: text };
-      let qty = m[1];
-      let rest = ((m[2] || '') + ' ' + (m[3] || '')).trim();
-      const w = (m[2] || '').replace(/[.,:]$/, '').toLowerCase();
-      if (QTY_UNITS.indexOf(w) !== -1) { qty += ' ' + m[2]; rest = (m[3] || '').trim(); }
-      if (!rest) return { qty: '', name: text };
-      return { qty: qty, name: rest };
-    }
 
-    function roman(n) {
-      const v = [50, 40, 10, 9, 5, 4, 1], sym = ['L','XL','X','IX','V','IV','I'];
-      let out = '';
-      for (let i = 0; i < v.length; i++) { while (n >= v[i]) { out += sym[i]; n -= v[i]; } }
-      return out || '\u2014';
-    }
 
-    function esc(t) {
-      return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
 
-    function scaleIngredient(text, factor) {
-      if (factor === 1) return text;
-      return text.replace(/(\d+(?:[.,]\d+)?)(\s*[–-]\s*)(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)/g, (m, a, dash, b, single) => {
-        if (a !== undefined) {
-          const na = parseFloat(a.replace(',', '.')) * factor;
-          const nb = parseFloat(b.replace(',', '.')) * factor;
-          return formatNum(na) + dash + formatNum(nb);
-        }
-        return formatNum(parseFloat(single.replace(',', '.')) * factor);
-      });
-    }
 
     function renderIngredients(r) {
       const base = r.servings || 4;
@@ -1080,7 +1078,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       fancyMode = next;
-      localStorage.setItem('recipeMode', next ? 'fancy' : 'basic');
+      Store.setRecipeMode(next ? 'fancy' : 'basic');
 
       const paint = () => {
         renderIngredients(r);
@@ -1226,7 +1224,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     const tokenStatus = document.getElementById('token-status');
 
     function highlightActiveTheme() {
-      const current = localStorage.getItem('theme') || '';
+      const current = Store.getTheme();
       document.querySelectorAll('.theme-swatch').forEach(btn => {
         const ring = btn.querySelector('div');
         const isActive = btn.dataset.theme === current;
@@ -1239,10 +1237,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       btn.addEventListener('click', () => {
         const theme = btn.dataset.theme;
         if (theme) {
-          localStorage.setItem('theme', theme);
+          Store.setTheme(theme);
           document.documentElement.setAttribute('data-theme', theme);
         } else {
-          localStorage.removeItem('theme');
+          Store.setTheme(null);
           document.documentElement.removeAttribute('data-theme');
         }
         highlightActiveTheme();
@@ -1250,7 +1248,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     });
 
     document.getElementById('settings-btn').addEventListener('click', () => {
-      tokenInput.value = localStorage.getItem('gh_token') || '';
+      tokenInput.value = Store.getToken();
       tokenStatus.classList.add('hidden');
       highlightActiveTheme();
       settingsOverlay.classList.remove('hidden');
@@ -1267,7 +1265,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.getElementById('token-save').addEventListener('click', () => {
       const token = tokenInput.value.trim();
       if (!token) { tokenStatus.textContent = 'Zadej token.'; tokenStatus.className = 'mt-3 text-[13px] text-red-400'; tokenStatus.classList.remove('hidden'); return; }
-      localStorage.setItem('gh_token', token);
+      Store.setToken(token);
       tokenStatus.textContent = 'Token uložen.';
       tokenStatus.className = 'mt-3 text-[13px] text-green-400';
       tokenStatus.classList.remove('hidden');
@@ -1279,7 +1277,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     const savingText = document.getElementById('saving-text');
 
     saveBtn.addEventListener('click', async () => {
-      const token = localStorage.getItem('gh_token');
+      const token = Store.getToken();
       if (!token) { document.getElementById('settings-btn').click(); return; }
 
       savingOverlay.classList.remove('hidden');
@@ -1340,21 +1338,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.getElementById('chef-close').addEventListener('click', closeChef);
     chefOverlay.addEventListener('click', e => { if (e.target === chefOverlay) closeChef(); });
 
-    function parseIngredients(text) {
-      return text.toLowerCase().split(/[,;\n]+/).map(s => s.trim()).filter(Boolean);
-    }
 
-    function normalizeWord(w) {
-      return w.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-    }
 
-    function ingredientMatch(userIngredients, recipeIngredient) {
-      const ri = normalizeWord(recipeIngredient);
-      return userIngredients.some(ui => {
-        const nu = normalizeWord(ui);
-        return ri.includes(nu) || nu.includes(ri);
-      });
-    }
 
     document.getElementById('chef-search').addEventListener('click', () => {
       const userIngs = parseIngredients(chefInput.value);
@@ -1583,29 +1568,7 @@ Slug vezmi přesně z pole SLUG= u každého receptu. Tento řádek musí být P
     });
 
     // -- Duration parsing (Czech) --
-    function parseDurations(text) {
-      const out = [];
-      const re = /(\d+)(?:\s*[\u2013\u2014-]\s*(\d+))?\s*(hodin\w*|hod\.?|minut\w*|min\.?|sekund\w*|vte\u0159in\w*|sek\.?)/gi;
-      let m;
-      while ((m = re.exec(text)) !== null) {
-        const hi = parseInt(m[2] || m[1], 10);
-        const u = m[3].toLowerCase();
-        let secs;
-        if (u.indexOf('hod') === 0) secs = hi * 3600;
-        else if (u.indexOf('sek') === 0 || u.indexOf('vte') === 0) secs = hi;
-        else secs = hi * 60;
-        if (!secs || secs < 5 || secs > 6 * 3600) continue;
-        if (out.some(o => o.secs === secs)) continue;
-        out.push({ secs: secs, label: m[0].trim() });
-      }
-      return out.slice(0, 3);
-    }
 
-    function fmtClock(s) {
-      const m = Math.floor(s / 60), sec = s % 60;
-      if (m >= 60) return Math.floor(m / 60) + ':' + String(m % 60).padStart(2, '0') + ':' + String(sec).padStart(2, '0');
-      return m + ':' + String(sec).padStart(2, '0');
-    }
 
     // -- Parallel timers --
     let timers = [];
@@ -1902,10 +1865,10 @@ Slug vezmi přesně z pole SLUG= u každého receptu. Tento řádek musí být P
     const shoppingEmpty = document.getElementById('shopping-empty');
     const shoppingClear = document.getElementById('shopping-clear');
     const shoppingCount = document.getElementById('shopping-count');
-    let shopList = JSON.parse(localStorage.getItem('shopping_list') || '[]');
+    let shopList = Store.getShoppingList();
 
     function saveShopList() {
-      localStorage.setItem('shopping_list', JSON.stringify(shopList));
+      Store.setShoppingList(shopList);
       updateShoppingBadge();
     }
 
@@ -2014,10 +1977,10 @@ Slug vezmi přesně z pole SLUG= u každého receptu. Tento řádek musí být P
 
     // --- Rating & notes ---
     function getReview(slug) {
-      return JSON.parse(localStorage.getItem('review_' + slug) || 'null') || { stars: 0, note: '', cooked: 0, lastCooked: null };
+      return Store.getReview(slug);
     }
     function saveReview(slug, review) {
-      localStorage.setItem('review_' + slug, JSON.stringify(review));
+      Store.setReview(slug, review);
     }
     function getUserRating(slug) {
       return getReview(slug).stars || 0;
