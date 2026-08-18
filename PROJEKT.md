@@ -238,6 +238,9 @@ Oddělit **„mozek"** od **„vzhledu"**:
 
 ## 7. Refaktoring — kde to stojí
 
+> **Stav k 18. 8. 2026:** mozek je vytažený celý (kroky 1–5). Zbývá přenést
+> dnešní UI jako skin „Aplikace" a postavit „Knihu" jako zkoušku kontraktu.
+
 ### Hotovo
 
 **Krok 1 — vrstva `Store`**
@@ -279,9 +282,17 @@ Dvě rozhodnutí, která stojí za zapamatování:
 Ve vzhledu záměrně zůstalo: pípání, vibrace, notifikace, wake lock, konfety,
 animace přechodu, gesta a zásuvka s ingrediencemi.
 
+**Krok 5 — `src/lib/recipe-view.js`**
+`cardMarkup` a `rowMarkup` už nedostanou recept, ale **hotový podklad** —
+data, ne HTML (`test-view.mjs`, 32 testů).
+
+**Tím vznikl kontrakt pro skiny.** Mozek řekne *co* se o receptu ukáže
+(název, kategorie, „01", „4 porcí", počet hvězdiček, oblíbenost); skin
+rozhodne *jak* to vypadá. Nový skin nahradí `cardMarkup`/`rowMarkup`
+a mozku se nedotkne.
+
 ### Zbývá
-- [ ] **Vykreslování** (`cardMarkup`, `rowMarkup`, `renderGrid`) → kontrakt pro skiny
-- [ ] **Token do Workeru** (viz 8.2)
+- [ ] **Token do Workeru** (viz 8.2) — AI část Workeru už hotová, viz 8.10
 - [ ] **Přihlašování + D1** → výměna vnitřku `Store`
 - [ ] Přenést UI jako skin „Aplikace", pak „Kniha"
 
