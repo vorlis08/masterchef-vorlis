@@ -4,7 +4,8 @@
 > a nástrahy**, které z kódu samotného nejsou poznat. Kód si přečti sám — tady je to,
 > co v něm není napsané.
 >
-> Poslední aktualizace: srpen 2026, po dokončení Fáze 1 refaktoringu (kroky 1–2).
+> Poslední aktualizace: 18. 8. 2026 — po kroku 3 refaktoringu a po bezpečnostní revizi
+> (viz 8.10, 8.11).
 
 ---
 
@@ -261,6 +262,10 @@ Rozhodování, **které** recepty se zobrazí, oddělené od toho, **jak** se vy
 `filterRecipes`, `matchesSearch`, `matchesCategory`, `matchesMeal`, `matchesTime`,
 `headingFor`, `countLabel`, `TIME_BUCKETS`.
 
+**Krok 3 — `src/lib/filters.js`** je od 18. 8. 2026 opravdu v repu včetně testů.
+Do té doby existoval jen lokálně a `main` ho neměl — pozor na tenhle rozpor,
+sekce 7 tvrdila hotovo dřív, než to bylo nahrané.
+
 ### Zbývá
 
 - [ ] **Cook mode a časovače** do mozku
@@ -301,6 +306,11 @@ zapisuje přímo do repozitáře**. Dokud je tam Honza sám, funguje to.
 
 **S přihlašováním to musí skončit** — kdokoliv by si ho mohl vytáhnout z nástrojů
 prohlížeče.
+
+**Stav k 18. 8. 2026:** stále neuděláno. Riziko je zatím nízké (token je jen
+v Honzově prohlížeči), ale **je to blokující věc pro přihlašování** — jakmile
+do appky pustíš druhého člověka, token musí být pryč. Do té doby ať je token
+fine-grained a má přístup **jen k tomuhle jednomu repu**.
 
 **Cíl:** token přesunout do Cloudflare Workeru jako **secret**. Appka pak volá Worker
 („ulož tenhle recept"), Worker ověří identitu a zapíše sám. Token se do prohlížeče
@@ -362,6 +372,47 @@ node test-store.mjs    # celá appka v jsdom
 - Srdíčka existují **jen v režimu dlaždic**; v režimu seznamu je oblíbenost ♥ v názvu
 - První barevný čtvereček je „Teplá (výchozí)" s prázdnou hodnotou — klik **maže** téma
 
+### 8.10 AI proxy — Worker nesmí brát hotový dotaz
+
+**Draze zjištěno 18. 8. 2026.** Worker původně vzal cokoliv, co dostal, a poslal
+to Anthropicu s klíčem z secrets. Model, délku i **celý text dotazu** určoval
+prohlížeč.
+
+Důsledek: kdokoliv si našel adresu Workeru ve vývojářských nástrojích, měl
+Claude zdarma na Honzův účet. Ověřeno zvenku — fungovalo to.
+
+**Pravidlo:** Worker **nikdy nepřebírá hotový dotaz**. Appka posílá jen
+`action` + data, text skládá Worker (`worker/src/index.js`). Jinak je to
+otevřená proxy, ať se jmenuje jakkoliv.
+
+Tři vrstvy, žádná sama nestačí:
+
+| Vrstva | Co řeší | Čím se dá obejít |
+|---|---|---|
+| `ALLOWED_ORIGINS` | volání z cizí stránky | `curl` si hlavičku napíše jakoukoliv |
+| Worker skládá dotaz sám | zneužití jako AI zdarma | jde poslat vlastní „recepty" |
+| `RATE_LIMITER` 20/min na IP | strop škod | víc IP adres |
+
+**Nástrahy:**
+- Po `wrangler deploy` chvíli běží **stará i nová verze zároveň** (pozorováno
+  ~5 min). Test hned po nasazení dává střídavě staré a nové odpovědi —
+  neznamená to, že nasazení selhalo. Testovat opakovaně, ne jednou.
+- Limit se počítá **per klíč** předaný do `limit({ key })`. Test s vlastním
+  klíčem nevyčerpá limit produkčního klíče (IP) a naopak.
+- Kód Workeru je nově v `worker/`. Dřív existoval **jen v Cloudflare** — nešel
+  revidovat ani obnovit.
+
+### 8.11 Texty receptů se musí ošetřit před vložením do stránky
+
+Názvy, kategorie a odkazy na obrázky se vkládaly do HTML neošetřené. Protože
+appka umí **import receptu z JSON**, stačilo podstrčit soubor se škodlivým
+názvem a spustil se cizí kód — a ten by měl přístup ke `gh_token` v localStorage.
+
+- `esc()` **neošetřuje uvozovky** → do atributů (`src=`, `alt=`, `data-`)
+  patří `escAttr()`, ne `esc()`
+- Do HTML se nikdy nepíše `onclick="..."` s vloženým textem — použít
+  `data-slug` a posluchač
+
 ### 8.9 Obrázky
 
 `scripts/optimize-images.mjs` (`npm run images`) — z `photos-raw/[slug].png` udělá
@@ -371,7 +422,9 @@ node test-store.mjs    # celá appka v jsdom
 
 ## 9. Jak s Honzou pracovat
 
-- **Nikdy nic nepushovat bez výslovného schválení.** Platí i pro změny názvů.
+- **Pushuje se bez ptaní** (změna z 18. 8. 2026 — dřív platil opak).
+  Podmínka: musí projít `npm run build` a všechny tři testy. Když test spadne,
+  **nepushovat** a ozvat se.
 - **Komunikace česky.**
 - Honza dělá **vibecoding** — technické pojmy vysvětlovat lidsky, ne žargonem.
   Když se ptá „co mám udělat", chce **konkrétní kroky**, ne architekturu.
