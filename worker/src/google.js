@@ -12,6 +12,7 @@
 // ==========================================================================
 
 import { signSession, verifySession } from './session.js';
+import { sendWelcome } from './mail.js';
 
 const GOOGLE_AUTH  = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token';
@@ -66,7 +67,7 @@ function readIdToken(idToken) {
 }
 
 /** Krok 4+5: vymena kodu za udaje, zalozeni uzivatele, vydani listku. */
-export async function finishLogin(request, env, allowed) {
+export async function finishLogin(request, env, allowed, ctx) {
   const url = new URL(request.url);
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
@@ -104,6 +105,13 @@ export async function finishLogin(request, env, allowed) {
   if (claims.email_verified === false) return failPage('Tenhle e-mail není u Googlu ověřený.');
 
   const user = await upsertUser(env.DB, claims);
+
+  // Uvitaci e-mail az po prvnim prihlaseni. Posila se na pozadi - uzivatel
+  // na nej neceka a kdyz posilatel selze, prihlaseni to nerozbije.
+  if (!user.welcome_sent_at) {
+    const odeslani = sendWelcome(env, user);
+    if (ctx && ctx.waitUntil) ctx.waitUntil(odeslani);
+  }
   const token = await signSession(
     { sub: user.id, email: user.email, name: user.name, role: user.role },
     env.SESSION_SECRET,
@@ -123,7 +131,7 @@ async function upsertUser(db, claims) {
   const email = String(claims.email).toLowerCase();
   const name = claims.name || claims.given_name || null;
 
-  const found = await db.prepare('SELECT id, email, name, role FROM users WHERE email = ?')
+  const found = await db.prepare('SELECT id, email, name, role, welcome_sent_at FROM users WHERE email = ?')
     .bind(email).first();
 
   if (found) {
@@ -137,7 +145,7 @@ async function upsertUser(db, claims) {
   const id = crypto.randomUUID();
   await db.prepare('INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)')
     .bind(id, email, name, 'user').run();
-  return { id: id, email: email, name: name, role: 'user' };
+  return { id: id, email: email, name: name, role: 'user', welcome_sent_at: null };
 }
 
 /** Chybova stranka - uzivatel je tu po presmerovani, nekouka do konzole. */

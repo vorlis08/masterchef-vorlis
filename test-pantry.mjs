@@ -74,8 +74,8 @@ t('staple se prenese', pohled[1].staple, true);
 console.log('\n--- Popisky stavu ---');
 t('mam', statusLabel('mam'), 'Mám');
 t('dochazi', statusLabel('dochazi'), 'Dochází');
-t('doslo', statusLabel('doslo'), 'Došlo');
-t('neznamy stav = doslo', statusLabel('necoJineho'), 'Došlo');
+t('doslo se rika Nemam', statusLabel('doslo'), 'Nemám');
+t('neznamy stav = Nemam', statusLabel('necoJineho'), 'Nemám');
 t('tri moznosti', STATUSES.length, 3);
 
 console.log(fail === 0 ? '\n=== VSE PROSLO ===\n' : '\n=== ' + fail + ' CHYB ===\n');

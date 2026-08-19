@@ -117,7 +117,7 @@ export default {
     // Origin nema. Kontrola puvodu se proto na /auth/* nevztahuje;
     // chrani je misto toho podepsany stav a seznam povolenych navratu.
     if (path === '/auth/start')    return startLogin(request, env, ALLOWED_ORIGINS);
-    if (path === '/auth/callback') return finishLogin(request, env, ALLOWED_ORIGINS);
+    if (path === '/auth/callback') return finishLogin(request, env, ALLOWED_ORIGINS, ctx);
 
     const origin = request.headers.get('Origin');
     const allowed = ALLOWED_ORIGINS.includes(origin);

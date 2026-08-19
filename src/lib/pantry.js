@@ -26,10 +26,12 @@ export const APPROX_WORDS = [
 
 export const STATUSES = ['mam', 'dochazi', 'doslo'];
 
+// Hodnota `doslo` je v databazi, ale uzivateli se rika "Nemam" -
+// je to srozumitelnejsi u veci, ktere nikdy nemel.
 const STATUS_LABELS = {
   mam: 'M\u00e1m',
   dochazi: 'Doch\u00e1z\u00ed',
-  doslo: 'Do\u0161lo',
+  doslo: 'Nemám',
 };
 
 /** Popisek stavu pro priblizne suroviny. */
