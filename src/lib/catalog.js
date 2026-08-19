@@ -140,6 +140,20 @@ export const CATALOG = [
 export const FROM_RECIPES = 'Z tvých receptů';
 
 /**
+ * Hruby "koren" nazvu: prvni slovo bez diakritiky, zkracene.
+ *
+ * Cestina sklonuje a recepty pisou procenta, takze "smetany", "smetany 31 %"
+ * a "smetana na vareni" jsou pro pocitac tri veci, pro cloveka jedna.
+ * Zkraceni na ctyri pismena je srovna na "smet".
+ *
+ * Zamerne hrube - lepsi jednou spojit dve podobne suroviny nez nabidnout
+ * uzivateli seznam, ve kterem je smetana petkrat.
+ */
+export function stemKey(name) {
+  return fold(String(name).trim().split(/\s+/)[0] || '').slice(0, 4);
+}
+
+/**
  * Slozi cely seznam k proklikani.
  *
  * Zaklad je katalog; doplni se suroviny z receptu, ktere v nem chybi.
@@ -154,25 +168,38 @@ export function buildChecklist(recipes, pantryItems) {
   (pantryItems || []).forEach(it => bySlug.set(fold(it.name), it));
 
   const seen = new Set();
+  const stems = new Set();
   const rows = [];
 
   CATALOG.forEach(entry => {
     const key = fold(entry.name);
     seen.add(key);
+    stems.add(stemKey(entry.name));
     rows.push(makeRow(entry.name, entry.kind, entry.group, bySlug.get(key)));
   });
 
-  // Suroviny z receptu, ktere katalog nezna.
+  // Suroviny z receptu, ktere katalog nezna. Sbirame nejdriv vsechny,
+  // pak z kazdeho korene nechame jen nejkratsi nazev - "smetany" misto
+  // "smetany na vareni 12%".
+  const zReceptu = new Map();
   (recipes || []).forEach(r => {
     (r.ingredients || []).forEach(raw => {
       const name = cleanName(raw);
       if (!name || name.length < 3) return;
-      const key = fold(name);
-      if (seen.has(key)) return;
-      seen.add(key);
-      rows.push(makeRow(name, guessKind(name), FROM_RECIPES, bySlug.get(key)));
+      if (seen.has(fold(name))) return;
+      const stem = stemKey(name);
+      if (!stem || stems.has(stem)) return;        // uz to zna katalog
+      const stavajici = zReceptu.get(stem);
+      if (!stavajici || name.length < stavajici.length) zReceptu.set(stem, name);
     });
   });
+
+  [...zReceptu.values()]
+    .sort((a, b) => a.localeCompare(b, 'cs'))
+    .forEach(name => {
+      seen.add(fold(name));
+      rows.push(makeRow(name, guessKind(name), FROM_RECIPES, bySlug.get(fold(name))));
+    });
 
   // Polozky, ktere si uzivatel pridal sam a nejsou ani v katalogu,
   // ani v receptech - at o ne pri prochazeni neprijde.

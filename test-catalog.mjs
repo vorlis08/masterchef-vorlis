@@ -1,4 +1,5 @@
-import { CATALOG, GROUPS, FROM_RECIPES, buildChecklist, checklistProgress } from './src/lib/catalog.js';
+import { fold } from './src/lib/recipe-logic.js';
+import { CATALOG, GROUPS, FROM_RECIPES, buildChecklist, checklistProgress, stemKey } from './src/lib/catalog.js';
 
 let fail = 0;
 const t = (name, got, want) => {
@@ -45,6 +46,21 @@ t('neznama surovina se doplni', !!sriracha, true);
 t('a je ve vlastni skupine', sriracha.group, FROM_RECIPES);
 t('surovina uz v katalogu se nezdvoji',
   sReceptem.flatMap(g => g.items).filter(x => x.name === 'sůl').length, 1);
+
+console.log('\n--- Sklonovani a procenta nedelaji duplicity ---');
+t('koren srovna sklonovani', stemKey('smetany') === stemKey('smetana na vaření'), true);
+t('koren srovna procenta', stemKey('smetany 31 %') === stemKey('smetany'), true);
+t('ruzne suroviny maji ruzny koren', stemKey('brambory') === stemKey('brokolice'), false);
+
+const SMETANY = [{ ingredients: ['200 ml smetany 31 %', 'smetany na vaření 12%', '100 ml smetany'] }];
+t('smetana z receptu uz je v katalogu, nepridava se',
+  buildChecklist(SMETANY, []).flatMap(g => g.items).filter(x => fold(x.name).startsWith('smet')).length,
+  CATALOG.filter(x => fold(x.name).startsWith('smet')).length);
+
+const CIZI = [{ ingredients: ['3 lžíce sriracha omáčky', '2 lžíce sriracha'] }];
+const cizi = buildChecklist(CIZI, []).flatMap(g => g.items).filter(x => x.name.includes('sriracha'));
+t('neznama surovina se prida jednou', cizi.length, 1);
+t('a nechá se kratší název', cizi[0].name, 'sriracha');
 
 console.log('\n--- Co uz uzivatel ve spizi ma ---');
 const SPIZ = [
