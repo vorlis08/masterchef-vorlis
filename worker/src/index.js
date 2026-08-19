@@ -14,6 +14,7 @@
 
 import { startLogin, finishLogin } from './google.js';
 import { verifySession, bearerToken } from './session.js';
+import { updateProfile, listInventory, saveInventory } from './api.js';
 
 const ALLOWED_ORIGINS = [
   'https://vorlis08.github.io',   // ostra appka
@@ -128,7 +129,7 @@ export default {
     }
 
     if (!allowed) return deny(403, 'Tenhle Worker obsluhuje jen MasterChef Vorlis.', null);
-    if (request.method !== 'POST' && path !== '/api/me') return deny(405, 'Jen POST.', origin);
+    if (request.method !== 'POST' && !path.startsWith('/api/')) return deny(405, 'Jen POST.', origin);
 
     // -- Strop na pocet dotazu z jedne IP --
     if (env.RATE_LIMITER) {
@@ -137,17 +138,32 @@ export default {
       if (!success) return deny(429, 'Moc dotazů za sebou. Dej si chvilku pauzu. 🍳', origin);
     }
 
-    // -- Kdo jsem --------------------------------------------------------
-    if (path === '/api/me') {
+    // -- Vse pod /api/ vyzaduje prihlaseni --------------------------------
+    if (path.startsWith('/api/')) {
       const session = await verifySession(bearerToken(request), env.SESSION_SECRET);
       if (!session) return deny(401, 'Nepřihlášeno.', origin);
-      const user = await env.DB
-        .prepare('SELECT id, email, name, role FROM users WHERE id = ?')
-        .bind(session.sub).first();
-      if (!user) return deny(401, 'Účet už neexistuje.', origin);
-      return new Response(JSON.stringify(user), {
-        headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
-      });
+
+      if (path === '/api/me') {
+        const user = await env.DB
+          .prepare('SELECT id, email, name, role, avatar FROM users WHERE id = ?')
+          .bind(session.sub).first();
+        if (!user) return deny(401, 'Účet už neexistuje.', origin);
+        return new Response(JSON.stringify(user), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+        });
+      }
+
+      if (path === '/api/profile' && request.method === 'POST') {
+        return updateProfile(request, env, session, origin, corsHeaders);
+      }
+
+      if (path === '/api/inventory') {
+        return request.method === 'POST'
+          ? saveInventory(request, env, session, origin, corsHeaders)
+          : listInventory(env, session, origin, corsHeaders);
+      }
+
+      return deny(404, 'Neznámý požadavek.', origin);
     }
 
     let data;
