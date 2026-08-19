@@ -37,8 +37,10 @@ function clip(value, max) {
 function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    // GET kvuli /api/me, Authorization kvuli prihlasovacimu listku.
+    // Kdyz tu Authorization chybi, prohlizec dotaz vubec neodesle.
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Vary': 'Origin',
   };
 }
