@@ -293,6 +293,10 @@ a mozku se nedotkne.
 
 ### Zbývá
 - [ ] **Token do Workeru** (viz 8.2) — AI část Workeru už hotová, viz 8.10
+- [x] ~~**Zrcadlení stavu receptů do D1**~~ — hotové 20. 8. 2026. Oblíbené,
+      hodnocení, poznámky a „chci vyzkoušet" se nově ukládají i do D1
+      (tabulka `recipe_state`). localStorage zůstává, takže aplikace funguje
+      i bez přihlášení. Tím padá nástraha 8.5.
 - [x] ~~**Přihlašování + D1**~~ — hotové 19. 8. 2026. D1 `masterchef` (EEUR),
       Google OAuth přes Worker, spíž a profil. `Store` zatím zůstává na
       localStorage pro vzhled a oblíbené; přesun zbytku do D1 je další krok.
@@ -464,6 +468,41 @@ chybou — tedy stejně, jako by uživatel přihlášený nebyl.
 
 **Jak to poznat rychle:** podívej se do databáze, jestli se uživatel založil
 nebo změnil. Když ano, server je v pořádku a chyba je na straně prohlížeče.
+
+### 8.14 E-maily: co, komu a jak často
+
+Rozesílá je **Cron ve Workeru** (`worker/src/digest.js`), aby to fungovalo
+i při zavřené aplikaci — stejný důvod jako u nákupního seznamu v 4.6.
+
+| Zpráva | Kdy | Komu |
+|---|---|---|
+| Uvítání | první přihlášení | novému uživateli |
+| Nové recepty | pondělí 7:00 | kdo je chce |
+| Z wishlistu jde uvařit | pondělí 7:00, max. 1× za 14 dní | kdo je chce |
+| Měsíční souhrn | 1. v měsíci 7:00 | kdo je chce |
+| Nový uživatel | hned | jen adminovi |
+| Chyba v Cronu | při chybě | jen adminovi |
+
+**Pravidla, která nesmí zmizet:**
+
+- **Nejvýš 1 zpráva denně a 3 týdně** na člověka. Radši vynechat.
+- **V noci (22–7 českého času) se neposílá nic.** Cron běží v UTC —
+  `jeVhodnaDoba()` to přepočítává.
+- Každá pravidelná zpráva má **odhlašovací odkaz** chráněný tokenem
+  (`users.unsub_token`). Bez tokenu by šlo odhlásit kohokoliv.
+- Odeslané zprávy se zapisují do `email_log` — brání to duplicitám.
+
+**Nástrahy:**
+
+- **Recepty si Worker stahuje z GitHubu** (`raw.githubusercontent.com`),
+  ne z vlastní kopie. Jinak by se rozešly s aplikací.
+- **Při prvním běhu se recepty jen zapamatují** a nikomu nic nechodí —
+  jinak by první e-mail obsahoval celou kuchařku. Tabulka `known_recipes`.
+- **Na porovnávání surovin se NEPOUŽÍVÁ `ingredientMatch`** z `recipe-logic.js`.
+  Porovnává podřetězce, takže „smetana" a „smetany" mu nesednou. Digest
+  porovnává kořeny slov, a bere i slova od tří písmen — jinak propadne „sůl".
+- Worker si **půjčuje mozek aplikace** (`../../src/lib/*.js`). Wrangler to
+  zabalí bez problémů a logika porovnávání se nepíše dvakrát.
 
 ### 8.9 Obrázky
 
