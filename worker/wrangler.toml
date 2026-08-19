@@ -11,6 +11,8 @@ preview_urls = false
 # prihlasovani, takze klidne muze byt v repu.
 [vars]
 GOOGLE_CLIENT_ID = "947951400010-qfu21j9g331jd8t9imcaeolrphslhtkb.apps.googleusercontent.com"
+# Adresa, ze ktere chodi uvitaci e-mail. Musi byt overena v Brevu.
+MAIL_FROM = "honzavorel0@gmail.com"
 
 # Tyhle DVA naopak nikdy nepatri sem, nastavuji se jako secret:
 #   npx.cmd wrangler secret put ANTHROPIC_API_KEY
