@@ -26,6 +26,13 @@ export const APPROX_WORDS = [
 
 export const STATUSES = ['mam', 'dochazi', 'doslo'];
 
+/** Suroviny, ktere se prirozene pocitaji na kusy. */
+export const COUNT_WORDS = [
+  'vejce', 'vajec', 'vajicko', 'lusk', 'konzerva', 'konzervy', 'masox',
+  'bujon', 'prasek do peciva', 'kypric', 'jogurt', 'chleb', 'tortill',
+  'parky', 'klobasa', 'okurka', 'citron', 'paprika', 'cibule', 'mrkev',
+];
+
 // Hodnota `doslo` je v databazi, ale uzivateli se rika "Nemam" -
 // je to srozumitelnejsi u veci, ktere nikdy nemel.
 const STATUS_LABELS = {
@@ -65,12 +72,29 @@ export function cleanName(raw) {
  */
 export function guessKind(name) {
   const n = fold(String(name));
+  if (COUNT_WORDS.some(w => n.includes(w))) return 'count';
   return APPROX_WORDS.some(w => n.includes(w)) ? 'approx' : 'exact';
 }
 
-/** Ma se u tehle polozky vubec ukazovat pole na mnozstvi? (4.4) */
-export function needsQuantity(item) {
-  return item.kind !== 'approx';
+/**
+ * Ma se u tehle polozky vubec ukazovat pole na mnozstvi?
+ *
+ * `detail` = uzivatel si nahore zapnul "vypisovat mnozstvi u vseho".
+ * Bez nej se ptame jen tam, kde to ma smysl - u vazenych a pocitanych.
+ */
+export function needsQuantity(item, detail) {
+  return detail === true || item.kind !== 'approx';
+}
+
+/** Pocita se na kusy (vejce, masox, prasek do peciva)? */
+export function isCountable(item) {
+  return item.kind === 'count';
+}
+
+/** Vychozi jednotka podle druhu. */
+export function defaultUnit(item) {
+  if (isCountable(item)) return 'ks';
+  return item.unit || '';
 }
 
 /**
@@ -116,16 +140,20 @@ export function starterList(recipes) {
  * Podklad pro vykresleni spize. Vzhled uz jen kresli - nerozhoduje,
  * jestli ukazat gramy nebo tri tlacitka.
  */
-export function pantryView(items) {
-  return (items || []).map(item => ({
-    id: item.id,
-    name: item.name,
-    kind: item.kind,
-    staple: !!item.staple,
-    showQuantity: needsQuantity(item),
-    quantity: needsQuantity(item) ? (item.quantity == null ? '' : item.quantity) : null,
-    unit: needsQuantity(item) ? (item.unit || '') : null,
-    status: needsQuantity(item) ? null : (item.status || 'doslo'),
-    statusLabel: needsQuantity(item) ? null : statusLabel(item.status),
-  }));
+export function pantryView(items, detail) {
+  return (items || []).map(item => {
+    const ptat = needsQuantity(item, detail);
+    return {
+      id: item.id,
+      name: item.name,
+      kind: item.kind,
+      staple: !!item.staple,
+      showQuantity: ptat,
+      countable: isCountable(item),
+      quantity: ptat ? (item.quantity == null ? '' : item.quantity) : null,
+      unit: ptat ? defaultUnit(item) : null,
+      status: ptat ? null : (item.status || 'doslo'),
+      statusLabel: ptat ? null : statusLabel(item.status),
+    };
+  });
 }

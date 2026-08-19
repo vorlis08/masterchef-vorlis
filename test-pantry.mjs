@@ -1,6 +1,6 @@
 import {
   cleanName, guessKind, needsQuantity, freeQuantity, starterList,
-  pantryView, statusLabel, STATUSES
+  pantryView, statusLabel, STATUSES, isCountable, defaultUnit
 } from './src/lib/pantry.js';
 
 let fail = 0;
@@ -67,6 +67,12 @@ t('presna ma mnozstvi', pohled[0].showQuantity, true);
 t('presna nese jednotku', pohled[0].unit, 'ml');
 t('presna nema stav', pohled[0].status, null);
 t('priblizna nema mnozstvi', pohled[1].showQuantity, false);
+const sDetailem = pantryView([{ id: 2, name: 'sůl', kind: 'approx', status: 'dochazi' }], true);
+t('se zapnutym detailem ma i priblizna mnozstvi', sDetailem[0].showQuantity, true);
+const pocitane = pantryView([{ id: 3, name: 'vejce', kind: 'count', quantity: 6 }]);
+t('pocitana je oznacena', pocitane[0].countable, true);
+t('pocitana ma jednotku ks', pocitane[0].unit, 'ks');
+t('pocitana nese pocet', pocitane[0].quantity, 6);
 t('priblizna nese stav', pohled[1].status, 'dochazi');
 t('priblizna ma popisek stavu', pohled[1].statusLabel, 'Dochází');
 t('staple se prenese', pohled[1].staple, true);

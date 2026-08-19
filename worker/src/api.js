@@ -6,7 +6,7 @@
 // si kdokoli precetl cizi spiz.
 // ==========================================================================
 
-const KINDS = ['exact', 'approx'];
+const KINDS = ['exact', 'approx', 'count'];
 const STATUSES = ['mam', 'dochazi', 'doslo'];
 
 function json(body, origin, cors, status) {
@@ -92,12 +92,14 @@ export async function saveInventory(request, env, session, origin, cors) {
   const order = Number(item.sort_order) || 0;
 
   // 4.4: u priblizne suroviny se mnozstvi ZAMERNE neuklada.
-  const quantity = kind === 'exact' && item.quantity !== '' && item.quantity != null
+  // Vazene (exact) i pocitane (count) mnozstvi maji.
+  const merene = kind === 'exact' || kind === 'count';
+  const quantity = merene && item.quantity !== '' && item.quantity != null
     ? Number(item.quantity) : null;
   if (quantity != null && !(quantity >= 0)) {
     return json({ error: 'Množství musí být číslo.' }, origin, cors, 400);
   }
-  const unit = kind === 'exact' ? text(item.unit, 20) || null : null;
+  const unit = merene ? (text(item.unit, 20) || (kind === 'count' ? 'ks' : null)) : null;
   const status = kind === 'approx'
     ? (STATUSES.includes(item.status) ? item.status : 'doslo') : null;
 

@@ -22,7 +22,14 @@ console.log('\n--- Katalog sam o sobe ---');
 t('katalog neni prazdny', CATALOG.length > 50, true);
 t('kazda polozka ma nazev', CATALOG.every(x => !!x.name), true);
 t('kazda polozka ma skupinu z GROUPS', CATALOG.every(x => GROUPS.includes(x.group)), true);
-t('kazda polozka ma kind', CATALOG.every(x => x.kind === 'exact' || x.kind === 'approx'), true);
+t('kazda polozka ma kind', CATALOG.every(x => ['exact', 'approx', 'count'].includes(x.kind)), true);
+t('pocitane veci se pocitaji na kusy',
+  ['vejce', 'bujón (masox)', 'prášek do pečiva', 'vanilkový lusk', 'rajčata konzerva']
+    .map(n => CATALOG.find(x => x.name === n).kind),
+  ['count', 'count', 'count', 'count', 'count']);
+t('brambory jdou prepnout kg/ks', CATALOG.find(x => x.name === 'brambory').units, ['kg', 'ks']);
+t('vetsina veci mnozstvi nechce',
+  CATALOG.filter(x => x.kind === 'approx').length > CATALOG.filter(x => x.kind === 'exact').length, true);
 t('zadne duplicity', CATALOG.length, new Set(CATALOG.map(x => x.name)).size);
 
 console.log('\n--- Mouka se nevazi, maso ano (4.4) ---');

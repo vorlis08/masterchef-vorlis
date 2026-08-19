@@ -348,6 +348,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </button>
         </div>
 
+        <label class="flex items-center gap-2 mb-3 cursor-pointer shrink-0">
+          <input type="checkbox" id="checklist-detail" />
+          <span class="text-[12px] text-text-muted">Vypisovat množství úplně u všeho</span>
+        </label>
+
         <input id="checklist-filter" type="text" placeholder="Hledat v seznamu…" class="w-full bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-3 shrink-0" />
 
         <div id="checklist-body" class="overflow-y-auto flex-1 min-h-0 -mx-1 px-1"></div>
@@ -382,6 +387,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <input id="pantry-new" type="text" maxlength="80" placeholder="Přidat surovinu…" class="flex-1 bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors" />
             <button id="pantry-add" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors shrink-0">Přidat</button>
           </div>
+
+          <label class="flex items-center gap-2 mb-3 cursor-pointer shrink-0">
+            <input type="checkbox" id="pantry-detail" />
+            <span class="text-[12px] text-text-muted">Vypisovat množství úplně u všeho</span>
+          </label>
 
           <button id="checklist-open" class="w-full mb-4 py-2.5 rounded-lg bg-surface border border-border text-text text-[13px] hover:border-accent hover:text-accent transition-colors shrink-0">
             Projít seznam surovin →
@@ -743,6 +753,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       getToken()          { return this._raw('gh_token', ''); },
       setToken(token)     { this._write('gh_token', token); },
+
+      // "Vypisovat mnozstvi u vseho" - viz spiz. Ulozeno lokalne,
+      // je to preference vzhledu, ne data.
+      getPantryDetail()   { return this._raw('pantryDetail', '') === '1'; },
+      setPantryDetail(on) { if (on) this._write('pantryDetail', '1'); else this._remove('pantryDetail'); },
 
       // Prihlasovaci listek od Workeru (viz worker/src/session.js).
       getSession()        { return this._raw('session', ''); },
@@ -2255,6 +2270,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         pantryOverlay.classList.remove('opacity-0');
         pantryModal.classList.remove('scale-95', 'opacity-0');
       });
+      document.getElementById('pantry-detail').checked = Store.getPantryDetail();
       document.getElementById('pantry-signedout').classList.toggle('hidden', !!currentUser);
       document.getElementById('pantry-body').classList.toggle('hidden', !currentUser);
       if (currentUser) loadPantry();
@@ -2277,7 +2293,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     function renderPantry() {
-      const views = pantryView(pantryItems);
+      const views = pantryView(pantryItems, Store.getPantryDetail());
       document.getElementById('pantry-empty').classList.toggle('hidden', views.length > 0);
       document.getElementById('pantry-count').textContent =
         views.length === 0 ? '' : views.length + (views.length < 5 ? ' suroviny' : ' surovin');
@@ -2286,9 +2302,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         const ovladani = v.showQuantity
           ? '<div class="flex items-center gap-1.5">' +
               '<input class="pantry-qty w-20 bg-surface border border-border rounded-lg py-1.5 px-2 text-text text-[13px] text-right focus:outline-none focus:border-accent" ' +
-              'type="number" min="0" step="any" value="' + escAttr(v.quantity) + '" data-id="' + escAttr(v.id) + '" />' +
+              'type="number" min="0" step="any" placeholder="—" value="' + escAttr(v.quantity) + '" data-id="' + escAttr(v.id) + '" />' +
               '<input class="pantry-unit w-14 bg-surface border border-border rounded-lg py-1.5 px-2 text-text-muted text-[13px] focus:outline-none focus:border-accent" ' +
-              'type="text" maxlength="20" placeholder="g" value="' + escAttr(v.unit) + '" data-id="' + escAttr(v.id) + '" />' +
+              'type="text" maxlength="20" placeholder="' + (v.countable ? 'ks' : 'g') + '" value="' + escAttr(v.unit) + '" data-id="' + escAttr(v.id) + '" />' +
             '</div>'
           : '<div class="flex gap-1">' + STATUSES.map(st =>
               '<button class="pantry-status px-2.5 py-1.5 rounded-lg text-[12px] border transition-colors ' +
@@ -2396,6 +2412,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     let checklistGroups = [];
 
     function openChecklist() {
+      document.getElementById('checklist-detail').checked = Store.getPantryDetail();
       checklistGroups = buildChecklist(recipes, pantryItems);
       renderChecklist();
       checklistOverlay.classList.remove('hidden');
@@ -2413,6 +2430,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     function renderChecklist() {
+      const detail = Store.getPantryDetail();
       const hledat = fold(document.getElementById('checklist-filter').value.trim());
       const postup = checklistProgress(checklistGroups);
       document.getElementById('checklist-progress').textContent =
@@ -2426,7 +2444,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         if (!items.length) return;
 
         html += '<h3 class="label text-accent sticky top-0 bg-bg py-2 z-10">' + esc(skupina.group) + '</h3>';
-        html += '<ul class="divide-y divide-border mb-3">' + items.map(radek).join('') + '</ul>';
+        html += '<ul class="divide-y divide-border mb-3">' + items.map(it => radek(it, detail)).join('') + '</ul>';
       });
 
       checklistBody.innerHTML = html ||
@@ -2434,20 +2452,37 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       bindChecklistRows();
     }
 
-    /** Jeden radek seznamu. U priblizne suroviny se pole na mnozstvi neukaze (4.4). */
-    function radek(it) {
+    /**
+     * Jeden radek seznamu.
+     *
+     * - priblizna surovina  -> jen Mam / Dochazi / Nemam
+     * - pocitana (vejce)    -> pocet a "ks"
+     * - vazena (maso)       -> mnozstvi a jednotka
+     *
+     * `detail` = uzivatel si nahore rekl, ze chce mnozstvi uplne u vseho.
+     */
+    function radek(it, detail) {
       const klic = escAttr(it.name);
-      const ovladani = it.kind === 'approx'
+      const ptatSeNaMnozstvi = detail || it.kind !== 'approx';
+
+      // Kdyz katalog zna vic jednotek (brambory kg/ks), nabidneme vyber.
+      const jednotka = it.units && it.units.length
+        ? '<select class="chk-unit bg-surface border border-border rounded-lg py-1.5 px-1 text-text-muted text-[12px] focus:outline-none focus:border-accent" data-name="' + klic + '">' +
+            it.units.map(u => '<option value="' + escAttr(u) + '"' + ((it.unit || it.units[0]) === u ? ' selected' : '') + '>' + esc(u) + '</option>').join('') +
+          '</select>'
+        : '<input class="chk-unit w-14 bg-surface border border-border rounded-lg py-1.5 px-2 text-text-muted text-[13px] focus:outline-none focus:border-accent" ' +
+          'type="text" maxlength="20" placeholder="' + (it.kind === 'count' ? 'ks' : 'g') + '" value="' + escAttr(it.unit) + '" data-name="' + klic + '" />';
+
+      const ovladani = !ptatSeNaMnozstvi
         ? '<div class="flex gap-1 shrink-0">' + STATUSES.map(st =>
             '<button class="chk-status px-2 py-1.5 rounded-lg text-[12px] border transition-colors ' +
             (it.status === st ? 'bg-accent text-white border-accent' : 'bg-surface text-text-muted border-border hover:border-accent') +
             '" data-name="' + klic + '" data-status="' + escAttr(st) + '">' + esc(statusLabel(st)) + '</button>'
           ).join('') + '</div>'
         : '<div class="flex items-center gap-1.5 shrink-0">' +
-            '<input class="chk-qty w-20 bg-surface border border-border rounded-lg py-1.5 px-2 text-text text-[13px] text-right focus:outline-none focus:border-accent" ' +
+            '<input class="chk-qty w-16 bg-surface border border-border rounded-lg py-1.5 px-2 text-text text-[13px] text-right focus:outline-none focus:border-accent" ' +
             'type="number" min="0" step="any" placeholder="—" value="' + escAttr(it.quantity) + '" data-name="' + klic + '" />' +
-            '<input class="chk-unit w-14 bg-surface border border-border rounded-lg py-1.5 px-2 text-text-muted text-[13px] focus:outline-none focus:border-accent" ' +
-            'type="text" maxlength="20" placeholder="g" value="' + escAttr(it.unit) + '" data-name="' + klic + '" />' +
+            jednotka +
           '</div>';
 
       return '<li class="py-2.5 flex items-center gap-3">' +
@@ -2467,6 +2502,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     /** Ulozi radek. Kdyz surovina ve spizi jeste neni, tenhle zapis ji zalozi. */
     async function saveChecklistRow(it, zmena) {
       const novy = { ...it, ...zmena };
+      // Kdyz uzivatel vyplni mnozstvi u priblizne suroviny (protoze si
+      // zapnul detail), prestava byt priblizna - jinak by se mu to neulozilo.
+      if (novy.kind === 'approx' && zmena.quantity !== undefined && zmena.quantity !== '') {
+        novy.kind = 'exact';
+      }
       try {
         const data = await api('/api/inventory', {
           item: {
@@ -2506,6 +2546,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         })
       );
     }
+
+    function nastavDetail(on) {
+      Store.setPantryDetail(on);
+      const a = document.getElementById('pantry-detail');
+      const b = document.getElementById('checklist-detail');
+      if (a) a.checked = on;
+      if (b) b.checked = on;
+      renderPantry();
+      if (!checklistOverlay.classList.contains('hidden')) renderChecklist();
+    }
+
+    document.getElementById('pantry-detail').addEventListener('change', e => nastavDetail(e.target.checked));
+    document.getElementById('checklist-detail').addEventListener('change', e => nastavDetail(e.target.checked));
 
     document.getElementById('checklist-open').addEventListener('click', openChecklist);
     document.getElementById('checklist-close').addEventListener('click', closeChecklist);

@@ -33,28 +33,28 @@ export const CATALOG = [
   { name: 'mouka hladká',        group: 'Spíž — základ', kind: 'approx' },
   { name: 'mouka polohrubá',     group: 'Spíž — základ', kind: 'approx' },
   { name: 'mouka hrubá',         group: 'Spíž — základ', kind: 'approx' },
-  { name: 'rýže',                group: 'Spíž — základ', kind: 'exact' },
-  { name: 'těstoviny',           group: 'Spíž — základ', kind: 'exact' },
-  { name: 'brambory',            group: 'Spíž — základ', kind: 'exact' },
-  { name: 'čočka',               group: 'Spíž — základ', kind: 'exact' },
-  { name: 'fazole sušené',       group: 'Spíž — základ', kind: 'exact' },
-  { name: 'kuskus',              group: 'Spíž — základ', kind: 'exact' },
-  { name: 'ovesné vločky',       group: 'Spíž — základ', kind: 'exact' },
+  { name: 'rýže',                group: 'Spíž — základ', kind: 'approx' },
+  { name: 'těstoviny',           group: 'Spíž — základ', kind: 'exact', units: ['g', 'balení'] },
+  { name: 'brambory',            group: 'Spíž — základ', kind: 'exact', units: ['kg', 'ks'] },
+  { name: 'čočka',               group: 'Spíž — základ', kind: 'approx' },
+  { name: 'fazole sušené',       group: 'Spíž — základ', kind: 'approx' },
+  { name: 'kuskus',              group: 'Spíž — základ', kind: 'approx' },
+  { name: 'ovesné vločky',       group: 'Spíž — základ', kind: 'approx' },
   { name: 'strouhanka',          group: 'Spíž — základ', kind: 'approx' },
   { name: 'cukr krystal',        group: 'Spíž — základ', kind: 'approx' },
   { name: 'sůl',                 group: 'Spíž — základ', kind: 'approx', alias: ['soli'] },
 
-  // -- Konzervy a sklenice --
-  { name: 'rajčata konzerva',    group: 'Spíž — konzervy a sklenice', kind: 'exact' },
-  { name: 'protlak rajčatový',   group: 'Spíž — konzervy a sklenice', kind: 'approx' },
-  { name: 'fazole konzerva',     group: 'Spíž — konzervy a sklenice', kind: 'exact' },
-  { name: 'kukuřice konzerva',   group: 'Spíž — konzervy a sklenice', kind: 'exact' },
-  { name: 'tuňák konzerva',      group: 'Spíž — konzervy a sklenice', kind: 'exact' },
-  { name: 'kokosové mléko',      group: 'Spíž — konzervy a sklenice', kind: 'exact' },
+  // -- Konzervy a sklenice (pocitaji se na kusy) --
+  { name: 'rajčata konzerva',    group: 'Spíž — konzervy a sklenice', kind: 'count' },
+  { name: 'protlak rajčatový',   group: 'Spíž — konzervy a sklenice', kind: 'count' },
+  { name: 'fazole konzerva',     group: 'Spíž — konzervy a sklenice', kind: 'count' },
+  { name: 'kukuřice konzerva',   group: 'Spíž — konzervy a sklenice', kind: 'count' },
+  { name: 'tuňák konzerva',      group: 'Spíž — konzervy a sklenice', kind: 'count' },
+  { name: 'kokosové mléko',      group: 'Spíž — konzervy a sklenice', kind: 'count' },
   { name: 'nakládané okurky',    group: 'Spíž — konzervy a sklenice', kind: 'approx' },
   { name: 'med',                 group: 'Spíž — konzervy a sklenice', kind: 'approx' },
 
-  // -- Koreni --
+  // -- Koreni: skoro vse jen mam/dochazi/nemam --
   { name: 'pepř mletý',          group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'paprika sladká mletá', group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'paprika pálivá',      group: 'Koření a dochucovadla', kind: 'approx' },
@@ -70,13 +70,15 @@ export const CATALOG = [
   { name: 'kurkuma',             group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'chilli',              group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'kajenský pepř',       group: 'Koření a dochucovadla', kind: 'approx' },
-  { name: 'bobkový list',        group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'muškátový oříšek',    group: 'Koření a dochucovadla', kind: 'approx' },
-  { name: 'bujón',               group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'sójová omáčka',       group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'worcester',           group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'hořčice',             group: 'Koření a dochucovadla', kind: 'approx' },
   { name: 'kečup',               group: 'Koření a dochucovadla', kind: 'approx' },
+  // Tohle se doopravdy pocita - bujon po kostkach, lusk po kusech.
+  { name: 'bujón (masox)',       group: 'Koření a dochucovadla', kind: 'count', alias: ['bujon', 'masox'] },
+  { name: 'bobkový list',        group: 'Koření a dochucovadla', kind: 'count' },
+  { name: 'vanilkový lusk',      group: 'Koření a dochucovadla', kind: 'count' },
 
   // -- Oleje a tekutiny --
   { name: 'slunečnicový olej',   group: 'Oleje, octy a tekutiny', kind: 'approx' },
@@ -86,56 +88,58 @@ export const CATALOG = [
   { name: 'balzamikový ocet',    group: 'Oleje, octy a tekutiny', kind: 'approx' },
   { name: 'víno na vaření',      group: 'Oleje, octy a tekutiny', kind: 'approx' },
 
-  // -- Lednice --
-  { name: 'máslo',               group: 'Lednice', kind: 'exact' },
-  { name: 'mléko',               group: 'Lednice', kind: 'exact' },
-  { name: 'smetana na vaření 12 %', group: 'Lednice', kind: 'exact' },
-  { name: 'smetana ke šlehání 31 %', group: 'Lednice', kind: 'exact' },
-  { name: 'zakysaná smetana',    group: 'Lednice', kind: 'exact' },
-  { name: 'krémový sýr',         group: 'Lednice', kind: 'exact' },
-  { name: 'jogurt',              group: 'Lednice', kind: 'exact' },
-  { name: 'vejce',               group: 'Lednice', kind: 'exact' },
-  { name: 'tvrdý sýr',           group: 'Lednice', kind: 'exact' },
-  { name: 'parmazán',            group: 'Lednice', kind: 'exact' },
-  { name: 'mozzarella',          group: 'Lednice', kind: 'exact' },
-  { name: 'niva',                group: 'Lednice', kind: 'exact' },
-  { name: 'šunka',               group: 'Lednice', kind: 'exact' },
-  { name: 'slanina',             group: 'Lednice', kind: 'exact' },
-  { name: 'klobása',             group: 'Lednice', kind: 'exact' },
-  { name: 'kuřecí prsa',         group: 'Lednice', kind: 'exact' },
-  { name: 'kuřecí stehna',       group: 'Lednice', kind: 'exact' },
+  // -- Lednice: maso a syry se vazi, zbytek se pocita --
+  { name: 'kuřecí prsa',         group: 'Lednice', kind: 'exact', units: ['g', 'ks'] },
+  { name: 'kuřecí stehna',       group: 'Lednice', kind: 'exact', units: ['g', 'ks'] },
   { name: 'mleté maso',          group: 'Lednice', kind: 'exact' },
   { name: 'vepřová krkovice',    group: 'Lednice', kind: 'exact' },
   { name: 'hovězí',              group: 'Lednice', kind: 'exact' },
+  { name: 'slanina',             group: 'Lednice', kind: 'exact' },
+  { name: 'šunka',               group: 'Lednice', kind: 'exact' },
+  { name: 'klobása',             group: 'Lednice', kind: 'count' },
+  { name: 'párky',               group: 'Lednice', kind: 'count' },
+  { name: 'vejce',               group: 'Lednice', kind: 'count' },
+  { name: 'máslo',               group: 'Lednice', kind: 'exact', units: ['g', 'ks'] },
+  { name: 'mléko',               group: 'Lednice', kind: 'exact', units: ['l', 'ks'] },
+  { name: 'smetana na vaření 12 %', group: 'Lednice', kind: 'exact', units: ['ml', 'ks'] },
+  { name: 'smetana ke šlehání 31 %', group: 'Lednice', kind: 'exact', units: ['ml', 'ks'] },
+  { name: 'zakysaná smetana',    group: 'Lednice', kind: 'count' },
+  { name: 'krémový sýr',         group: 'Lednice', kind: 'count' },
+  { name: 'jogurt',              group: 'Lednice', kind: 'count' },
+  { name: 'tvrdý sýr',           group: 'Lednice', kind: 'exact' },
+  { name: 'parmazán',            group: 'Lednice', kind: 'exact' },
+  { name: 'mozzarella',          group: 'Lednice', kind: 'count' },
+  { name: 'niva',                group: 'Lednice', kind: 'exact' },
 
-  // -- Zelenina a ovoce --
-  { name: 'cibule',              group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'česnek',              group: 'Zelenina a ovoce', kind: 'approx' },
-  { name: 'mrkev',               group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'paprika',             group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'rajčata',             group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'cherry rajčata',      group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'okurka',              group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'salát',               group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'žampiony',            group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'brokolice',           group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'špenát',              group: 'Zelenina a ovoce', kind: 'exact' },
-  { name: 'citron',              group: 'Zelenina a ovoce', kind: 'exact' },
+  // -- Zelenina a ovoce: vetsinou kusy --
+  { name: 'cibule',              group: 'Zelenina a ovoce', kind: 'count', units: ['ks', 'kg'] },
+  { name: 'česnek',              group: 'Zelenina a ovoce', kind: 'count' },
+  { name: 'mrkev',               group: 'Zelenina a ovoce', kind: 'count', units: ['ks', 'kg'] },
+  { name: 'paprika',             group: 'Zelenina a ovoce', kind: 'count' },
+  { name: 'rajčata',             group: 'Zelenina a ovoce', kind: 'count', units: ['ks', 'kg'] },
+  { name: 'cherry rajčata',      group: 'Zelenina a ovoce', kind: 'count', units: ['balení', 'g'] },
+  { name: 'okurka',              group: 'Zelenina a ovoce', kind: 'count' },
+  { name: 'salát',               group: 'Zelenina a ovoce', kind: 'count' },
+  { name: 'citron',              group: 'Zelenina a ovoce', kind: 'count' },
+  { name: 'brokolice',           group: 'Zelenina a ovoce', kind: 'count' },
+  { name: 'žampiony',            group: 'Zelenina a ovoce', kind: 'exact', units: ['g', 'balení'] },
+  { name: 'špenát',              group: 'Zelenina a ovoce', kind: 'approx' },
   { name: 'petržel čerstvá',     group: 'Zelenina a ovoce', kind: 'approx' },
   { name: 'jarní cibulka',       group: 'Zelenina a ovoce', kind: 'approx' },
 
   // -- Mrazak --
-  { name: 'hrášek mražený',      group: 'Mrazák', kind: 'exact' },
-  { name: 'zeleninová směs',     group: 'Mrazák', kind: 'exact' },
-  { name: 'hranolky',            group: 'Mrazák', kind: 'exact' },
-  { name: 'ryba mražená',        group: 'Mrazák', kind: 'exact' },
+  { name: 'hrášek mražený',      group: 'Mrazák', kind: 'approx' },
+  { name: 'zeleninová směs',     group: 'Mrazák', kind: 'approx' },
+  { name: 'hranolky',            group: 'Mrazák', kind: 'approx' },
+  { name: 'ryba mražená',        group: 'Mrazák', kind: 'count' },
 
   // -- Pecivo a sladke --
-  { name: 'chléb',               group: 'Pečivo a sladké', kind: 'exact' },
-  { name: 'tortilly',            group: 'Pečivo a sladké', kind: 'exact' },
-  { name: 'čokoláda',            group: 'Pečivo a sladké', kind: 'exact' },
-  { name: 'vanilkový cukr',      group: 'Pečivo a sladké', kind: 'approx' },
-  { name: 'prášek do pečiva',    group: 'Pečivo a sladké', kind: 'approx' },
+  { name: 'chléb',               group: 'Pečivo a sladké', kind: 'count' },
+  { name: 'tortilly',            group: 'Pečivo a sladké', kind: 'count' },
+  { name: 'čokoláda',            group: 'Pečivo a sladké', kind: 'count' },
+  { name: 'vanilkový cukr',      group: 'Pečivo a sladké', kind: 'count' },
+  { name: 'prášek do pečiva',    group: 'Pečivo a sladké', kind: 'count', alias: ['kyprici'] },
+  { name: 'jedlá soda',          group: 'Pečivo a sladké', kind: 'approx' },
 ];
 
 /** Skupina pro suroviny dotazene z receptu, ktere v katalogu nejsou. */
@@ -202,7 +206,7 @@ export function buildChecklist(recipes, pantryItems) {
     wordStems(entry.name).forEach(st => stems.add(st));
     // Cestina meni kmen: "sul" vs "soli". Par takovych se doplni rucne.
     (entry.alias || []).forEach(a => wordStems(a).forEach(st => stems.add(st)));
-    rows.push(makeRow(entry.name, entry.kind, entry.group, bySlug.get(key)));
+    rows.push(makeRow(entry.name, entry.kind, entry.group, bySlug.get(key), entry.units));
   });
 
   // Suroviny z receptu, ktere katalog nezna. Sbirame nejdriv vsechny,
@@ -249,7 +253,7 @@ export function buildChecklist(recipes, pantryItems) {
   return groupRows(rows);
 }
 
-function makeRow(name, kind, group, existing) {
+function makeRow(name, kind, group, existing, units) {
   return {
     name: name,
     group: group,
@@ -262,6 +266,8 @@ function makeRow(name, kind, group, existing) {
     unit: existing && existing.unit ? existing.unit : '',
     status: existing && existing.status ? existing.status : null,
     staple: !!(existing && existing.staple),
+    // Jednotky, mezi kterymi jde prepnout (brambory kg/ks). Prazdne = volny text.
+    units: units || null,
   };
 }
 
