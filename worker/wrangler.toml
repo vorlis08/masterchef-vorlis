@@ -7,8 +7,15 @@ compatibility_date = "2026-08-18"
 # dovnitr posledniho bloku a tise se neuplatni.
 preview_urls = false
 
-# ANTHROPIC_API_KEY se nastavuje jako secret, nikdy nepatri sem:
+# Client ID od Googlu je verejny udaj - vidi ho kazdy v adrese pri
+# prihlasovani, takze klidne muze byt v repu.
+[vars]
+GOOGLE_CLIENT_ID = "947951400010-qfu21j9g331jd8t9imcaeolrphslhtkb.apps.googleusercontent.com"
+
+# Tyhle DVA naopak nikdy nepatri sem, nastavuji se jako secret:
 #   npx.cmd wrangler secret put ANTHROPIC_API_KEY
+#   npx.cmd wrangler secret put GOOGLE_CLIENT_SECRET
+#   npx.cmd wrangler secret put SESSION_SECRET
 
 # Strop na pocet dotazu: 20 za minutu z jedne IP.
 [[ratelimits]]
