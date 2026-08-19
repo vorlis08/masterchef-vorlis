@@ -10,7 +10,7 @@
 // - "Mam doma standardne" (staple) se nikdy nepridava do nakupniho seznamu.
 // ==========================================================================
 
-import { fold, splitQty } from './recipe-logic.js';
+import { fold, splitQty, QTY_UNITS } from './recipe-logic.js';
 
 /**
  * Suroviny, ktere nema smysl vazit. Porovnava se na zaklad slova bez
@@ -46,6 +46,12 @@ export function statusLabel(status) {
  */
 export function cleanName(raw) {
   let name = splitQty(String(raw).trim()).name;
+  // "spetka soli" nebo "hrnek mouky" - jednotka na zacatku i bez cisla.
+  const prvni = name.split(/\s+/)[0] || '';
+  const jednotky = QTY_UNITS.map(u => fold(u));
+  if (jednotky.indexOf(fold(prvni).replace(/[^a-z]/g, '')) !== -1) {
+    name = name.slice(prvni.length).trim() || name;
+  }
   name = name.replace(/\([^)]*\)/g, ' ');       // poznamky v zavorce
   name = name.replace(/\s*[-\u2013]\s*.*$/, ''); // vsechno za pomlckou
   name = name.replace(/\s+/g, ' ').trim();

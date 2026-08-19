@@ -32,6 +32,7 @@ export const CATALOG = [
   // -- Spiz zaklad --
   { name: 'mouka hladká',        group: 'Spíž — základ', kind: 'approx' },
   { name: 'mouka polohrubá',     group: 'Spíž — základ', kind: 'approx' },
+  { name: 'mouka hrubá',         group: 'Spíž — základ', kind: 'approx' },
   { name: 'rýže',                group: 'Spíž — základ', kind: 'exact' },
   { name: 'těstoviny',           group: 'Spíž — základ', kind: 'exact' },
   { name: 'brambory',            group: 'Spíž — základ', kind: 'exact' },
@@ -41,7 +42,7 @@ export const CATALOG = [
   { name: 'ovesné vločky',       group: 'Spíž — základ', kind: 'exact' },
   { name: 'strouhanka',          group: 'Spíž — základ', kind: 'approx' },
   { name: 'cukr krystal',        group: 'Spíž — základ', kind: 'approx' },
-  { name: 'sůl',                 group: 'Spíž — základ', kind: 'approx' },
+  { name: 'sůl',                 group: 'Spíž — základ', kind: 'approx', alias: ['soli'] },
 
   // -- Konzervy a sklenice --
   { name: 'rajčata konzerva',    group: 'Spíž — konzervy a sklenice', kind: 'exact' },
@@ -88,9 +89,10 @@ export const CATALOG = [
   // -- Lednice --
   { name: 'máslo',               group: 'Lednice', kind: 'exact' },
   { name: 'mléko',               group: 'Lednice', kind: 'exact' },
-  { name: 'smetana ke šlehání',  group: 'Lednice', kind: 'exact' },
-  { name: 'smetana na vaření',   group: 'Lednice', kind: 'exact' },
+  { name: 'smetana na vaření 12 %', group: 'Lednice', kind: 'exact' },
+  { name: 'smetana ke šlehání 31 %', group: 'Lednice', kind: 'exact' },
   { name: 'zakysaná smetana',    group: 'Lednice', kind: 'exact' },
+  { name: 'krémový sýr',         group: 'Lednice', kind: 'exact' },
   { name: 'jogurt',              group: 'Lednice', kind: 'exact' },
   { name: 'vejce',               group: 'Lednice', kind: 'exact' },
   { name: 'tvrdý sýr',           group: 'Lednice', kind: 'exact' },
@@ -154,6 +156,27 @@ export function stemKey(name) {
 }
 
 /**
+ * Zna katalog nektere ze slov v nazvu?
+ *
+ * Recepty pisou "hrnek polohrube mouky na zahusteni" - podstatne slovo
+ * je uprostred. Kdyz katalog mouku uz zna, nema smysl pridavat cely
+ * ten utrzek jako dalsi polozku.
+ *
+ * Kratka slova (do 4 pismen) se ignoruji, at "na", "dle" nebo "z"
+ * nespojuji nesouvisejici veci.
+ */
+export function wordStems(name) {
+  return String(name).trim().split(/\s+/)
+    .map(w => fold(w).replace(/[^a-z]/g, ''))
+    .filter(w => w.length >= 4)
+    .map(w => w.slice(0, 4));
+}
+
+export function knownWords(name, stems) {
+  return wordStems(name).some(st => stems.has(st));
+}
+
+/**
  * Slozi cely seznam k proklikani.
  *
  * Zaklad je katalog; doplni se suroviny z receptu, ktere v nem chybi.
@@ -174,7 +197,11 @@ export function buildChecklist(recipes, pantryItems) {
   CATALOG.forEach(entry => {
     const key = fold(entry.name);
     seen.add(key);
-    stems.add(stemKey(entry.name));
+    // Koren si bereme z KAZDEHO slova nazvu - diky tomu "slunecnicovy olej"
+    // v katalogu umlci i "olej na smazeni" z receptu.
+    wordStems(entry.name).forEach(st => stems.add(st));
+    // Cestina meni kmen: "sul" vs "soli". Par takovych se doplni rucne.
+    (entry.alias || []).forEach(a => wordStems(a).forEach(st => stems.add(st)));
     rows.push(makeRow(entry.name, entry.kind, entry.group, bySlug.get(key)));
   });
 
@@ -187,6 +214,15 @@ export function buildChecklist(recipes, pantryItems) {
       const name = cleanName(raw);
       if (!name || name.length < 3) return;
       if (seen.has(fold(name))) return;
+      // Dlouhe utrzky z receptu ("hrnek polohrube mouky na zahusteni")
+      // zahazujeme, kdyz uz katalog zna nektere ze slov - podstatne slovo
+      // v nich nebyva na zacatku.
+      //
+      // Kratke nazvy (do dvou slov) si necháváme, i kdyz nejake slovo
+      // katalog zna: "sriracha omacky" je vlastni surovina, ne utrzek -
+      // spolecne slovo "omacka" jeste neznamena tutez vec.
+      const slov = name.trim().split(/\s+/).length;
+      if (slov >= 3 && knownWords(name, stems)) return;
       const stem = stemKey(name);
       if (!stem || stems.has(stem)) return;        // uz to zna katalog
       const stavajici = zReceptu.get(stem);

@@ -6,7 +6,7 @@
 // je samostatne testovat.
 // ==========================================================================
 
-export const QTY_UNITS = ['g', 'kg', 'mg', 'ml', 'l', 'dl', 'cl', 'ks', 'kus', 'kusy', 'kusů', 'lžíce', 'lžíci', 'lžic', 'lžička', 'lžičky', 'lžiček', 'stroužek', 'stroužky', 'stroužku', 'stroužků', 'balení', 'plátek', 'plátky', 'plátků', 'špetka', 'špetky', 'hrst', 'hrsti', 'šálek', 'šálky', 'sklenice', 'sklenici', 'porce', 'porcí', 'konzerva', 'konzervy', 'kelímek', 'kelímky', 'svazek', 'snítka', 'snítky', 'větvička', 'list', 'listy', 'listů'];
+export const QTY_UNITS = ['g', 'kg', 'mg', 'ml', 'l', 'dl', 'cl', 'ks', 'kus', 'kusy', 'kusů', 'lžíce', 'lžíci', 'lžic', 'lžička', 'lžičky', 'lžiček', 'stroužek', 'stroužky', 'stroužku', 'stroužků', 'balení', 'plátek', 'plátky', 'plátků', 'špetka', 'špetky', 'hrst', 'hrsti', 'hrnek', 'hrnky', 'hrnku', 'šálek', 'šálky', 'sklenice', 'sklenici', 'porce', 'porcí', 'konzerva', 'konzervy', 'kelímek', 'kelímky', 'svazek', 'snítka', 'snítky', 'větvička', 'list', 'listy', 'listů'];
 
 /** Odstrani diakritiku a prevede na mala pismena - pro vyhledavani. */
 export function fold(str) {
