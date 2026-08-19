@@ -2,14 +2,23 @@ name = "vorlis"
 main = "src/index.js"
 compatibility_date = "2026-08-18"
 
+# Nahledove adresy vypnute - Worker ma jen jednu verejnou adresu.
+# POZOR: v TOML musi tenhle radek zustat NAD bloky [[...]], jinak spadne
+# dovnitr posledniho bloku a tise se neuplatni.
+preview_urls = false
+
+# ANTHROPIC_API_KEY se nastavuje jako secret, nikdy nepatri sem:
+#   npx.cmd wrangler secret put ANTHROPIC_API_KEY
+
 # Strop na pocet dotazu: 20 za minutu z jedne IP.
 [[ratelimits]]
 name = "RATE_LIMITER"
 namespace_id = "1001"
 simple = { limit = 20, period = 60 }
 
-# ANTHROPIC_API_KEY se nastavuje jako secret, nikdy nepatri sem:
-#   npx.cmd wrangler secret put ANTHROPIC_API_KEY
-
-# Nahledove adresy vypnute - Worker ma jen jednu verejnou adresu.
-preview_urls = false
+# Databaze (D1). Schema je ve slozce migrations/.
+[[d1_databases]]
+binding = "DB"
+database_name = "masterchef"
+database_id = "d4df6301-4557-4c28-afed-3511eaf71561"
+migrations_dir = "migrations"
