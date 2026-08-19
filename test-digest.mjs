@@ -62,7 +62,12 @@ console.log('\n--- Podoba zprav ---');
 const U = { id: 'u1', name: 'Honza Vorel', email: 'h@x.cz', unsub_token: 'tok' };
 
 const uvitani = welcomeMail(U);
-t('uvitani oslovuje krestnim jmenem', uvitani.html.includes('Ahoj Honza'), true);
+t('uvitani oslovuje krestnim jmenem', /Ahoj <strong[^>]*>Honza<\/strong>/.test(uvitani.html), true);
+t('uvitani ma predmet jako otazku', uvitani.subject, 'Tak co dneska? 👨‍🍳');
+t('uvitani vede na uvod v appce', uvitani.html.includes('?uvod=1'), true);
+t('uvitani ma i textovou verzi', uvitani.text.includes('A pak si stejně dáš toast'), true);
+t('jmeno se v uvitani osetri',
+  welcomeMail({ name: '<script>zle()</script>' }).html.includes('<script>'), false);
 t('uvitani nema odhlasovaci odkaz', uvitani.html.includes('Vypni si je'), false);
 
 const nove = newRecipesMail(U, [{ title: 'Guláš', category: 'Maso' }], 'https://w/unsub');

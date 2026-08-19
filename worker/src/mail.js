@@ -81,26 +81,121 @@ function jmeno(user) {
 }
 
 // -- 1. Uvitani -----------------------------------------------------------
+//
+// Text zacina u ctenare, ne u appky: prvni dva odstavce jsou o jeho vecerni
+// lednici a jmeno appky padne az ve chvili, kdy se pozna.
+//
+// Vsechny styly jsou INLINE. Postovni programy hromadny <style> casto
+// zahazuji - to, co je v hlavicce, je jen pro mobil a smi se ztratit.
+
+const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
+const SERIF = "Georgia,'Times New Roman',serif";
+
+function karta(ikona, stitek, nadpis, text) {
+  return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">' +
+    '<tr><td bgcolor="#1d1a16" style="background:#1d1a16;border:1px solid #322c24;border-radius:14px;padding:20px 22px;">' +
+    '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>' +
+    '<td width="40" valign="top" style="font-size:24px;line-height:1.2;">' + ikona + '</td>' +
+    '<td valign="top">' +
+    '<div style="font-family:' + SANS + ';font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#e07850;font-weight:bold;margin-bottom:5px;">' + stitek + '</div>' +
+    '<div style="font-family:' + SERIF + ';font-size:19px;color:#f2ede4;margin-bottom:7px;">' + nadpis + '</div>' +
+    '<div style="font-family:' + SANS + ';font-size:14px;line-height:1.6;color:#9a9083;">' + text + '</div>' +
+    '</td></tr></table></td></tr></table>';
+}
+
+function polozkaLednice(ikona, popis) {
+  return '<td width="33%" align="center" style="padding:4px;">' +
+    '<div style="font-size:26px;line-height:1.4;">' + ikona + '</div>' +
+    '<div style="font-family:' + SANS + ';font-size:12px;color:#9a9083;">' + popis + '</div></td>';
+}
 
 export function welcomeMail(user) {
-  const telo =
-    '<p>Ahoj ' + esc(jmeno(user)) + ',</p>' +
-    '<p>vítej v osobní kuchařce, ze které se pomalu stává systém řízení kuchyně.</p>' +
-    '<p><strong>Co můžeš rovnou zkusit:</strong></p>' +
-    '<ul>' +
-      '<li>projít recepty a přepnout si barevné téma</li>' +
-      '<li>spustit režim vaření — krokuje recept a hlídá časovače</li>' +
-      '<li>naplnit si spíž a zaškrtat, co máš doma</li>' +
-    '</ul>';
-  return {
-    subject: 'Vítej v MasterChef Vorlis 👨‍🍳',
-    text: 'Ahoj ' + jmeno(user) + ',\n\nvítej v MasterChef Vorlis — osobní kuchařce, ze které se\n' +
-      'pomalu stává systém řízení kuchyně.\n\nCo můžeš rovnou zkusit:\n' +
-      '  • projít recepty a přepnout si barevné téma\n' +
-      '  • spustit režim vaření — krokuje recept a hlídá časovače\n' +
-      '  • naplnit si spíž a zaškrtat, co máš doma\n\n' + APP_URL + '\n\nDobrou chuť!\n',
-    html: layout('Vítej v MasterChef Vorlis 👨‍🍳', telo, null),
-  };
+  const kdo = esc(jmeno(user));
+
+  const odstavec = t =>
+    '<p style="margin:0 0 16px;font-family:' + SANS + ';font-size:16px;line-height:1.65;color:#cdc5b8;">' + t + '</p>';
+
+  const html =
+    '<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0">' +
+      'Je šest hodin a v lednici tři věci. Tohle je pro tenhle moment.</div>' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0d0b09" style="background:#0d0b09;">' +
+    '<tr><td align="center" style="padding:28px 12px 40px;">' +
+    '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">' +
+
+    // hlavicka
+    '<tr><td align="center" bgcolor="#e07850" style="background:#e07850;background:linear-gradient(135deg,#e07850 0%,#c96840 55%,#a4502f 100%);border-radius:20px 20px 0 0;padding:34px 24px 30px;">' +
+      '<div style="font-size:40px;line-height:1;margin-bottom:6px;">🍳</div>' +
+      '<div style="font-family:' + SERIF + ';font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#3a1e10;font-weight:bold;">MasterChef&nbsp;Vorlis</div>' +
+    '</td></tr>' +
+
+    // telo
+    '<tr><td bgcolor="#14120f" style="background:#14120f;padding:38px 44px 10px;border-left:1px solid #322c24;border-right:1px solid #322c24;">' +
+      '<h1 style="margin:0 0 22px;font-family:' + SERIF + ';font-weight:normal;font-size:36px;line-height:1.15;color:#f2ede4;">Tak co&nbsp;dneska?</h1>' +
+      odstavec('Ahoj <strong style="color:#f2ede4;">' + kdo + '</strong>,') +
+      odstavec('znáš to. Je šest, máš hlad, otevřeš lednici — a koukáš na kuřecí prsa, půlku smetany a cibuli.') +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0 26px;"><tr>' +
+        polozkaLednice('🍗', 'kuřecí prsa') +
+        polozkaLednice('🥛', 'půlka smetany') +
+        polozkaLednice('🧅', 'cibule') +
+      '</tr></table>' +
+      '<p style="margin:0 0 26px;font-family:' + SANS + ';font-size:16px;line-height:1.65;color:#cdc5b8;">A pak si stejně dáš toast.</p>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 34px;"><tr>' +
+        '<td width="3" bgcolor="#e07850" style="background:#e07850;border-radius:2px;">&nbsp;</td>' +
+        '<td style="padding-left:18px;"><p style="margin:0;font-family:' + SERIF + ';font-size:19px;line-height:1.5;color:#f2ede4;font-style:italic;">' +
+        'MasterChef Vorlis existuje přesně kvůli téhle chvíli.</p></td>' +
+      '</tr></table>' +
+    '</td></tr>' +
+
+    // karty
+    '<tr><td bgcolor="#14120f" style="background:#14120f;padding:0 44px;border-left:1px solid #322c24;border-right:1px solid #322c24;">' +
+      karta('🥫', 'Spíž', 'Ví, co máš doma',
+        'Jednou proklikáš, co máš v kuchyni — a appka od té chvíle ví, co ti chybí a co zvládneš uvařit, ' +
+        'aniž bys někam běžel. U masa se ptá na gramy, u soli jen na ' +
+        '<em style="color:#cdc5b8;">mám / dochází / nemám</em>. Protože sůl nikdo neváží.') +
+      karta('⏱️', 'Režim vaření', 'Vede tě krok za krokem',
+        'Jeden krok přes celou obrazovku, časovače běží samy a displej nezhasne ve chvíli, kdy máš ruce od mouky.') +
+      karta('👨‍🍳', 'Kuchařský kámoš', 'Poradí, když ti něco dojde',
+        'Napíšeš, co máš, on vybere. A když v půlce receptu zjistíš, že smetana došla, vymyslí náhradu — bez povyšování.') +
+    '</td></tr>' +
+
+    // tlacitko
+    '<tr><td bgcolor="#14120f" align="center" style="background:#14120f;padding:6px 44px 40px;border-left:1px solid #322c24;border-right:1px solid #322c24;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>' +
+      '<td align="center" bgcolor="#e07850" style="background:#e07850;background:linear-gradient(135deg,#e07850,#c96840);border-radius:12px;">' +
+      '<a href="' + APP_URL + '?uvod=1" style="display:inline-block;padding:16px 40px;font-family:' + SANS + ';font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;">' +
+      'Pojď si vybrat večeři&nbsp;&rarr;</a></td></tr></table>' +
+      '<p style="margin:20px 0 0;font-family:' + SANS + ';font-size:13px;line-height:1.6;color:#786f63;">' +
+      'Uvnitř tě čeká krátký úvod a nabídka průvodce.<br>Kdo nechce, proklikne. Nikdo se neurazí.</p>' +
+    '</td></tr>' +
+
+    // paticka
+    '<tr><td bgcolor="#1d1a16" align="center" style="background:#1d1a16;border:1px solid #322c24;border-top:none;border-radius:0 0 20px 20px;padding:24px 30px;">' +
+      '<div style="font-family:' + SERIF + ';font-size:15px;color:#cdc5b8;margin-bottom:6px;">Ať to dneska dopadne jakkoliv, snad líp než ten toast.</div>' +
+      '<div style="font-family:' + SANS + ';font-size:12px;color:#6b6357;">Dobrou chuť!</div>' +
+    '</td></tr>' +
+
+    '</table></td></tr></table>';
+
+  const text =
+    'Tak co dneska?\n\n' +
+    'Ahoj ' + jmeno(user) + ',\n\n' +
+    'znáš to. Je šest, máš hlad, otevřeš lednici — a koukáš na kuřecí prsa,\n' +
+    'půlku smetany a cibuli. A pak si stejně dáš toast.\n\n' +
+    'MasterChef Vorlis existuje přesně kvůli téhle chvíli.\n\n' +
+    'SPÍŽ — ví, co máš doma\n' +
+    '  Jednou proklikáš, co máš v kuchyni, a appka od té chvíle ví, co ti chybí\n' +
+    '  a co zvládneš uvařit, aniž bys někam běžel. U masa se ptá na gramy,\n' +
+    '  u soli jen na mám / dochází / nemám. Protože sůl nikdo neváží.\n\n' +
+    'REŽIM VAŘENÍ — vede tě krok za krokem\n' +
+    '  Jeden krok přes celou obrazovku, časovače běží samy a displej nezhasne\n' +
+    '  ve chvíli, kdy máš ruce od mouky.\n\n' +
+    'KUCHAŘSKÝ KÁMOŠ — poradí, když ti něco dojde\n' +
+    '  Napíšeš, co máš, on vybere. A když v půlce receptu zjistíš, že smetana\n' +
+    '  došla, vymyslí náhradu — bez povyšování.\n\n' +
+    'Pojď si vybrat večeři: ' + APP_URL + '?uvod=1\n\n' +
+    'Ať to dneska dopadne jakkoliv, snad líp než ten toast.\nDobrou chuť!\n';
+
+  return { subject: 'Tak co dneska? 👨‍🍳', text: text, html: html };
 }
 
 // -- 5. Nove recepty ------------------------------------------------------
