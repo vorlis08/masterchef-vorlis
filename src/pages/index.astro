@@ -51,6 +51,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
         </button>
+        <!-- Prihlaseni -->
+        <button id="auth-btn" class="h-10 sm:h-9 px-3 rounded-lg bg-surface border border-border flex items-center gap-2 text-text-muted text-[13px] hover:text-accent hover:border-accent transition-colors" title="Přihlásit se">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+          <span id="auth-label" class="hidden sm:inline">Přihlásit</span>
+        </button>
         <!-- Settings -->
         <button id="settings-btn" class="w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Nastavení GitHub tokenu">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -547,6 +554,62 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     const recipesData = JSON.parse(document.getElementById('recipes-data').textContent);
 
+    // --- Prihlaseni ------------------------------------------------------
+    // Worker po prihlaseni vrati listek za mrizkou v adrese. Mrizka se na
+    // server neposila, takze listek nezustane v zadnem logu po ceste.
+    let currentUser = null;
+
+    function readTokenFromUrl() {
+      const m = /[#&]token=([^&]+)/.exec(location.hash || '');
+      if (!m) return;
+      Store.setSession(decodeURIComponent(m[1]));
+      // Uklidime adresu, at listek nezustane viset v historii prohlizece.
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+
+    function paintAuth() {
+      const btn = document.getElementById('auth-btn');
+      const label = document.getElementById('auth-label');
+      if (!btn || !label) return;
+      if (currentUser) {
+        label.textContent = currentUser.name || currentUser.email;
+        btn.title = currentUser.email + ' - klikni pro odhlášení';
+      } else {
+        label.textContent = 'Přihlásit';
+        btn.title = 'Přihlásit se přes Google';
+      }
+    }
+
+    async function loadUser() {
+      const token = Store.getSession();
+      if (!token) { currentUser = null; paintAuth(); return; }
+      try {
+        const res = await fetch(AI_WORKER + '/api/me', {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        if (res.ok) {
+          currentUser = await res.json();
+        } else {
+          // Listek propadl nebo uz neplati - zahodime ho.
+          Store.setSession('');
+          currentUser = null;
+        }
+      } catch { currentUser = null; }
+      paintAuth();
+    }
+
+    document.getElementById('auth-btn')?.addEventListener('click', () => {
+      if (currentUser) {
+        if (!confirm('Odhlásit se?')) return;
+        Store.setSession('');
+        currentUser = null;
+        paintAuth();
+        return;
+      }
+      const back = location.origin + location.pathname;
+      location.href = AI_WORKER + '/auth/start?return=' + encodeURIComponent(back);
+    });
+
     // Adresa AI proxy. Klic k Anthropicu je uvnitr Workeru, ne tady.
     const AI_WORKER = 'https://vorlis.honzavorel0.workers.dev';
 
@@ -582,6 +645,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       getToken()          { return this._raw('gh_token', ''); },
       setToken(token)     { this._write('gh_token', token); },
+
+      // Prihlasovaci listek od Workeru (viz worker/src/session.js).
+      getSession()        { return this._raw('session', ''); },
+      setSession(token)   { if (token) this._write('session', token); else this._remove('session'); },
 
       getShoppingList()     { return this._json('shopping_list', []); },
       setShoppingList(list) { this._writeJson('shopping_list', list); },
@@ -2059,6 +2126,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // --- Init ---
     updateFilters();
     renderGrid();
+
+    // Az uplne nakonec - drive jeste neexistuje Store ani adresa Workeru.
+    readTokenFromUrl();
+    loadUser();
 
 
 

@@ -12,6 +12,9 @@
 //   3. RATE_LIMITER - strop na pocet dotazu z jedne IP
 // ==========================================================================
 
+import { startLogin, finishLogin } from './google.js';
+import { verifySession, bearerToken } from './session.js';
+
 const ALLOWED_ORIGINS = [
   'https://vorlis08.github.io',   // ostra appka
   'http://localhost:4321',        // `npm run dev`
@@ -104,6 +107,15 @@ const ACTIONS = {
 
 export default {
   async fetch(request, env, ctx) {
+    const path = new URL(request.url).pathname;
+
+    // -- Prihlaseni ------------------------------------------------------
+    // Sem uzivatel prijde presmerovanim, ne z kodu appky, takze hlavicku
+    // Origin nema. Kontrola puvodu se proto na /auth/* nevztahuje;
+    // chrani je misto toho podepsany stav a seznam povolenych navratu.
+    if (path === '/auth/start')    return startLogin(request, env, ALLOWED_ORIGINS);
+    if (path === '/auth/callback') return finishLogin(request, env, ALLOWED_ORIGINS);
+
     const origin = request.headers.get('Origin');
     const allowed = ALLOWED_ORIGINS.includes(origin);
 
@@ -114,13 +126,26 @@ export default {
     }
 
     if (!allowed) return deny(403, 'Tenhle Worker obsluhuje jen MasterChef Vorlis.', null);
-    if (request.method !== 'POST') return deny(405, 'Jen POST.', origin);
+    if (request.method !== 'POST' && path !== '/api/me') return deny(405, 'Jen POST.', origin);
 
     // -- Strop na pocet dotazu z jedne IP --
     if (env.RATE_LIMITER) {
       const ip = request.headers.get('CF-Connecting-IP') || 'neznama';
       const { success } = await env.RATE_LIMITER.limit({ key: ip });
       if (!success) return deny(429, 'Moc dotazů za sebou. Dej si chvilku pauzu. 🍳', origin);
+    }
+
+    // -- Kdo jsem --------------------------------------------------------
+    if (path === '/api/me') {
+      const session = await verifySession(bearerToken(request), env.SESSION_SECRET);
+      if (!session) return deny(401, 'Nepřihlášeno.', origin);
+      const user = await env.DB
+        .prepare('SELECT id, email, name, role FROM users WHERE id = ?')
+        .bind(session.sub).first();
+      if (!user) return deny(401, 'Účet už neexistuje.', origin);
+      return new Response(JSON.stringify(user), {
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+      });
     }
 
     let data;
