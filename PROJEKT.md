@@ -293,7 +293,9 @@ a mozku se nedotkne.
 
 ### Zbývá
 - [ ] **Token do Workeru** (viz 8.2) — AI část Workeru už hotová, viz 8.10
-- [ ] **Přihlašování + D1** → výměna vnitřku `Store`
+- [x] ~~**Přihlašování + D1**~~ — hotové 19. 8. 2026. D1 `masterchef` (EEUR),
+      Google OAuth přes Worker, spíž a profil. `Store` zatím zůstává na
+      localStorage pro vzhled a oblíbené; přesun zbytku do D1 je další krok.
 - [ ] Přenést UI jako skin „Aplikace", pak „Kniha"
 
 ---
@@ -448,6 +450,20 @@ to vypadá jako rozbité krokování.
 **Jak testovat cook mode bez okna:** vybrat recept, který má odpočet
 **hned v prvním kroku** (`caramelised-onion-pasta`) — časovače na rAF nezávisí.
 Logika krokování je pokrytá v `test-cook.mjs`, bez prohlížeče.
+
+### 8.13 Chybějící `Authorization` v CORS vypadá jako rozbité přihlašování
+
+Přihlášení projde, uživatel se vrátí do appky — a appka se tváří, že je
+odhlášený. Příčina není v přihlašování, ale v tom, že prohlížeč se **před**
+dotazem s hlavičkou `Authorization` ptá Workeru, jestli ji smí poslat.
+Když Worker vrátí seznam bez ní, dotaz **vůbec neodejde** a `fetch` skončí
+chybou — tedy stejně, jako by uživatel přihlášený nebyl.
+
+`Access-Control-Allow-Headers` musí obsahovat `Authorization`,
+`Access-Control-Allow-Methods` musí obsahovat `GET`.
+
+**Jak to poznat rychle:** podívej se do databáze, jestli se uživatel založil
+nebo změnil. Když ano, server je v pořádku a chyba je na straně prohlížeče.
 
 ### 8.9 Obrázky
 
