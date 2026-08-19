@@ -123,3 +123,77 @@ export async function saveInventory(request, env, session, origin, cors) {
 
   return listInventory(env, session, origin, cors);
 }
+
+// -- Nastaveni upozorneni -------------------------------------------------
+
+const NOTIFY = {
+  recipes:  'notify_recipes',
+  wishlist: 'notify_wishlist',
+  summary:  'notify_summary',
+};
+
+export async function getNotify(env, session, origin, cors) {
+  const u = await env.DB.prepare(
+    'SELECT notify_recipes, notify_wishlist, notify_summary FROM users WHERE id = ?'
+  ).bind(session.sub).first();
+  return json({
+    recipes:  !!(u && u.notify_recipes),
+    wishlist: !!(u && u.notify_wishlist),
+    summary:  !!(u && u.notify_summary),
+  }, origin, cors);
+}
+
+export async function setNotify(request, env, session, origin, cors) {
+  const data = await request.json().catch(() => ({}));
+  const sloupec = NOTIFY[data.kind];
+  if (!sloupec) return json({ error: 'Neznámý druh zpráv.' }, origin, cors, 400);
+
+  await env.DB.prepare('UPDATE users SET ' + sloupec + ' = ? WHERE id = ?')
+    .bind(data.on ? 1 : 0, session.sub).run();
+  return getNotify(env, session, origin, cors);
+}
+
+// -- Vztah uzivatele k receptum -------------------------------------------
+//
+// Nahrazuje localStorage klice `favorites` a `review_<slug>` (8.5).
+// Appka posle svuj stav, Worker ho ulozi a vrati zpatky vsechno,
+// co o uzivateli vi - diky tomu se to srovna i mezi zarizenimi.
+
+const STAVY = ['neuvareno', 'wishlist', 'uvareno'];
+
+export async function syncState(request, env, session, origin, cors) {
+  const data = await request.json().catch(() => ({}));
+  const polozky = Array.isArray(data.items) ? data.items.slice(0, 500) : [];
+
+  if (polozky.length) {
+    const stmt = env.DB.prepare(
+      `INSERT INTO recipe_state (user_id, recipe_slug, favorite, status, stars, note, cooked, last_cooked, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+       ON CONFLICT (user_id, recipe_slug) DO UPDATE SET
+            favorite = excluded.favorite, status = excluded.status,
+            stars = excluded.stars, note = excluded.note,
+            cooked = excluded.cooked, last_cooked = excluded.last_cooked,
+            updated_at = datetime('now')`
+    );
+    const davka = polozky
+      .filter(it => it && it.slug)
+      .map(it => stmt.bind(
+        session.sub,
+        text(it.slug, 120),
+        it.favorite ? 1 : 0,
+        STAVY.includes(it.status) ? it.status : 'neuvareno',
+        Math.max(0, Math.min(5, Number(it.stars) || 0)),
+        it.note ? text(it.note, 2000) : null,
+        Math.max(0, Number(it.cooked) || 0),
+        it.lastCooked ? text(it.lastCooked, 40) : null
+      ));
+    if (davka.length) await env.DB.batch(davka);
+  }
+
+  const { results } = await env.DB.prepare(
+    `SELECT recipe_slug AS slug, favorite, status, stars, note, cooked, last_cooked AS lastCooked
+       FROM recipe_state WHERE user_id = ?`
+  ).bind(session.sub).all();
+
+  return json({ items: results || [] }, origin, cors);
+}

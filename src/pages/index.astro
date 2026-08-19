@@ -186,7 +186,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <div id="modal-rating" class="mt-6 pt-6 border-t border-border">
           <div class="flex items-center justify-between mb-4">
             <h3 class="label text-accent">Moje hodnocení</h3>
-            <button id="cooked-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">
+            <button id="wish-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M11.48 3.5a.56.56 0 011.04 0l2.12 4.3 4.75.69c.46.07.64.63.31.95l-3.44 3.35.81 4.73c.08.46-.4.81-.81.6L12 15.9l-4.26 2.23c-.41.21-.89-.14-.81-.6l.81-4.73-3.44-3.35a.56.56 0 01.31-.95l4.75-.69 2.12-4.3z" /></svg>
+            <span id="wish-label">Chci vyzkoušet</span>
+          </button>
+          <button id="cooked-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               Uvařil jsem to
             </button>
@@ -432,6 +436,23 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <input id="profile-name" type="text" maxlength="80" class="w-full bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-3" />
           <label class="block text-[12px] text-text-muted mb-1">Odkaz na fotku (https://…)</label>
           <input id="profile-photo" type="url" maxlength="500" placeholder="https://…" class="w-full bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-3" />
+          <div id="notify-section" class="mt-5 mb-4 hidden">
+            <h4 class="text-[12px] font-semibold text-text-muted uppercase tracking-wider mb-2">Co mi posílat e-mailem</h4>
+            <label class="flex items-center gap-2 mb-1.5 cursor-pointer">
+              <input type="checkbox" id="notify-recipes" />
+              <span class="text-[13px] text-text">Když přibude nový recept</span>
+            </label>
+            <label class="flex items-center gap-2 mb-1.5 cursor-pointer">
+              <input type="checkbox" id="notify-wishlist" />
+              <span class="text-[13px] text-text">Když můžu uvařit něco z „chci vyzkoušet"</span>
+            </label>
+            <label class="flex items-center gap-2 mb-2 cursor-pointer">
+              <input type="checkbox" id="notify-summary" />
+              <span class="text-[13px] text-text">Měsíční souhrn</span>
+            </label>
+            <p class="text-[11px] text-text-muted">Nejvýš jedna zpráva denně a tři týdně. V noci nic nechodí.</p>
+          </div>
+
           <div class="flex items-center gap-3">
             <button id="profile-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
             <button id="profile-logout" class="px-4 py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] hover:text-accent hover:border-accent transition-colors">Odhlásit se</button>
@@ -700,6 +721,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       } catch { currentUser = null; }
       paintAuth();
       paintProfile();
+      nactiUpozorneni();
+      nactiStav();
     }
 
     function startGoogleLogin() {
@@ -771,6 +794,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         return r || { stars: 0, note: '', cooked: 0, lastCooked: null };
       },
       setReview(slug, review) { this._writeJson('review_' + slug, review); },
+
+      // Stav receptu: neuvareno / wishlist / uvareno (4.7).
+      getWishlist()       { return this._json('wishlist', []); },
+      setWishlist(list)   { this._writeJson('wishlist', list); },
     };
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -797,6 +824,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       else favorites.push(slug);
       Store.setFavorites(favorites);
       renderGrid();
+      posliStav();
     }
 
     // --- Scroll reveal ---
@@ -1269,6 +1297,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       const paint = () => {
         renderIngredients(r);
+      paintWishBtn(slug);
         renderSteps(r);
         renderModeChrome(r);
         if (reduce) return;
@@ -2160,6 +2189,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
     function saveReview(slug, review) {
       Store.setReview(slug, review);
+      posliStav();
     }
     function getUserRating(slug) {
       return getReview(slug).stars || 0;
@@ -2564,6 +2594,118 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.getElementById('checklist-close').addEventListener('click', closeChecklist);
     checklistOverlay.addEventListener('click', e => { if (e.target === checklistOverlay) closeChecklist(); });
     document.getElementById('checklist-filter').addEventListener('input', renderChecklist);
+
+    // --- Stav receptu: oblibene, hodnoceni, "chci vyzkouset" ---------------
+    // Zatim se drzi v prohlizeci a do databaze se posila navic - diky tomu
+    // appka funguje i bez prihlaseni a data se srovnaji mezi zarizenimi.
+
+    let wishlist = Store.getWishlist();
+
+    function jeVeWishlistu(slug) {
+      return wishlist.indexOf(slug) >= 0;
+    }
+
+    function prepniWishlist(slug) {
+      const i = wishlist.indexOf(slug);
+      if (i >= 0) wishlist.splice(i, 1); else wishlist.push(slug);
+      Store.setWishlist(wishlist);
+      paintWishBtn(slug);
+      posliStav();
+    }
+
+    function paintWishBtn(slug) {
+      const btn = document.getElementById('wish-btn');
+      const label = document.getElementById('wish-label');
+      if (!btn || !label) return;
+      const je = jeVeWishlistu(slug);
+      label.textContent = je ? 'Chci vyzkoušet ✓' : 'Chci vyzkoušet';
+      btn.classList.toggle('text-accent', je);
+      btn.classList.toggle('border-accent', je);
+    }
+
+    /** Slozi stav vsech receptu, o kterych appka neco vi. */
+    function sberStavu() {
+      const slugy = new Set([...favorites, ...wishlist]);
+      recipes.forEach(r => {
+        const rev = Store.getReview(r.slug);
+        if (rev.stars || rev.note || rev.cooked) slugy.add(r.slug);
+      });
+      return [...slugy].map(slug => {
+        const rev = Store.getReview(slug);
+        return {
+          slug: slug,
+          favorite: favorites.indexOf(slug) >= 0,
+          status: rev.cooked > 0 ? 'uvareno' : (jeVeWishlistu(slug) ? 'wishlist' : 'neuvareno'),
+          stars: rev.stars || 0,
+          note: rev.note || '',
+          cooked: rev.cooked || 0,
+          lastCooked: rev.lastCooked || null,
+        };
+      });
+    }
+
+    /** Posle stav do databaze. Kdyz nejsi prihlasen, tise se nic nedeje. */
+    let posilaniStavu = null;
+    function posliStav() {
+      if (!currentUser) return;
+      clearTimeout(posilaniStavu);
+      posilaniStavu = setTimeout(() => {
+        api('/api/state', { items: sberStavu() }).catch(() => {});
+      }, 800);
+    }
+
+    /** Po prihlaseni stahne, co uz o uzivateli databaze vi, a doplni to. */
+    async function nactiStav() {
+      if (!currentUser) return;
+      try {
+        const data = await api('/api/state', { items: sberStavu() });
+        (data.items || []).forEach(it => {
+          if (it.favorite && favorites.indexOf(it.slug) < 0) favorites.push(it.slug);
+          if (it.status === 'wishlist' && wishlist.indexOf(it.slug) < 0) wishlist.push(it.slug);
+          const rev = Store.getReview(it.slug);
+          if ((it.cooked || 0) > (rev.cooked || 0) || (it.stars || 0) > (rev.stars || 0)) {
+            Store.setReview(it.slug, {
+              stars: Math.max(it.stars || 0, rev.stars || 0),
+              note: rev.note || it.note || '',
+              cooked: Math.max(it.cooked || 0, rev.cooked || 0),
+              lastCooked: it.lastCooked || rev.lastCooked || null,
+            });
+          }
+        });
+        Store.setFavorites(favorites);
+        Store.setWishlist(wishlist);
+        renderGrid();
+      } catch {}
+    }
+
+    document.getElementById('wish-btn')?.addEventListener('click', () => {
+      if (currentSlug) prepniWishlist(currentSlug);
+    });
+
+    // --- Nastaveni upozorneni ---
+    const NOTIFY_POLE = { recipes: 'notify-recipes', wishlist: 'notify-wishlist', summary: 'notify-summary' };
+
+    async function nactiUpozorneni() {
+      const box = document.getElementById('notify-section');
+      if (!box) return;
+      box.classList.toggle('hidden', !currentUser);
+      if (!currentUser) return;
+      try {
+        const stav = await api('/api/notify');
+        Object.keys(NOTIFY_POLE).forEach(k => {
+          const el = document.getElementById(NOTIFY_POLE[k]);
+          if (el) el.checked = !!stav[k];
+        });
+      } catch {}
+    }
+
+    Object.keys(NOTIFY_POLE).forEach(kind => {
+      const el = document.getElementById(NOTIFY_POLE[kind]);
+      if (el) el.addEventListener('change', async () => {
+        try { await api('/api/notify', { kind: kind, on: el.checked }); }
+        catch (e) { alert(e.message); el.checked = !el.checked; }
+      });
+    });
 
     // --- Profil ---
     function paintProfile() {

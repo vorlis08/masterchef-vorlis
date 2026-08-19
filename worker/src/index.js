@@ -14,7 +14,9 @@
 
 import { startLogin, finishLogin } from './google.js';
 import { verifySession, bearerToken } from './session.js';
-import { updateProfile, listInventory, saveInventory } from './api.js';
+import { updateProfile, listInventory, saveInventory, getNotify, setNotify, syncState } from './api.js';
+import { spustCron } from './digest.js';
+import { adminError } from './mail.js';
 
 const ALLOWED_ORIGINS = [
   'https://vorlis08.github.io',   // ostra appka
@@ -116,6 +118,10 @@ export default {
     // Sem uzivatel prijde presmerovanim, ne z kodu appky, takze hlavicku
     // Origin nema. Kontrola puvodu se proto na /auth/* nevztahuje;
     // chrani je misto toho podepsany stav a seznam povolenych navratu.
+    // Odhlaseni ze zprav. Uzivatel sem klika z e-mailu, takze bez
+    // prihlaseni - misto nej chrani odkaz tajny token.
+    if (path === '/unsub') return odhlasit(request, env);
+
     if (path === '/auth/start')    return startLogin(request, env, ALLOWED_ORIGINS);
     if (path === '/auth/callback') return finishLogin(request, env, ALLOWED_ORIGINS, ctx);
 
@@ -155,6 +161,16 @@ export default {
 
       if (path === '/api/profile' && request.method === 'POST') {
         return updateProfile(request, env, session, origin, corsHeaders);
+      }
+
+      if (path === '/api/notify') {
+        return request.method === 'POST'
+          ? setNotify(request, env, session, origin, corsHeaders)
+          : getNotify(env, session, origin, corsHeaders);
+      }
+
+      if (path === '/api/state' && request.method === 'POST') {
+        return syncState(request, env, session, origin, corsHeaders);
       }
 
       if (path === '/api/inventory') {
@@ -210,4 +226,37 @@ export default {
       },
     });
   },
+
+  // Pravidelne zpravy. Bezi i kdyz je appka zavrena (4.6).
+  async scheduled(event, env, ctx) {
+    const origin = 'https://vorlis.honzavorel0.workers.dev';
+    ctx.waitUntil(spustCron(event, env, origin));
+  },
 };
+
+/** Vypne jeden druh zprav. Odkaz z e-mailu, chrani ho token. */
+async function odhlasit(request, env) {
+  const url = new URL(request.url);
+  const id = url.searchParams.get('u');
+  const token = url.searchParams.get('t');
+  const kind = url.searchParams.get('k');
+  const sloupce = { recipes: 'notify_recipes', wishlist: 'notify_wishlist', summary: 'notify_summary' };
+
+  const stranka = (nadpis, text) => new Response(
+    '<!doctype html><meta charset="utf-8"><title>' + nadpis + '</title>' +
+    '<body style="font-family:system-ui;padding:2rem;line-height:1.6;max-width:32rem">' +
+    '<h1 style="font-size:1.25rem">' + nadpis + '</h1><p>' + text + '</p>' +
+    '<p><a href="https://vorlis08.github.io/masterchef-vorlis/">Zpátky do kuchařky</a></p>',
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
+
+  if (!id || !token || !sloupce[kind]) return stranka('Neplatný odkaz', 'Chybí údaje.');
+
+  const user = await env.DB.prepare('SELECT id, unsub_token FROM users WHERE id = ?').bind(id).first();
+  if (!user || !user.unsub_token || user.unsub_token !== token) {
+    return stranka('Neplatný odkaz', 'Odkaz už neplatí. Vypnout si zprávy můžeš i v nastavení aplikace.');
+  }
+
+  await env.DB.prepare('UPDATE users SET ' + sloupce[kind] + ' = 0 WHERE id = ?').bind(id).run();
+  return stranka('Hotovo', 'Tenhle druh zpráv už ti chodit nebude. Zpátky si ho zapneš v nastavení aplikace.');
+}

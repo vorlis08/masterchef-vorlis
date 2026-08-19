@@ -31,3 +31,8 @@ binding = "DB"
 database_name = "masterchef"
 database_id = "d4df6301-4557-4c28-afed-3511eaf71561"
 migrations_dir = "migrations"
+
+# Pravidelne zpravy. Casy jsou v UTC; digest.js si hlida, aby nic
+# neodeslo v noci ceskeho casu.
+[triggers]
+crons = ["0 5 * * 1", "0 5 1 * *"]   # pondeli 7:00 CEST, 1. v mesici 7:00 CEST

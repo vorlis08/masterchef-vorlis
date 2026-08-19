@@ -12,7 +12,7 @@
 // ==========================================================================
 
 import { signSession, verifySession } from './session.js';
-import { sendWelcome } from './mail.js';
+import { sendWelcome, adminNewUser } from './mail.js';
 
 const GOOGLE_AUTH  = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token';
@@ -109,7 +109,15 @@ export async function finishLogin(request, env, allowed, ctx) {
   // Uvitaci e-mail az po prvnim prihlaseni. Posila se na pozadi - uzivatel
   // na nej neceka a kdyz posilatel selze, prihlaseni to nerozbije.
   if (!user.welcome_sent_at) {
-    const odeslani = sendWelcome(env, user);
+    const odeslani = (async () => {
+      await sendWelcome(env, user);
+      // 9. Zprava spravci o novem uzivateli. Jde jen tobe, takze bez
+      //    ohledu na nastaveni upozorneni.
+      if (user.jeNovy) {
+        const pocet = await env.DB.prepare('SELECT COUNT(*) AS p FROM users').first();
+        await adminNewUser(env, user, (pocet && pocet.p) || '?');
+      }
+    })();
     if (ctx && ctx.waitUntil) ctx.waitUntil(odeslani);
   }
   const token = await signSession(
@@ -131,10 +139,16 @@ async function upsertUser(db, claims) {
   const email = String(claims.email).toLowerCase();
   const name = claims.name || claims.given_name || null;
 
-  const found = await db.prepare('SELECT id, email, name, role, welcome_sent_at FROM users WHERE email = ?')
+  const found = await db.prepare('SELECT id, email, name, role, welcome_sent_at, unsub_token FROM users WHERE email = ?')
     .bind(email).first();
 
   if (found) {
+    // Starsi ucty token na odhlaseni jeste nemaji - doplnime ho.
+    if (!found.unsub_token) {
+      found.unsub_token = crypto.randomUUID();
+      await db.prepare('UPDATE users SET unsub_token = ? WHERE id = ?')
+        .bind(found.unsub_token, found.id).run();
+    }
     if (name && name !== found.name) {
       await db.prepare('UPDATE users SET name = ? WHERE id = ?').bind(name, found.id).run();
       found.name = name;
@@ -143,9 +157,13 @@ async function upsertUser(db, claims) {
   }
 
   const id = crypto.randomUUID();
-  await db.prepare('INSERT INTO users (id, email, name, role) VALUES (?, ?, ?, ?)')
-    .bind(id, email, name, 'user').run();
-  return { id: id, email: email, name: name, role: 'user', welcome_sent_at: null };
+  const token = crypto.randomUUID();
+  await db.prepare('INSERT INTO users (id, email, name, role, unsub_token) VALUES (?, ?, ?, ?, ?)')
+    .bind(id, email, name, 'user', token).run();
+  return {
+    id: id, email: email, name: name, role: 'user',
+    welcome_sent_at: null, unsub_token: token, jeNovy: true,
+  };
 }
 
 /** Chybova stranka - uzivatel je tu po presmerovani, nekouka do konzole. */
