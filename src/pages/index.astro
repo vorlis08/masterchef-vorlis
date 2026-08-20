@@ -279,68 +279,88 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
   <!-- Uvitaci obrazovka. Vidi ji kazdy, kdo neni prihlaseny. -->
   <div id="brana" class="fixed inset-0 z-[200] overflow-y-auto">
-    <div class="brana-zare"></div>
+    <div class="brana-zare" aria-hidden="true"></div>
+    <div class="brana-zrno" aria-hidden="true"></div>
 
-    <div class="relative min-h-full flex flex-col items-center justify-center px-5 py-14">
+    <div class="brana-plocha">
 
-      <div class="brana-obsah w-full max-w-[640px] text-center">
+      <!-- Leva strana: rec -->
+      <header class="brana-rec">
+        <p class="brana-nadtitul brana-nabeh" style="--d:.05s">
+          <span class="brana-znacka">&#10086;</span>&nbsp; MasterChef Vorlis
+          <span class="brana-delic">&mdash;</span> osobní kuchařka
+        </p>
 
-        <div class="brana-znak mx-auto mb-7">
-          <span class="text-[34px] leading-none">🍳</span>
-        </div>
-
-        <div class="label text-accent mb-5">MasterChef&nbsp;Vorlis</div>
-
-        <h1 class="display text-[40px] sm:text-[58px] leading-[1.05] text-text mb-6">
-          Tak co dneska?
+        <h1 class="brana-h1">
+          <span class="brana-slovo" style="--d:.14s"><span>Zase</span></span>
+          <span class="brana-slovo" style="--d:.26s"><span><em>toast?</em></span></span>
         </h1>
 
-        <p class="text-text-muted text-[16px] sm:text-[17px] leading-relaxed max-w-[30rem] mx-auto mb-8">
-          Je šest, máš hlad, otevřeš lednici — a koukáš na tři věci, ze kterých
-          nevíš co udělat.
+        <p class="brana-lead brana-nabeh" style="--d:.42s">
+          Lednice není prázdná. Jen v ní máš tři věci, které k sobě nepasují —
+          a hlad, který nepočká. Tahle kuchařka z&nbsp;toho udělá večeři.
         </p>
 
-        <div class="flex items-center justify-center gap-3 sm:gap-6 mb-8 flex-wrap">
-          <span class="brana-surovina"><span class="text-[24px]">🍗</span>kuřecí prsa</span>
-          <span class="brana-surovina"><span class="text-[24px]">🥛</span>půlka smetany</span>
-          <span class="brana-surovina"><span class="text-[24px]">🧅</span>cibule</span>
+        <div class="brana-cta brana-nabeh" style="--d:.55s">
+          <button id="brana-prihlasit" class="brana-tlacitko">
+            <svg class="w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M12 11v2.8h6.6c-.27 1.5-1.9 4.4-6.6 4.4A7.2 7.2 0 1 1 16.8 6l2.2-2.1A10.4 10.4 0 1 0 12 22.4c6 0 10-4.2 10-10.1 0-.7-.08-1.2-.18-1.7H12z"/>
+            </svg>
+            Pokračovat přes Google
+          </button>
+          <p class="brana-mikro">
+            Deset vteřin. Rychlejší než předehřát troubu.<br>
+            Účet chceme jen kvůli tvé spíži a&nbsp;hodnocení —
+            „10&nbsp;tipů na avokádo&#8220; ti posílat nebudeme.
+          </p>
         </div>
 
-        <p class="display text-[20px] sm:text-[23px] text-text italic leading-snug mb-10 max-w-[28rem] mx-auto">
-          Tahle kuchařka existuje přesně kvůli téhle chvíli.
+        <p class="brana-pata brana-nabeh" style="--d:.68s">
+          Každý recept tady někdo doopravdy uvařil. Většinou úspěšně.
         </p>
+      </header>
 
-        <button id="brana-prihlasit" class="brana-tlacitko">
-          <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="#fff" d="M12 11v2.8h6.6c-.27 1.5-1.9 4.4-6.6 4.4A7.2 7.2 0 1 1 16.8 6l2.2-2.1A10.4 10.4 0 1 0 12 22.4c6 0 10-4.2 10-10.1 0-.7-.08-1.2-.18-1.7H12z"/>
-          </svg>
-          Pokračovat přes Google
-        </button>
-
-        <p class="text-text-muted text-[12.5px] mt-4">
-          Účet je potřeba, aby si appka pamatovala tvoji spíž a hodnocení.<br>
-          Nic víc po tobě nechceme.
-        </p>
-
-        <div class="brana-karty mt-14">
-          <div class="brana-karta">
-            <span class="text-[22px]">🥫</span>
-            <strong>Spíž</strong>
-            <span>Zaškrtáš, co máš doma. Appka pak ví, co ti chybí.</span>
-          </div>
-          <div class="brana-karta">
-            <span class="text-[22px]">⏱️</span>
-            <strong>Režim vaření</strong>
-            <span>Krok za krokem, s časovači. Displej nezhasne.</span>
-          </div>
-          <div class="brana-karta">
-            <span class="text-[22px]">👨‍🍳</span>
-            <strong>Kuchařský kámoš</strong>
-            <span>Poradí, když ti v půlce receptu něco dojde.</span>
-          </div>
+      <!-- Prava strana: listek denni situace -->
+      <aside class="brana-listek brana-nabeh" style="--d:.48s" aria-label="Dnešní situace">
+        <div class="brana-listek-hlava">
+          <span class="brana-stitek">Dnešní situace</span>
+          <span class="brana-cas" id="brana-cas">18:47</span>
         </div>
 
-      </div>
+        <ul class="brana-inventura">
+          <li><span>kuřecí prsa</span><i></i><em>bez plánu</em></li>
+          <li><span>půlka smetany</span><i></i><em>od úterý</em></li>
+          <li><span>cibule</span><i></i><em>jedna, statečná</em></li>
+        </ul>
+
+        <div class="brana-fleuron" aria-hidden="true">&#10086;</div>
+
+        <p class="brana-stitek brana-mezinadpis">Co s tím uděláme</p>
+        <ol class="brana-chody">
+          <li>
+            <b>I</b>
+            <div>
+              <strong>Spíž</strong>
+              <span>Jednou zaškrtáš, co máš doma, a&nbsp;od té chvíle appka počítá za tebe. Sůl vážit nebudeš.</span>
+            </div>
+          </li>
+          <li>
+            <b>II</b>
+            <div>
+              <strong>Režim vaření</strong>
+              <span>Krok za krokem, časovače běží samy. Displej nezhasne, ani když máš ruce od mouky.</span>
+            </div>
+          </li>
+          <li>
+            <b>III</b>
+            <div>
+              <strong>Kuchařský kámoš</strong>
+              <span>Poradí náhradu, když v&nbsp;půlce receptu zjistíš, že smetana&hellip; no. Znáš to.</span>
+            </div>
+          </li>
+        </ol>
+      </aside>
+
     </div>
   </div>
 
@@ -2112,6 +2132,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     document.getElementById('brana-prihlasit').addEventListener('click', startGoogleLogin);
+
+    // Cas na listku je skutecny - "dnesni situace" je fakt dnesni.
+    const branaCas = document.getElementById('brana-cas');
+    if (branaCas) branaCas.textContent =
+      new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' });
 
     // Kdo ma listek, tomu branu nezobrazujeme vubec. Kdyby uz neplatil,
     // loadUser ji vrati zpatky.

@@ -958,114 +958,263 @@ body {
 /* ==========================================================================
    Uvitaci obrazovka (brana)
 
-   Vidi ji kazdy, kdo neni prihlaseny. Je to prvni vec, kterou clovek
-   z appky uvidi, tak drzi stejny nadech jako uvitaci e-mail: tmava
-   plocha, teply akcent, patkovy nadpis.
+   Prvni vec, kterou clovek z appky uvidi. Editorial layout jako titulni
+   strana kucharky: velky patkovy titulek vlevo, "listek denni situace"
+   vpravo - lehce natoceny, jako by lezel na stole. Zadne karticky v rade.
    ========================================================================== */
 
 #brana {
   background: var(--color-bg);
   opacity: 1;
-  transition: opacity .35s ease, visibility .35s;
+  transition: opacity .4s ease, visibility .4s;
 }
 
-/* Skryta brana nesmi jen zprusvitnet - musela by pod ni jit klikat. */
+/* Skryta brana nesmi jen zprusvitnet - slo by pod ni klikat. */
 #brana.je-pryc {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
 
-/* Teple svetlo za nadpisem. Radialni prechod, at plocha neni placata. */
+/* Teple svetlo od horniho okraje + slaby odlesk vpravo dole. */
 .brana-zare {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background:
-    radial-gradient(60rem 34rem at 50% 6%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 70%),
-    radial-gradient(30rem 24rem at 85% 88%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 70%);
   pointer-events: none;
+  background:
+    radial-gradient(52rem 30rem at 16% -8%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 65%),
+    radial-gradient(38rem 28rem at 104% 108%, color-mix(in srgb, var(--color-accent) 7%, transparent), transparent 70%);
 }
 
-.brana-znak {
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
+/* Filmove zrno, at plocha neni digitalne hladka. */
+.brana-zrno {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: .06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.brana-plocha {
+  position: relative;
+  max-width: 1120px;
+  margin: 0 auto;
+  min-height: 100%;
+  padding: clamp(2.5rem, 7vh, 5.5rem) clamp(1.25rem, 4vw, 3rem) 4rem;
   display: grid;
-  place-items: center;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
-  box-shadow: 0 14px 40px color-mix(in srgb, var(--color-accent) 34%, transparent);
+  gap: 3.2rem;
+  align-content: center;
+}
+@media (min-width: 1024px) {
+  .brana-plocha {
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
+    gap: clamp(3rem, 6vw, 5.5rem);
+    align-items: center;
+    min-height: 100vh;
+  }
 }
 
-.brana-surovina {
-  display: inline-flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .55rem 1rem;
-  border-radius: 999px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+/* -- Leva strana ------------------------------------------------------- */
+
+.brana-nadtitul {
+  font-size: 11.5px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
   color: var(--color-text-muted);
-  font-size: 13px;
+}
+.brana-znacka { color: var(--color-accent); }
+.brana-delic  { color: var(--color-accent); margin: 0 .2em; }
+
+.brana-h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(3.6rem, 11vw, 6.6rem);
+  line-height: .96;
+  letter-spacing: -.02em;
+  color: var(--color-text);
+  margin: 1.5rem 0 1.7rem;
+}
+.brana-h1 em {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+/* Slova titulku vyjizdeji zpod netviditelne linky - zadne rozmazani. */
+.brana-slovo { display: block; overflow: hidden; }
+.brana-slovo > span {
+  display: block;
+  transform: translateY(112%);
+  animation: brana-vyjet .9s cubic-bezier(.19, 1, .22, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes brana-vyjet { to { transform: none; } }
+
+.brana-lead {
+  max-width: 44ch;
+  font-size: clamp(1rem, .5vw + .9rem, 1.15rem);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  margin-bottom: 2.3rem;
 }
 
 .brana-tlacitko {
   display: inline-flex;
   align-items: center;
-  gap: .7rem;
-  padding: 1rem 2rem;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  gap: .65rem;
+  padding: .95rem 1.7rem;
+  border-radius: 12px;
+  background: var(--color-accent);
   color: #fff;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 12px 34px color-mix(in srgb, var(--color-accent) 30%, transparent);
-  transition: transform .18s ease, box-shadow .18s ease;
+  letter-spacing: .01em;
+  box-shadow:
+    0 10px 30px color-mix(in srgb, var(--color-accent) 28%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .22);
+  transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
 }
-.brana-tlacitko:hover  { transform: translateY(-2px); box-shadow: 0 18px 44px color-mix(in srgb, var(--color-accent) 38%, transparent); }
+.brana-tlacitko:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 36px color-mix(in srgb, var(--color-accent) 36%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, .22);
+}
 .brana-tlacitko:active { transform: translateY(0); }
+.brana-tlacitko:focus-visible { outline: 2px solid var(--color-text); outline-offset: 3px; }
 
-.brana-karty {
-  display: grid;
-  gap: .8rem;
-  grid-template-columns: 1fr;
-  text-align: left;
-}
-@media (min-width: 640px) {
-  .brana-karty { grid-template-columns: repeat(3, 1fr); }
+.brana-mikro {
+  margin-top: 1rem;
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--color-text-muted);
 }
 
-.brana-karta {
-  display: flex;
-  flex-direction: column;
-  gap: .35rem;
-  padding: 1.1rem 1.2rem;
-  border-radius: 14px;
+.brana-pata {
+  margin-top: 2.8rem;
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--color-text-muted) 72%, transparent);
+}
+
+/* -- Prava strana: listek ---------------------------------------------- */
+
+.brana-listek {
+  position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 1.7rem 1.6rem 1.9rem;
+  max-width: 30rem;
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, .45),
+    inset 0 1px 0 rgba(255, 255, 255, .04);
 }
-.brana-karta strong { color: var(--color-text); font-size: 14px; font-weight: 600; }
-.brana-karta span:last-child { color: var(--color-text-muted); font-size: 13px; line-height: 1.55; }
+@media (min-width: 1024px) {
+  .brana-listek {
+    transform: rotate(-1.4deg);
+    transition: transform .35s ease;
+  }
+  .brana-listek:hover { transform: rotate(0); }
+}
 
-/* Obsah nabehne odspodu. Kdo ma vypnute animace, uvidi ho rovnou. */
-.brana-obsah > * {
-  animation: brana-nabeh .6s cubic-bezier(.22,.61,.36,1) backwards;
+.brana-stitek {
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--color-accent);
 }
-.brana-obsah > *:nth-child(1) { animation-delay: .05s }
-.brana-obsah > *:nth-child(2) { animation-delay: .12s }
-.brana-obsah > *:nth-child(3) { animation-delay: .19s }
-.brana-obsah > *:nth-child(4) { animation-delay: .26s }
-.brana-obsah > *:nth-child(5) { animation-delay: .33s }
-.brana-obsah > *:nth-child(6) { animation-delay: .40s }
-.brana-obsah > *:nth-child(7) { animation-delay: .47s }
-.brana-obsah > *:nth-child(8) { animation-delay: .54s }
-.brana-obsah > *:nth-child(9) { animation-delay: .61s }
+.brana-mezinadpis { display: block; margin-bottom: .95rem; }
 
-@keyframes brana-nabeh {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: none; }
+.brana-listek-hlava {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.15rem;
 }
+.brana-cas {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Inventura lednice: teckovane vodici linky jako v jidelnim listku. */
+.brana-inventura { display: grid; gap: .7rem; }
+.brana-inventura li {
+  display: flex;
+  align-items: baseline;
+  gap: .7rem;
+  font-size: 15px;
+}
+.brana-inventura li > span { color: var(--color-text); white-space: nowrap; }
+.brana-inventura li > i {
+  flex: 1;
+  border-bottom: 2px dotted var(--color-border);
+  transform: translateY(-3px);
+}
+.brana-inventura li > em {
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.brana-fleuron {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  margin: 1.35rem 0 1.15rem;
+  color: var(--color-accent);
+  font-size: 14px;
+}
+.brana-fleuron::before,
+.brana-fleuron::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.brana-chody { display: grid; gap: 1.05rem; }
+.brana-chody li { display: flex; gap: .8rem; }
+.brana-chody b {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--color-accent);
+  width: 1.5rem;
+  flex: none;
+  text-align: center;
+}
+.brana-chody strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: .18rem;
+}
+.brana-chody div > span {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+/* -- Nabehy -------------------------------------------------------------- */
+
+.brana-nabeh {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: brana-in .8s cubic-bezier(.22, .61, .36, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+@keyframes brana-in { to { opacity: 1; transform: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .brana-obsah > * { animation: none; }
   #brana { transition: none; }
+  .brana-nabeh,
+  .brana-slovo > span { animation: none; opacity: 1; transform: none; }
+  .brana-listek { transform: none; }
 }
