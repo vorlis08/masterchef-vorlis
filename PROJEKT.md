@@ -74,7 +74,12 @@ o recepty, které sám vaří a ověřuje.
 
 ---
 
-## 4. Fáze 2/3 — inventář a plánování (návrh schválený, nezačato)
+## 4. Fáze 2/3 — inventář a plánování
+
+> **Stav k 20. 8. 2026:** postavené je 4.1 (bookingy), 4.2 (zámky),
+> 4.3 (škála „co můžu uvařit"), 4.4 a 4.5 (spíž), 4.6 (nákupní seznam
+> z Cronu), 4.7 (stavy receptů), 4.8 (Google OAuth) a 4.9 (dlouhý seznam).
+> Zbývá jen Sign in with Apple, který čeká na placený účet.
 
 Tohle je jádro celého projektu. Všechno níže je **odsouhlasené**, ne návrh k diskusi.
 
@@ -503,6 +508,26 @@ i při zavřené aplikaci — stejný důvod jako u nákupního seznamu v 4.6.
   porovnává kořeny slov, a bere i slova od tří písmen — jinak propadne „sůl".
 - Worker si **půjčuje mozek aplikace** (`../../src/lib/*.js`). Wrangler to
   zabalí bez problémů a logika porovnávání se nepíše dvakrát.
+
+### 8.15 Sdílený mozek mezi aplikací a Workerem
+
+Porovnávání surovin (`src/lib/match.js`) a termíny (`src/lib/booking.js`)
+používá **aplikace i Worker**. Wrangler si poradí s `import` přes hranici
+složky (`../../src/lib/…`) a zabalí to bez potíží.
+
+**Proč to tak je:** logika „co mi chybí" se počítá na dvou místech — v appce
+kvůli odznaku u receptu a ve Workeru kvůli e-mailům. Kdyby existovala
+dvakrát, do týdne se rozejde a e-mail bude tvrdit něco jiného než obrazovka.
+
+### 8.16 Pozor na pořadí deklarací v `index.astro`
+
+Skript je jeden velký blok a `renderGrid()` se volá hned při startu.
+Když do něj přibude čtení nové proměnné (spíž, wishlist), **musí být
+deklarovaná nad ním** — jinak spadne na `Cannot access before
+initialization` ještě před prvním vykreslením.
+
+Stejný druh pasti jako 8.13: build i testy projdou, protože syntakticky
+je všechno v pořádku.
 
 ### 8.9 Obrázky
 
