@@ -17,6 +17,7 @@ import { verifySession, bearerToken } from './session.js';
 import {
   updateProfile, listInventory, saveInventory, getNotify, setNotify,
   syncState, markIntroDone, listBookings, saveBooking,
+  listShopping, saveShopping,
 } from './api.js';
 import { spustCron } from './digest.js';
 import { adminError } from './mail.js';
@@ -184,6 +185,12 @@ export default {
         return request.method === 'POST'
           ? saveBooking(request, env, session, origin, corsHeaders)
           : listBookings(env, session, origin, corsHeaders);
+      }
+
+      if (path === '/api/shopping') {
+        return request.method === 'POST'
+          ? saveShopping(request, env, session, origin, corsHeaders)
+          : listShopping(env, session, origin, corsHeaders);
       }
 
       if (path === '/api/inventory') {

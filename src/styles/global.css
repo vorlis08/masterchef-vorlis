@@ -1369,3 +1369,103 @@ body {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* ---- Kalendář vaření ---------------------------------------------------
+   Mřížka měsíce. Týden začíná pondělím. Dnešek nese obrys, ne jen barvu -
+   ať je poznat i bez rozlišování odstínů. */
+
+.kal-hlavicka,
+.kal-tyden {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.kal-hlavicka { margin-bottom: 6px; }
+.kal-tyden { margin-bottom: 4px; }
+
+.kal-den-zkratka {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding-bottom: 2px;
+}
+
+.kal-bunka {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  min-height: 74px;
+  padding: 5px 5px 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-surface);
+  text-align: left;
+  overflow: hidden;
+  transition: border-color .15s ease, background .15s ease;
+}
+.kal-bunka:hover { border-color: var(--color-accent); }
+.kal-bunka:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+.kal-cislo {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+/* Dobeh z okolnich mesicu je potlaceny, ale porad citelny. */
+.kal-bunka.je-jiny-mesic { opacity: .38; }
+.kal-bunka.je-minulost .kal-cislo { opacity: .6; }
+
+.kal-bunka.je-dnes {
+  border-color: var(--color-accent);
+  box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.kal-bunka.je-dnes .kal-cislo { color: var(--color-accent); font-weight: 700; }
+
+.kal-bunka.ma-vareni { background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface)); }
+
+.kal-bunka.je-vybrany {
+  border-color: var(--color-text);
+  background: var(--color-surface-hover);
+}
+
+.kal-stitek {
+  display: block;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  color: var(--color-text);
+  font-size: 10px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kal-stitek.je-hotovo {
+  background: transparent;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+.kal-vic { font-size: 9px; color: var(--color-text-muted); padding-left: 4px; }
+
+/* Na uzkem displeji se dny zmensi, at se mrizka porad vejde. */
+@media (max-width: 640px) {
+  .kal-bunka { min-height: 58px; padding: 4px 3px 5px; }
+  .kal-stitek { font-size: 9px; padding: 1px 3px; }
+}
+
+/* Položka, kterou do nákupního seznamu doplnila appka podle plánu vaření. */
+.nakup-auto {
+  display: inline-block;
+  margin-left: .5em;
+  padding: 0 .4em;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  color: var(--color-accent);
+  font-size: 10px;
+  vertical-align: middle;
+}

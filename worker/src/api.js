@@ -307,3 +307,65 @@ export async function saveBooking(request, env, session, origin, cors) {
 
   return listBookings(env, session, origin, cors);
 }
+
+// -- Nakupni seznam -------------------------------------------------------
+//
+// Do teto chvile zil seznam jen v prohlizeci, zatimco Cron psal do databaze
+// (4.6) - takze co Cron doplnil, uzivatel nikdy neuvidel. Ted je zdroj
+// pravdy databaze a appka si ji jen zrcadli.
+
+export async function listShopping(env, session, origin, cors) {
+  const { results } = await env.DB.prepare(
+    `SELECT id, text, amount, unit, done, source, created_at
+       FROM shopping_list WHERE user_id = ?
+      ORDER BY done, created_at`
+  ).bind(session.sub).all();
+  return json({ items: results || [] }, origin, cors);
+}
+
+export async function saveShopping(request, env, session, origin, cors) {
+  const data = await request.json().catch(() => ({}));
+
+  if (data.action === 'add') {
+    const polozky = (Array.isArray(data.items) ? data.items : [data.text])
+      .map(x => text(x, 120)).filter(Boolean).slice(0, 100);
+    if (!polozky.length) return json({ error: 'Není co přidat.' }, origin, cors, 400);
+
+    // Co uz v seznamu nekoupene lezi, nepridavame znovu.
+    const { results: uzTam } = await env.DB.prepare(
+      'SELECT text FROM shopping_list WHERE user_id = ? AND done = 0'
+    ).bind(session.sub).all();
+    const mam = new Set((uzTam || []).map(x => String(x.text).toLowerCase()));
+
+    const nove = polozky.filter(x => !mam.has(x.toLowerCase()));
+    if (nove.length) {
+      const stmt = env.DB.prepare(
+        "INSERT INTO shopping_list (user_id, text, source) VALUES (?, ?, ?)"
+      );
+      await env.DB.batch(nove.map(x => stmt.bind(session.sub, x, data.source === 'auto' ? 'auto' : 'manual')));
+    }
+    return listShopping(env, session, origin, cors);
+  }
+
+  if (data.action === 'toggle') {
+    if (!(data.id > 0)) return json({ error: 'Chybí položka.' }, origin, cors, 400);
+    await env.DB.prepare(
+      'UPDATE shopping_list SET done = CASE done WHEN 1 THEN 0 ELSE 1 END WHERE id = ? AND user_id = ?'
+    ).bind(data.id, session.sub).run();
+    return listShopping(env, session, origin, cors);
+  }
+
+  if (data.action === 'remove') {
+    if (!(data.id > 0)) return json({ error: 'Chybí položka.' }, origin, cors, 400);
+    await env.DB.prepare('DELETE FROM shopping_list WHERE id = ? AND user_id = ?')
+      .bind(data.id, session.sub).run();
+    return listShopping(env, session, origin, cors);
+  }
+
+  if (data.action === 'clear') {
+    await env.DB.prepare('DELETE FROM shopping_list WHERE user_id = ?').bind(session.sub).run();
+    return listShopping(env, session, origin, cors);
+  }
+
+  return json({ error: 'Neznámá akce.' }, origin, cors, 400);
+}

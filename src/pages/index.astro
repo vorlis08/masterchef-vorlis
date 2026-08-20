@@ -36,6 +36,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         
         <!-- Add recipe -->
         
+        <!-- Kalendar -->
+        <button id="cal-btn" class="w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors relative" title="Kalendář vaření">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+          </svg>
+          <span id="cal-badge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-semibold flex items-center justify-center"></span>
+        </button>
         <!-- Spiz -->
         <button id="pantry-btn" class="w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Moje spíž">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,6 +286,60 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <div id="checklist-body" class="overflow-y-auto flex-1 min-h-0 -mx-1 px-1"></div>
 
         <p class="text-[11px] text-text-muted mt-3 shrink-0">Ukládá se hned, jak něco změníš. Seznam jde po kuchyni — spíž, koření, lednice, mrazák.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kalendar vareni -->
+  <div id="cal-overlay" class="fixed inset-0 bg-black/70 z-[84] hidden opacity-0 transition-opacity duration-200">
+    <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-6">
+      <div id="cal-modal" class="bg-bg border border-border rounded-2xl w-full max-w-3xl p-5 sm:p-7 scale-95 opacity-0 transition-all duration-200 max-h-[92vh] flex flex-col">
+
+        <div class="flex items-center justify-between gap-3 mb-4 shrink-0">
+          <div class="flex items-center gap-1">
+            <button id="cal-zpet" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" aria-label="Předchozí měsíc">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+            </button>
+            <button id="cal-vpred" class="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" aria-label="Další měsíc">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+            </button>
+            <button id="cal-dnes" class="ml-1 px-3 h-9 rounded-lg bg-surface border border-border text-text-muted text-[12px] hover:text-accent hover:border-accent transition-colors">Dnes</button>
+          </div>
+
+          <div class="text-center min-w-0">
+            <h2 id="cal-nazev" class="display text-[19px] sm:text-[22px] text-text capitalize truncate"></h2>
+            <p id="cal-souhrn" class="meta text-text-muted"></p>
+          </div>
+
+          <button id="cal-close" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div id="cal-signedout" class="hidden py-12 text-center">
+          <p class="text-text text-[15px] mb-2">Kalendář je tvůj osobní plán</p>
+          <p class="text-text-muted text-[13px] mb-5">Přihlas se, ať víme, komu ho uložit.</p>
+          <button id="cal-login" class="px-5 py-2.5 rounded-lg bg-accent text-white font-medium text-[14px] hover:bg-accent-hover transition-colors">Přihlásit přes Google</button>
+        </div>
+
+        <div id="cal-body" class="hidden flex-1 min-h-0 overflow-y-auto">
+          <div class="kal-hlavicka" id="cal-dny"></div>
+          <div id="cal-mrizka"></div>
+
+          <div id="cal-den" class="hidden mt-4 pt-4 border-t border-border">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <h3 id="cal-den-nazev" class="display text-[17px] text-text"></h3>
+              <button id="cal-do-nakupu" class="px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] hover:text-accent hover:border-accent transition-colors">
+                Chybějící do nákupu
+              </button>
+            </div>
+            <ul id="cal-den-seznam" class="space-y-2"></ul>
+            <p id="cal-den-prazdno" class="hidden text-text-muted text-[13px]">
+              Na tenhle den nic naplánovaného. Naplánovat jde z receptu tlačítkem „TO UVAŘÍM!“.
+            </p>
+            <p id="cal-nakup-hlaska" class="hidden mt-2 text-[12px] text-accent"></p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -757,9 +818,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     import { buildChecklist, checklistProgress } from '../lib/catalog.js';
     import { pripravenost, sediSurovina } from '../lib/match.js';
     import {
-      dnes as dnesniDatum, jeDatum, jeCas, popisBookingu,
+      dnes as dnesniDatum, jeDatum, jeCas, popisBookingu, popisDatumu,
       konflikty, popisKonfliktu, coZamknout, nadchazejici,
     } from '../lib/booking.js';
+    import {
+      DNY_ZKRATKY, mesicniMrizka, posunMesic, pocetVMesici, bookingyDne,
+    } from '../lib/kalendar.js';
+    import { chybejici } from '../lib/match.js';
     import {
       krok as tourKrokData, omez as tourOmez, jePrvni as tourPrvni,
       jePosledni as tourPosledni, popisPostupu as tourPostup,
@@ -2086,9 +2151,34 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     const shoppingCount = document.getElementById('shopping-count');
     let shopList = Store.getShoppingList();
 
+    /**
+     * Ulozeni. Prihlaseny pise do databaze (tam pise i Cron), neprihlaseny
+     * do prohlizece - at appka funguje i bez uctu.
+     */
     function saveShopList() {
-      Store.setShoppingList(shopList);
+      if (!currentUser) Store.setShoppingList(shopList);
       updateShoppingBadge();
+    }
+
+    /** Stahne seznam z databaze. Bez prihlaseni nedela nic. */
+    async function nactiNakup() {
+      if (!currentUser) return;
+      try {
+        const data = await api('/api/shopping');
+        shopList = (data.items || []).map(x => ({ id: x.id, text: x.text, done: !!x.done, source: x.source }));
+        updateShoppingBadge();
+        renderShopList();
+      } catch {}
+    }
+
+    /** Zmena polozky v databazi. Vraci nove cely seznam. */
+    async function nakupAkce(akce, dalsi) {
+      try {
+        const data = await api('/api/shopping', { action: akce, ...dalsi });
+        shopList = (data.items || []).map(x => ({ id: x.id, text: x.text, done: !!x.done, source: x.source }));
+        updateShoppingBadge();
+        renderShopList();
+      } catch (e) { alert(e.message); }
     }
 
     function updateShoppingBadge() {
@@ -2112,20 +2202,29 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <button class="shop-toggle w-[18px] h-[18px] shrink-0 rounded border ${item.done ? 'border-accent bg-accent' : 'border-border'} flex items-center justify-center transition-colors" data-i="${i}">
             ${item.done ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>' : ''}
           </button>
-          <span class="flex-1 text-[14px] ${item.done ? 'line-through opacity-40' : ''} text-text">${esc(item.text)}</span>
+          <span class="flex-1 text-[14px] ${item.done ? 'line-through opacity-40' : ''} text-text">${esc(item.text)}${item.source === 'auto' ? '<span class="nakup-auto" title="Doplnila appka podle plánu vaření">z plánu</span>' : ''}</span>
           <button class="shop-remove opacity-0 group-hover:opacity-100 text-text-muted hover:text-red-400 transition-all" data-i="${i}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </li>`).join('');
       shoppingItems.querySelectorAll('.shop-toggle').forEach(b =>
-        b.addEventListener('click', () => { shopList[b.dataset.i].done = !shopList[b.dataset.i].done; saveShopList(); renderShopList(); })
+        b.addEventListener('click', () => {
+          const polozka = shopList[b.dataset.i];
+          if (currentUser && polozka.id) return nakupAkce('toggle', { id: polozka.id });
+          polozka.done = !polozka.done; saveShopList(); renderShopList();
+        })
       );
       shoppingItems.querySelectorAll('.shop-remove').forEach(b =>
-        b.addEventListener('click', () => { shopList.splice(b.dataset.i, 1); saveShopList(); renderShopList(); })
+        b.addEventListener('click', () => {
+          const polozka = shopList[b.dataset.i];
+          if (currentUser && polozka.id) return nakupAkce('remove', { id: polozka.id });
+          shopList.splice(b.dataset.i, 1); saveShopList(); renderShopList();
+        })
       );
     }
 
     document.getElementById('shopping-btn').addEventListener('click', () => {
+      if (currentUser) nactiNakup();
       renderShopList();
       shoppingOverlay.classList.remove('hidden');
       requestAnimationFrame(() => { shoppingOverlay.classList.remove('opacity-0'); shoppingModal.classList.remove('scale-95', 'opacity-0'); });
@@ -2137,7 +2236,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
     document.getElementById('shopping-close').addEventListener('click', closeShopping);
     shoppingOverlay.addEventListener('click', e => { if (e.target === shoppingOverlay) closeShopping(); });
-    shoppingClear.addEventListener('click', () => { shopList = []; saveShopList(); renderShopList(); });
+    shoppingClear.addEventListener('click', () => {
+      if (currentUser) return nakupAkce('clear', {});
+      shopList = []; saveShopList(); renderShopList();
+    });
 
     document.getElementById('shopping-copy').addEventListener('click', () => {
       const text = shopList.filter(i => !i.done).map(i => '• ' + i.text).join('\n');
@@ -2155,12 +2257,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (!r) return;
       const base = r.servings || 4;
       const factor = currentServings / base;
-      variantOf(r).ingredients.forEach(raw => {
-        const text = scaleIngredient(raw, factor);
-        const norm = text.toLowerCase().trim();
-        if (!shopList.some(i => i.text.toLowerCase().trim() === norm)) shopList.push({ text, done: false });
-      });
-      saveShopList();
+      const polozky = variantOf(r).ingredients.map(raw => scaleIngredient(raw, factor));
+
+      if (currentUser) {
+        // Duplicity odchytne server, at se seznam nezdvoji mezi zarizenimi.
+        nakupAkce('add', { items: polozky });
+      } else {
+        polozky.forEach(text => {
+          const norm = text.toLowerCase().trim();
+          if (!shopList.some(i => i.text.toLowerCase().trim() === norm)) shopList.push({ text, done: false });
+        });
+        saveShopList();
+      }
+
       const btn = document.getElementById('add-shop-btn');
       const orig = btn.textContent;
       btn.textContent = 'Přidáno ✓';
@@ -2448,6 +2557,202 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.getElementById('book-close').addEventListener('click', zavriBooking);
     bookOverlay.addEventListener('click', e => { if (e.target === bookOverlay) zavriBooking(); });
 
+    // --- Kalendar vareni ----------------------------------------------------
+    //
+    // Mrizka mesice s tim, co kdy varis. Rozhodovani o dnech dela mozek
+    // (kalendar.js), tady se jen kresli a kliká.
+
+    const calOverlay = document.getElementById('cal-overlay');
+    const calModal = document.getElementById('cal-modal');
+    let calRok = new Date().getFullYear();
+    let calMesic = new Date().getMonth() + 1;
+    let calVybranyDen = null;
+
+    function otevriKalendar() {
+      document.getElementById('cal-signedout').classList.toggle('hidden', !!currentUser);
+      document.getElementById('cal-body').classList.toggle('hidden', !currentUser);
+
+      calOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        calOverlay.classList.remove('opacity-0');
+        calModal.classList.remove('scale-95', 'opacity-0');
+      });
+
+      if (currentUser) {
+        nactiBookingy().then(() => { vykresliKalendar(); paintCalBadge(); });
+      }
+    }
+
+    function zavriKalendar() {
+      calOverlay.classList.add('opacity-0');
+      calModal.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => calOverlay.classList.add('hidden'), 200);
+    }
+
+    function vykresliKalendar() {
+      const mrizka = mesicniMrizka(calRok, calMesic, bookings, dnesniDatum());
+      document.getElementById('cal-nazev').textContent = mrizka.nazev;
+
+      const kolik = pocetVMesici(mrizka);
+      document.getElementById('cal-souhrn').textContent =
+        kolik === 0 ? 'nic naplánováno'
+          : (kolik === 1 ? '1 vaření' : (kolik < 5 ? kolik + ' vaření' : kolik + ' vaření'));
+
+      document.getElementById('cal-dny').innerHTML =
+        DNY_ZKRATKY.map(d => '<div class="kal-den-zkratka">' + esc(d) + '</div>').join('');
+
+      document.getElementById('cal-mrizka').innerHTML = mrizka.tydny.map(tyden =>
+        '<div class="kal-tyden">' + tyden.map(bunkaKalendare).join('') + '</div>'
+      ).join('');
+
+      document.getElementById('cal-mrizka').querySelectorAll('.kal-bunka').forEach(b =>
+        b.addEventListener('click', () => vyberDen(b.dataset.datum))
+      );
+
+      if (calVybranyDen) vyberDen(calVybranyDen, true);
+    }
+
+    /** Jedna bunka mrizky. Vic nez tri vareni na den se schova pod "+N". */
+    function bunkaKalendare(d) {
+      const tridy = ['kal-bunka'];
+      if (d.jinyMesic) tridy.push('je-jiny-mesic');
+      if (d.dnes) tridy.push('je-dnes');
+      if (d.minulost) tridy.push('je-minulost');
+      if (d.bookingy.length) tridy.push('ma-vareni');
+      if (d.datum === calVybranyDen) tridy.push('je-vybrany');
+
+      const stitky = d.bookingy.slice(0, 3).map(b => {
+        const r = recipes.find(x => x.slug === b.recipe_slug);
+        const nazev = r ? r.title : b.recipe_slug;
+        const cas = b.cook_time ? b.cook_time + ' ' : '';
+        return '<span class="kal-stitek' + (b.state === 'done' ? ' je-hotovo' : '') + '" title="' +
+          escAttr(cas + nazev) + '">' + esc(cas) + esc(nazev) + '</span>';
+      }).join('');
+
+      const vic = d.bookingy.length > 3
+        ? '<span class="kal-vic">+' + (d.bookingy.length - 3) + '</span>' : '';
+
+      return '<button type="button" class="' + tridy.join(' ') + '" data-datum="' + escAttr(d.datum) + '">' +
+        '<span class="kal-cislo">' + d.den + '</span>' + stitky + vic + '</button>';
+    }
+
+    function vyberDen(datum, jenPrekreslit) {
+      calVybranyDen = datum;
+      if (!jenPrekreslit) {
+        document.getElementById('cal-mrizka').querySelectorAll('.kal-bunka').forEach(b =>
+          b.classList.toggle('je-vybrany', b.dataset.datum === datum));
+      }
+
+      const blok = document.getElementById('cal-den');
+      const seznam = document.getElementById('cal-den-seznam');
+      const dneska = bookingyDne(bookings, datum);
+
+      blok.classList.remove('hidden');
+      document.getElementById('cal-den-nazev').textContent =
+        popisDatumu(datum, dnesniDatum()).replace(/^./, c => c.toUpperCase());
+      document.getElementById('cal-den-prazdno').classList.toggle('hidden', dneska.length > 0);
+      document.getElementById('cal-do-nakupu').classList.toggle('hidden', dneska.length === 0);
+      document.getElementById('cal-nakup-hlaska').classList.add('hidden');
+
+      seznam.innerHTML = dneska.map(b => {
+        const r = recipes.find(x => x.slug === b.recipe_slug);
+        const p = r ? pripravenost(r, pantryItems) : null;
+        const odznak = p && p.stav !== 'nevim'
+          ? '<span class="odznak odznak-' + p.stav + '">' + esc(p.popisek) + '</span>' : '';
+        return '<li class="flex items-center gap-2 text-[13px]">' +
+          '<span class="flex-1 min-w-0">' +
+            '<span class="text-text">' + esc(r ? r.title : b.recipe_slug) + '</span>' +
+            '<span class="text-text-muted"> — ' + esc(b.cook_time || 'celý den') + '</span> ' + odznak +
+          '</span>' +
+          '<button class="cal-hotovo px-2 py-1 rounded-md bg-surface border border-border text-text-muted text-[11px] hover:text-accent hover:border-accent transition-colors" data-id="' + escAttr(b.id) + '">Dovařeno</button>' +
+          '<button class="cal-zrusit w-6 h-6 rounded-md text-text-muted hover:text-red-400 transition-colors" data-id="' + escAttr(b.id) + '" title="Zrušit">&times;</button>' +
+        '</li>';
+      }).join('');
+
+      seznam.querySelectorAll('.cal-hotovo').forEach(b =>
+        b.addEventListener('click', () => calBookingAkce('done', b.dataset.id)));
+      seznam.querySelectorAll('.cal-zrusit').forEach(b =>
+        b.addEventListener('click', () => calBookingAkce('cancel', b.dataset.id)));
+    }
+
+    async function calBookingAkce(akce, id) {
+      if (akce === 'done' && !confirm('Uvařeno? Suroviny se teď odečtou ze spíže.')) return;
+      try {
+        const data = await api('/api/bookings', { action: akce, id: Number(id) });
+        bookings = data.items || [];
+        vykresliKalendar();
+        paintCalBadge();
+        loadPantry();
+        renderGrid();
+      } catch (e) { alert(e.message); }
+    }
+
+    /**
+     * Chybejici suroviny vybraneho dne rovnou do nakupniho seznamu.
+     * Tohle dela Cron kazdou noc na zitrek (4.6) - tady si to uzivatel
+     * muze vyzadat pro libovolny den dopredu.
+     */
+    document.getElementById('cal-do-nakupu').addEventListener('click', async () => {
+      const hlaska = document.getElementById('cal-nakup-hlaska');
+      const dneska = bookingyDne(bookings, calVybranyDen);
+
+      const chybi = [];
+      dneska.forEach(b => {
+        const r = recipes.find(x => x.slug === b.recipe_slug);
+        if (!r) return;
+        chybejici(r, pantryItems).chybi.forEach(sur => {
+          if (!chybi.includes(sur)) chybi.push(sur);
+        });
+      });
+
+      if (!chybi.length) {
+        hlaska.textContent = 'Nic ti nechybí. Nakupovat nemusíš.';
+        hlaska.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const data = await api('/api/shopping', { action: 'add', items: chybi });
+        shopList = data.items || [];
+        updateShoppingBadge();
+        renderShopList();
+        hlaska.textContent = 'Přidáno do nákupního seznamu: ' + chybi.join(', ');
+        hlaska.classList.remove('hidden');
+      } catch (e) {
+        hlaska.textContent = e.message;
+        hlaska.classList.remove('hidden');
+      }
+    });
+
+    /** Kolik vareni te jeste ceka - cislo na tlacitku kalendare. */
+    function paintCalBadge() {
+      const odznak = document.getElementById('cal-badge');
+      if (!odznak) return;
+      const kolik = nadchazejici(bookings, dnesniDatum()).length;
+      odznak.textContent = kolik;
+      odznak.classList.toggle('hidden', kolik === 0);
+    }
+
+    document.getElementById('cal-btn').addEventListener('click', otevriKalendar);
+    document.getElementById('cal-close').addEventListener('click', zavriKalendar);
+    calOverlay.addEventListener('click', e => { if (e.target === calOverlay) zavriKalendar(); });
+    document.getElementById('cal-login').addEventListener('click', startGoogleLogin);
+
+    document.getElementById('cal-zpet').addEventListener('click', () => {
+      const m = posunMesic(calRok, calMesic, -1);
+      calRok = m.rok; calMesic = m.mesic; vykresliKalendar();
+    });
+    document.getElementById('cal-vpred').addEventListener('click', () => {
+      const m = posunMesic(calRok, calMesic, 1);
+      calRok = m.rok; calMesic = m.mesic; vykresliKalendar();
+    });
+    document.getElementById('cal-dnes').addEventListener('click', () => {
+      const d = new Date();
+      calRok = d.getFullYear(); calMesic = d.getMonth() + 1;
+      calVybranyDen = dnesniDatum();
+      vykresliKalendar();
+    });
+
     // --- Uvitaci obrazovka pro neprihlasene ---------------------------------
     //
     // Ukazuje se hned pri nacteni, jeste nez se overi prihlaseni na serveru -
@@ -2644,7 +2949,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       // Spiz potrebujeme i mimo okno spize - pocita se z ni pripravenost
       // receptu a co booking zamkne.
       loadPantry().then(renderGrid);
-      nactiBookingy();
+      nactiBookingy().then(paintCalBadge);
+      nactiNakup();
       zvazUvod();
     };
 
