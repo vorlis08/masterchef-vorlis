@@ -47,6 +47,8 @@ export function cardView(recipe, opts) {
     // Nakolik jde uvarit z toho, co mam doma (4.3). Prazdne = nevime.
     pripravenost: o.pripravenost || null,
     stav: o.stav || 'neuvareno',
+    uvareno: o.uvareno || 0,
+    zvyraznit: !!o.zvyraznit,
   };
 }
 
@@ -71,6 +73,8 @@ export function rowView(recipe, opts) {
     favorite: !!o.favorite,
     pripravenost: o.pripravenost || null,
     stav: o.stav || 'neuvareno',
+    uvareno: o.uvareno || 0,
+    zvyraznit: !!o.zvyraznit,
   };
 }
 
@@ -91,13 +95,20 @@ export function gridView(recipes, opts) {
 
   const pripravenostOf = o.pripravenostOf || (() => null);
   const stavOf = o.stavOf || (() => 'neuvareno');
+  const uvarenoOf = o.uvarenoOf || (() => 0);
+  // Kdyz je zapnuty filtr podle stavu, odpovidajici recepty se zvyrazni -
+  // at je na prvni pohled videt, PROC jsou v seznamu.
+  const zvyraznitStav = o.zvyraznitStav || '';
 
   const items = recipes.map((recipe, i) => {
+    const stav = stavOf(recipe.slug);
     const shared = {
       favorite: !!isFavorite(recipe.slug),
       rating: ratingOf(recipe.slug),
       pripravenost: pripravenostOf(recipe),
-      stav: stavOf(recipe.slug),
+      stav: stav,
+      uvareno: uvarenoOf(recipe.slug),
+      zvyraznit: !!zvyraznitStav && zvyraznitStav === stav,
     };
     return mode === 'grid'
       ? cardView(recipe, shared)
