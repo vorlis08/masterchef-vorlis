@@ -1246,3 +1246,10 @@ body {
 }
 .stav-znak.stav-chci { color: var(--color-accent); }
 .stav-znak.stav-ne   { color: var(--color-border); }
+
+/* Bublina prohlidky se musi vejit i na nizke okno - jinak by uzivatel
+   nedosahl na tlacitko "Dál" a prohlidka by pro nej skoncila. */
+#tour-bublina {
+  max-height: calc(100vh - 24px);
+  overflow-y: auto;
+}

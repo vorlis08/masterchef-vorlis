@@ -2492,28 +2492,59 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         return vykresliKrok();
       }
 
-      cil.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      // Skok bez animace: kdyby se rolovalo plynule, merili bychom pozici
+      // driv, nez se stranka zastavi - a bublina by skoncila jinde nez cil.
+      cil.scrollIntoView({ block: 'center', behavior: 'auto' });
 
-      setTimeout(() => {
-        const r = cil.getBoundingClientRect();
-        const okraj = 8;
-        tourDira.style.left = (r.left - okraj) + 'px';
-        tourDira.style.top = (r.top - okraj) + 'px';
-        tourDira.style.width = (r.width + okraj * 2) + 'px';
-        tourDira.style.height = (r.height + okraj * 2) + 'px';
-
-        // Bublina pod prvek, a kdyz se tam nevejde, nad nej.
-        const vyskaBubliny = tourBublina.offsetHeight || 220;
-        const podNim = r.bottom + 14;
-        const vejdeSe = podNim + vyskaBubliny < window.innerHeight - 10;
-        tourBublina.style.top = (vejdeSe ? podNim : Math.max(10, r.top - vyskaBubliny - 14)) + 'px';
-
-        const sirka = tourBublina.offsetWidth || 300;
-        let x = r.left + r.width / 2 - sirka / 2;
-        x = Math.max(12, Math.min(x, window.innerWidth - sirka - 12));
-        tourBublina.style.left = x + 'px';
-      }, 220);
+      // Kratka prodleva staci na prepocet rozvrzeni po skoku.
+      setTimeout(() => umistiBublinu(cil), 60);
     }
+
+    /**
+     * Postavi zvyrazneni na prvek a bublinu k nemu.
+     *
+     * Bublina musi byt VZDY cela videt - jinak se uzivatel nedostane na
+     * tlacitko "Dál" a prohlidka pro nej skonci.
+     */
+    function umistiBublinu(cil) {
+      const r = cil.getBoundingClientRect();
+      const okrajDiry = 8;
+      const mezera = 14;
+      const okraj = 12;
+
+      tourDira.style.left = (r.left - okrajDiry) + 'px';
+      tourDira.style.top = (r.top - okrajDiry) + 'px';
+      tourDira.style.width = (r.width + okrajDiry * 2) + 'px';
+      tourDira.style.height = (r.height + okrajDiry * 2) + 'px';
+
+      const vyska = tourBublina.offsetHeight || 220;
+      const sirka = tourBublina.offsetWidth || 300;
+
+      // Nejdriv pod prvek, pak nad nej, a kdyz se nevejde ani tam,
+      // vedle nej - v tom pripade uz jen srovnane do okna.
+      const podNim = r.bottom + mezera;
+      const nadNim = r.top - vyska - mezera;
+      let y;
+      if (podNim + vyska <= window.innerHeight - okraj) y = podNim;
+      else if (nadNim >= okraj) y = nadNim;
+      else y = r.top;
+
+      // Pojistka pro kazdy pripad: dovnitr okna, at uz vyslo cokoliv.
+      y = Math.max(okraj, Math.min(y, window.innerHeight - vyska - okraj));
+      tourBublina.style.top = y + 'px';
+
+      let x = r.left + r.width / 2 - sirka / 2;
+      x = Math.max(okraj, Math.min(x, window.innerWidth - sirka - okraj));
+      tourBublina.style.left = x + 'px';
+    }
+
+    // Pri zmene velikosti okna se bublina musi srovnat znovu.
+    window.addEventListener('resize', () => {
+      if (tour.classList.contains('hidden')) return;
+      const k = tourKrokData(tourKrok);
+      const cil = k && document.querySelector(k.cil);
+      if (cil) umistiBublinu(cil);
+    });
 
     document.getElementById('tour-dal').addEventListener('click', () => {
       if (tourPosledni(tourKrok)) return ukonciProhlidku();
