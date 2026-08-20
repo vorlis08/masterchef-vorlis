@@ -85,7 +85,7 @@
     "title": "Krémové kuřecí tagliatelle",
     "description": "Kořeněné kuřecí kostky v bohaté krémové rajčatové omáčce s tagliatelle. Ideální na meal-prep do krabiček.",
     "image": "https://vorlis08.github.io/masterchef-vorlis/images/kremove-kureci-tagliatelle-meal-prep.webp",
-    "time": "40 min",
+    "time": "45 min",
     "servings": 4,
     "difficulty": "Střední",
     "category": "Hlavní jídla",
@@ -110,17 +110,20 @@
       "300 ml smetany min. 12 %",
       "130 g light smetanového sýra",
       "50 g sýra dle chuti, nastrouhaného",
-      "520 g uvařených tagliatelle nebo fettuccine"
+      "260 g suchých tagliatelle nebo fettuccine",
+      "700 ml vody"
     ],
     "steps": [
       "Kuřecí prsa nakrájej na kostky a dej do mísy.",
       "Ochuť je 1/2 lžičky soli, 1 lžičkou italských bylinek, 1 lžičkou petrželky, 1/2 lžičkou chilli vloček, 1 lžičkou česnekového prášku a 1 lžičkou mleté papriky, pokapej 2 lžícemi olivového oleje. Promíchej rukama, dokud maso rovnoměrně nezmění barvu.",
-      "Na pánvi rozehřej 1 lžíci másla a kuře opékej 6-8 minut na středně vysokém plameni, dokud není propečené a mírně zkaramelizované. Na závěr přidej zbylou lžíci másla a promíchej. Kuře vyjmi z pánve a odlož stranou.",
-      "Do stejné pánve (se zbylou šťávou z kuřete) přidej nadrobno nakrájenou cibuli a česnek. Restuj 5-6 minut, dokud nezměknou.",
+      "V širokém hrnci nebo hluboké pánvi rozehřej 1 lžíci másla a kuře opékej 6–8 minut na stupni 7, dokud není propečené a mírně zkaramelizované. Na závěr přidej zbylou lžíci másla a promíchej. Kuře vyjmi a odlož stranou.",
+      "Do stejného hrnce (se zbylou šťávou z kuřete) přidej nadrobno nakrájenou cibuli a česnek. Restuj 5–6 minut na stupni 5, dokud nezměknou.",
       "Přidej zbylé koření – 1/2 lžičky soli, 1 lžičku petrželky, 1 lžičku italských bylinek, 1 lžičku papriky a 1/2 lžičky chilli vloček.",
       "Vmíchej 150 g rajčatového protlaku a restuj asi 5 minut, dokud omáčka nezhoustne.",
-      "Přilij 300 ml smetany a přidej 130 g light smetanového sýra a 50 g sýra dle chuti. Šlehej metličkou, dokud se omáčka nespojí a nezačne houstnout.",
-      "Přidej 520 g uvařených tagliatelle a propečené kuře zpět do pánve. Promíchej, dokud nejsou těstoviny rovnoměrně obalené krémovou omáčkou."
+      "Zalij 700 ml vody a přiveď k varu na stupni 9. Vsyp 260 g suchých tagliatelle — celé, nelámej je, po chvíli změknou a ponoří se samy.",
+      "Stáhni na stupeň 6 a vař 10–12 minut odkryté. Míchej každé 2 minuty, ať se nechytnou u dna. Voda se má vyvařit do husté omáčky, která obalí těstoviny.",
+      "Odstav z plotny. Vmíchej 300 ml smetany, 130 g smetanového sýra a 50 g strouhaného sýra. Míchej, dokud se omáčka nespojí — mimo plotnu se nesrazí.",
+      "Vrať kuře i s vypečenou šťávou, promíchej a nech 2 minuty odpočinout. Omáčka ještě zhoustne."
     ],
     "meal_type": [
       "oběd"
@@ -138,7 +141,8 @@
       "calcium": 180,
       "iron": 2.4,
       "vitamin_c": 6
-    }
+    },
+    "tip": "Těstoviny se dovařují přímo v omáčce — škrob, který z nich pustí, ji dělá krémovou. Proto se voda odměřuje: 700 ml na 260 g těstovin. Kdyby se ke konci vyvařila dřív, než jsou al dente, přilij po půl deci."
   },
   {
     "slug": "kure-na-paprice",
@@ -264,7 +268,7 @@
     "title": "Krémová česneková pasta s mletým masem",
     "description": "Krémové těstoviny s mletým masem, česnekem a passatou. Přizpůsobeno českým surovinám — čedar místo parmazánu, smetana 31 %.",
     "image": "https://vorlis08.github.io/masterchef-vorlis/images/creamy-garlic-beef-pasta.webp",
-    "time": "35 min",
+    "time": "40 min",
     "servings": 3,
     "difficulty": "Snadné",
     "category": "Hlavní jídla",
@@ -280,6 +284,7 @@
       "0,5 cibule",
       "4 stroužky česneku",
       "250 ml passaty",
+      "600 ml vody",
       "200 g smetany 31 %",
       "0,5 lžičky italských bylinek",
       "uzená paprika, sůl, pepř",
@@ -289,15 +294,15 @@
       "bazalka (volitelně)"
     ],
     "steps": [
-      "Uvař 240 g conchiglie al dente v osolené vodě. Před scezením odlij hrnek vody z těstovin.",
-      "Na 0,5 lžíce slunečnicového oleje opeč 500 g mletého masa na středním ohni. Ochuť solí, pepřem a uzenou paprikou. Nech ho chvíli bez míchání, ať se pěkně zatáhne — ne jen zešedne.",
+      "V širokém hrnci rozehřej 0,5 lžíce slunečnicového oleje a opeč 500 g mletého masa na stupni 6. Ochuť solí, pepřem a uzenou paprikou. Nech ho chvíli bez míchání, ať se pěkně zatáhne — ne jen zešedne.",
       "Přidej 0,5 nakrájené cibule a 2 prolisované stroužky česneku. Restuj 2–3 minuty, dokud cibule nezměkne.",
       "Přilij 250 ml passaty, přidej 0,5 lžičky italských bylinek a chilli vločky. Nech probublávat 5 minut.",
-      "Vlij 200 g smetany 31 % a vař na středně nízkém ohni 5–7 minut, dokud omáčka nezhoustne. Přidej zbylé 2 prolisované stroužky česneku.",
-      "Vmíchej scezené těstoviny. Pokud je omáčka moc hustá, dolij trochu vody z těstovin. Na závěr kápni citronovou šťávu.",
-      "Naservíruj, posyp čedarem a bazalkou."
+      "Zalij 600 ml vody, osol a přiveď k varu na stupni 9.",
+      "Vsyp 240 g suchých conchiglie. Stáhni na stupeň 6 a vař 11–13 minut odkryté. Míchej každé 2 minuty — mušličky mají tendenci sedat ke dnu.",
+      "Až jsou al dente a tekutina se stáhla do husté omáčky, odstav z plotny. Vmíchej 200 g smetany 31 % a zbylé 2 prolisované stroužky česneku.",
+      "Dochuť citronovou šťávou. Naservíruj, posyp čedarem a bazalkou."
     ],
-    "tip": "Čedar je krémovější a mírnější než parmazán — dej ho trochu víc. Voda z těstovin dodá omáčce hedvábnost.",
+    "tip": "Těstoviny se vaří rovnou v omáčce — škrob z nich ji zahustí líp než jakákoliv jíška. Conchiglie nabobtnají zhruba 2–2,5×, proto těch 600 ml vody. Česnek se přidává až na konci, aby zůstal cítit.",
     "meal_type": [
       "oběd",
       "večeře"
