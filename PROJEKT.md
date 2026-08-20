@@ -62,11 +62,14 @@ na to šlo postavit inventář a plánování, ne aby to byl hezký seznam recep
 Tohle jsou úkoly na obsahu, ne na kódu. Vyžadují Honzovo rozhodnutí, protože jde
 o recepty, které sám vaří a ověřuje.
 
-- [ ] **Basic verze pro 2 recepty**, které mají zatím jen Fancy:
-  *pečený bůček* a *karamelizovaná cibulková pasta*
-- [ ] **Oprava metody u tagliatelle a garlic beef pasta** — obojí má stejnou chybu:
-  těstoviny se míchají do hotové omáčky místo aby se v ní dovařily. Má se přepsat
-  na **one-pot metodu**
+- [x] ~~**Oprava metody u tagliatelle a garlic beef pasta**~~ — přepsáno na one-pot
+  20. 8. 2026. **Metoda ale ještě nebyla uvařená** — poměry vody chtějí jedno
+  ověření u sporáku.
+- [ ] **Fancy verze chybí u 5 receptů.** Pozor: dřív tu stálo, že *pečený bůček*
+  a *karamelizovaná cibulková pasta* mají jen Fancy a chybí jim Basic. V datech
+  je to naopak — Basic má **každý** recept, Fancy chybí u:
+  `kremove-kureci-tagliatelle`, `kure-na-paprice`, `peceny-bucek`,
+  `creamy-garlic-beef-pasta`, `sunko-eidamovy-wrap`
 - [ ] **Přidat recept** *Creamy Sausage Pasta se slaninou a cherry rajčaty* — je hotový
   a ověřený, čeká jen na nahrání do `recipes.json`
 - [ ] **Zpracovat seznam uložených YouTube Shorts** (23 videí) — postup je vždycky:
