@@ -85,125 +85,143 @@ function jmeno(user) {
 // Text zacina u ctenare, ne u appky: prvni dva odstavce jsou o jeho vecerni
 // lednici a jmeno appky padne az ve chvili, kdy se pozna.
 //
-// Vzhled zamerne drzi stejnou rec jako uvitaci obrazovka v aplikaci:
-// teckovane vodici linky jako v jidelnim listku a rimske cislice misto
-// kartiček s ikonami. Kdo si appku otevre, pozna, ze prisel na stejne misto.
+// VZHLED: e-mail zamerne vypada JAKO RECEPT - papirova karta, metadata pod
+// nadpisem, sekce Ingredience a Postup, na konci Tip. Je to jiny svet nez
+// tmava uvitaci obrazovka v aplikaci, a pritom to nemuze byt od nikoho
+// jineho: appka presne takhle sazi recepty uvnitr.
 //
-// Vsechny styly jsou INLINE. Postovni programy hromadny <style> casto
-// zahazuji - to, co je v hlavicce, je jen pro mobil a smi se ztratit.
+// Svetly podklad ma jeste jednu vyhodu - postovni programy, ktere si
+// prevraceji barvy, nemaji co zkazit.
+//
+// Vsechny styly jsou INLINE. Hromadny <style> postovni programy casto
+// zahazuji, takze se na nej nesmi nic podstatneho vazat.
 
 const SANS = "-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 const SERIF = "Georgia,'Times New Roman',serif";
 
-/**
- * Radek inventury s teckovanou vodici linkou.
- *
- * Linka se v e-mailu neda udelat pres flexbox - je to tabulka, kde
- * prostredni bunka ma teckovany spodni okraj a roztahne se na zbytek.
- */
-function radekLednice(nazev, poznamka) {
+// Papirova paleta. Akcent je proti aplikaci o neco tmavsi, aby na svetlem
+// podkladu drzel kontrast.
+const PAPIR = '#f6f1e7';
+const INKOUST = '#2a2118';
+const TLUMENY = '#6f6253';
+const LINKA = '#e2d8c6';
+const AKCENT = '#b8532b';
+
+/** Polozka v "ingrediencich": mnozstvi vlevo, popis vpravo. */
+function ingredience(mnozstvi, popis) {
   return '<tr>' +
-    '<td style="font-family:' + SANS + ';font-size:15px;color:#f2ede4;padding:5px 8px 5px 0;white-space:nowrap;">' + nazev + '</td>' +
-    '<td style="border-bottom:2px dotted #322c24;padding:0 6px;">&nbsp;</td>' +
-    '<td align="right" style="font-family:' + SANS + ';font-size:13px;color:#9a9083;font-style:italic;padding:5px 0 5px 8px;white-space:nowrap;">' + poznamka + '</td>' +
+    '<td width="76" valign="top" align="right" style="font-family:' + SANS + ';font-size:14px;' +
+      'color:' + AKCENT + ';font-weight:600;padding:5px 12px 5px 0;white-space:nowrap;">' + mnozstvi + '</td>' +
+    '<td valign="top" style="font-family:' + SANS + ';font-size:15px;line-height:1.6;color:' + INKOUST + ';padding:5px 0;">' + popis + '</td>' +
     '</tr>';
 }
 
-/** Chod s rimskou cislici. Zadny ramecek, zadna ikona - jen sazba. */
-function chod(cislice, nadpis, text) {
+/** Krok postupu. Cislice v krouzku, jako v Basic rezimu aplikace. */
+function krokPostupu(cislo, text) {
   return '<tr>' +
-    '<td width="42" valign="top" align="center" style="font-family:' + SERIF + ';font-style:italic;font-size:20px;color:#e07850;padding:14px 0 0;">' + cislice + '</td>' +
-    '<td valign="top" style="padding:12px 0 14px 6px;border-bottom:1px solid #241f19;">' +
-      '<div style="font-family:' + SERIF + ';font-size:18px;color:#f2ede4;margin-bottom:5px;">' + nadpis + '</div>' +
-      '<div style="font-family:' + SANS + ';font-size:14px;line-height:1.65;color:#9a9083;">' + text + '</div>' +
-    '</td></tr>';
+    '<td width="34" valign="top" style="padding:7px 0 7px 0;">' +
+      '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>' +
+      '<td width="24" height="24" align="center" valign="middle" bgcolor="' + AKCENT + '" ' +
+        'style="background:' + AKCENT + ';border-radius:12px;font-family:' + SANS + ';font-size:12px;' +
+        'font-weight:700;color:#ffffff;line-height:24px;">' + cislo + '</td>' +
+      '</tr></table>' +
+    '</td>' +
+    '<td valign="top" style="font-family:' + SANS + ';font-size:15px;line-height:1.65;color:' + INKOUST + ';padding:7px 0;">' + text + '</td>' +
+    '</tr>';
 }
 
 export function welcomeMail(user) {
   const kdo = esc(jmeno(user));
 
-  const odstavec = t =>
-    '<p style="margin:0 0 16px;font-family:' + SANS + ';font-size:16px;line-height:1.7;color:#cdc5b8;">' + t + '</p>';
-
   const html =
     '<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0">' +
-      'Je šest hodin a v lednici tři věci. Tohle je pro tenhle moment.</div>' +
-    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#14120f" style="background:#14120f;">' +
-    '<tr><td align="center" style="padding:0 0 48px;">' +
-    '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;">' +
+      'Recept na dnešní večer. Doba přípravy: deset vteřin.</div>' +
 
-    // Tenka akcentova linka misto gradientoveho pruhu.
-    '<tr><td bgcolor="#e07850" style="background:#e07850;font-size:0;line-height:0;height:4px;">&nbsp;</td></tr>' +
+    '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#efe7d8" style="background:#efe7d8;">' +
+    '<tr><td align="center" style="padding:32px 12px 44px;">' +
 
-    // Hlavicka: znacka vlevo, zadne velke emoji uprostred.
-    '<tr><td style="padding:34px 44px 0;">' +
-      '<div style="font-family:' + SANS + ';font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#9a9083;">' +
-        '<span style="color:#e07850;">&#10086;</span>&nbsp;&nbsp;MasterChef Vorlis' +
+    // Karta receptu
+    '<table role="presentation" width="580" cellpadding="0" cellspacing="0" border="0" ' +
+      'bgcolor="' + PAPIR + '" style="width:580px;max-width:580px;background:' + PAPIR + ';border:1px solid ' + LINKA + ';">' +
+
+    // Horni lista karty
+    '<tr><td bgcolor="' + AKCENT + '" style="background:' + AKCENT + ';height:5px;font-size:0;line-height:0;">&nbsp;</td></tr>' +
+
+    '<tr><td style="padding:30px 46px 0;">' +
+      // Hlavicka receptu
+      '<div style="font-family:' + SANS + ';font-size:10px;letter-spacing:3px;text-transform:uppercase;color:' + TLUMENY + ';">' +
+        'MasterChef Vorlis &nbsp;·&nbsp; recept na dnešní večer' +
       '</div>' +
-    '</td></tr>' +
 
-    // Telo
-    '<tr><td style="padding:26px 44px 0;">' +
-      '<h1 style="margin:0 0 26px;font-family:' + SERIF + ';font-weight:normal;font-size:44px;line-height:1.05;letter-spacing:-.5px;color:#f2ede4;">Tak co&nbsp;dneska?</h1>' +
-      odstavec('Ahoj <strong style="color:#f2ede4;font-weight:600;">' + kdo + '</strong>,') +
-      odstavec('znáš to. Je šest, máš hlad, otevřeš lednici — a koukáš na tohle:') +
+      '<h1 style="margin:14px 0 10px;font-family:' + SERIF + ';font-weight:normal;font-size:42px;' +
+        'line-height:1.08;color:' + INKOUST + ';">Tak co&nbsp;dneska?</h1>' +
 
-      // Inventura lednice: teckovane linky jako v jidelnim listku.
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:22px 0 24px;">' +
-        radekLednice('kuřecí prsa', 'rozmražené') +
-        radekLednice('půlka smetany', 'otevřená v úterý') +
-        radekLednice('cibule', 'poslední') +
+      // Metadata jako u receptu v aplikaci
+      '<div style="font-family:' + SANS + ';font-size:13px;color:' + TLUMENY + ';padding-bottom:20px;">' +
+        'Příprava 10 vteřin &nbsp;/&nbsp; 1 večeře &nbsp;/&nbsp; snadné' +
+      '</div>' +
+
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' +
+        '<tr><td style="border-top:1px solid ' + LINKA + ';font-size:0;line-height:0;">&nbsp;</td></tr>' +
       '</table>' +
 
-      '<p style="margin:0 0 30px;font-family:' + SANS + ';font-size:16px;line-height:1.7;color:#cdc5b8;">A pak si stejně dáš toast.</p>' +
-
-      // Zvyraznena veta s akcentovym prouzkem.
-      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 6px;"><tr>' +
-        '<td width="3" bgcolor="#e07850" style="background:#e07850;font-size:0;line-height:0;">&nbsp;</td>' +
-        '<td style="padding-left:20px;"><p style="margin:0;font-family:' + SERIF + ';font-size:21px;line-height:1.45;color:#f2ede4;font-style:italic;">' +
-        'MasterChef Vorlis existuje přesně kvůli téhle chvíli.</p></td>' +
-      '</tr></table>' +
+      // Uvod
+      '<p style="margin:22px 0 14px;font-family:' + SANS + ';font-size:16px;line-height:1.7;color:' + INKOUST + ';">' +
+        'Ahoj <strong>' + kdo + '</strong>, znáš to. Je šest, máš hlad, otevřeš lednici — ' +
+        'a koukáš na kuřecí prsa, půlku smetany a jednu cibuli.</p>' +
+      '<p style="margin:0 0 26px;font-family:' + SANS + ';font-size:16px;line-height:1.7;color:' + INKOUST + ';">' +
+        'A pak si stejně dáš toast.</p>' +
     '</td></tr>' +
 
-    // Fleuron jako predel
-    '<tr><td align="center" style="padding:30px 44px 6px;">' +
-      '<span style="font-family:' + SERIF + ';font-size:14px;color:#e07850;">&#10086;</span>' +
-    '</td></tr>' +
-
-    // Chody
-    '<tr><td style="padding:0 44px;">' +
-      '<div style="font-family:' + SANS + ';font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#e07850;font-weight:bold;margin-bottom:6px;">Jak z toho ven</div>' +
+    // Ingredience
+    '<tr><td style="padding:0 46px;">' +
+      '<div style="font-family:' + SANS + ';font-size:11px;letter-spacing:2px;text-transform:uppercase;' +
+        'color:' + AKCENT + ';font-weight:700;padding-bottom:8px;">Ingredience</div>' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' +
-        chod('I', 'Spíž',
-          'Zaškrtáš, co máš doma. Od té chvíle appka ví, co ti chybí a co zvládneš uvařit, ' +
-          'aniž bys někam běžel. U&nbsp;soli se tě na gramy nikdo ptát nebude.') +
-        chod('II', 'Režim vaření',
-          'Jeden krok přes celou obrazovku. Časovač pustíš ťuknutím, displej mezitím nezhasne. ' +
-          'I&nbsp;když máš ruce od mouky.') +
-        chod('III', 'Kuchařský kámoš',
-          'Došla ti smetana uprostřed vaření? Řekne ti, čím ji nahradit a v&nbsp;jakém poměru. ' +
-          'Bez kázání o&nbsp;tom, žes měl líp nakoupit.') +
+        ingredience('1 ks', 'spíž, která ví, co máš doma — a u soli se neptá na gramy') +
+        ingredience('1 ks', 'režim vaření, co tě vede krok za krokem a nenechá zhasnout displej') +
+        ingredience('1 ks', 'kuchařský kámoš na chvíle, kdy ti něco dojde uprostřed vaření') +
+        ingredience('dle chuti', 'recepty, které někdo doopravdy uvařil') +
+      '</table>' +
+    '</td></tr>' +
+
+    // Postup
+    '<tr><td style="padding:26px 46px 0;">' +
+      '<div style="font-family:' + SANS + ';font-size:11px;letter-spacing:2px;text-transform:uppercase;' +
+        'color:' + AKCENT + ';font-weight:700;padding-bottom:6px;">Postup</div>' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' +
+        krokPostupu('1', 'Klikni na tlačítko níž. Čeká tě krátký úvod a nabídka průvodce — kdo nechce, proklikne.') +
+        krokPostupu('2', 'Zaškrtej, co máš doma. Zabere to chvíli, ale od té chvíle appka počítá za tebe.') +
+        krokPostupu('3', 'Vař. O zbytek se postará ona.') +
       '</table>' +
     '</td></tr>' +
 
     // Tlacitko
-    '<tr><td style="padding:34px 44px 0;">' +
+    '<tr><td align="center" style="padding:30px 46px 0;">' +
       '<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>' +
-      '<td bgcolor="#e07850" style="background:#e07850;border-radius:12px;">' +
-      '<a href="' + APP_URL + '?uvod=1" style="display:inline-block;padding:15px 34px;font-family:' + SANS + ';font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;">' +
-      'Pojď si vybrat večeři&nbsp;&rarr;</a></td></tr></table>' +
-      '<p style="margin:16px 0 0;font-family:' + SANS + ';font-size:13px;line-height:1.7;color:#786f63;">' +
-      'Uvnitř tě čeká krátký úvod a nabídka průvodce.<br>Kdo nechce, proklikne. Nikdo se neurazí.</p>' +
+      '<td align="center" bgcolor="' + AKCENT + '" style="background:' + AKCENT + ';border-radius:10px;">' +
+      '<a href="' + APP_URL + '?uvod=1" style="display:inline-block;padding:15px 38px;font-family:' + SANS + ';' +
+        'font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;">Otevřít kuchařku</a>' +
+      '</td></tr></table>' +
     '</td></tr>' +
 
-    // Paticka
-    '<tr><td style="padding:34px 44px 0;">' +
+    // Tip - stejny prvek, jaky ma aplikace u receptu
+    '<tr><td style="padding:30px 46px 0;">' +
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" ' +
+        'bgcolor="#f0e7d5" style="background:#f0e7d5;border-left:3px solid ' + AKCENT + ';">' +
+        '<tr><td style="padding:14px 18px;font-family:' + SANS + ';font-size:14px;line-height:1.65;color:' + INKOUST + ';">' +
+          '<strong style="color:' + AKCENT + ';">Tip</strong> — Ať to dneska dopadne jakkoliv, ' +
+          'snad líp než ten toast.' +
+        '</td></tr>' +
+      '</table>' +
+    '</td></tr>' +
+
+    // Paticka karty
+    '<tr><td style="padding:26px 46px 30px;">' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
-      '<td style="border-top:1px solid #241f19;padding-top:20px;">' +
-        '<div style="font-family:' + SERIF + ';font-size:15px;font-style:italic;color:#cdc5b8;margin-bottom:5px;">' +
-          'Ať to dneska dopadne jakkoliv, snad líp než ten toast.</div>' +
-        '<div style="font-family:' + SANS + ';font-size:12px;color:#6b6357;">Dobrou chuť!</div>' +
-      '</td></tr></table>' +
+      '<td style="border-top:1px solid ' + LINKA + ';padding-top:16px;font-family:' + SANS + ';' +
+        'font-size:12px;color:' + TLUMENY + ';">Dobrou chuť!</td>' +
+      '</tr></table>' +
     '</td></tr>' +
 
     '</table></td></tr></table>';
