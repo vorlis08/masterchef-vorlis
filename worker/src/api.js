@@ -130,26 +130,92 @@ const NOTIFY = {
   recipes:  'notify_recipes',
   wishlist: 'notify_wishlist',
   summary:  'notify_summary',
+  push:     'notify_push',
 };
+
+// Predstih, ktery jde nastavit. Volne cislo z prohlizece nebereme -
+// slo by tim Cronu podstrcit nesmysl a rozhodit vyber bookingu.
+const PREDSTIHY = [30, 60, 120];
 
 export async function getNotify(env, session, origin, cors) {
   const u = await env.DB.prepare(
-    'SELECT notify_recipes, notify_wishlist, notify_summary FROM users WHERE id = ?'
+    'SELECT notify_recipes, notify_wishlist, notify_summary, notify_push, push_predstih FROM users WHERE id = ?'
+  ).bind(session.sub).first();
+  const zarizeni = await env.DB.prepare(
+    'SELECT COUNT(*) AS pocet FROM push_subs WHERE user_id = ?'
   ).bind(session.sub).first();
   return json({
     recipes:  !!(u && u.notify_recipes),
     wishlist: !!(u && u.notify_wishlist),
     summary:  !!(u && u.notify_summary),
+    push:     !!(u && u.notify_push),
+    predstih: (u && u.push_predstih) || 60,
+    zarizeni: (zarizeni && zarizeni.pocet) || 0,
+    // Verejny klic pro oznameni. Chodi ze serveru schvalne - kdyz se
+    // klice jednou vymeni, nemusi se kvuli tomu prestavovat appka.
+    vapid: env.VAPID_PUBLIC_KEY || '',
   }, origin, cors);
 }
 
 export async function setNotify(request, env, session, origin, cors) {
   const data = await request.json().catch(() => ({}));
+
+  if (data.kind === 'predstih') {
+    const minut = Number(data.minut);
+    if (!PREDSTIHY.includes(minut)) {
+      return json({ error: 'Takový předstih se nastavit nedá.' }, origin, cors, 400);
+    }
+    await env.DB.prepare('UPDATE users SET push_predstih = ? WHERE id = ?')
+      .bind(minut, session.sub).run();
+    return getNotify(env, session, origin, cors);
+  }
+
   const sloupec = NOTIFY[data.kind];
   if (!sloupec) return json({ error: 'Neznámý druh zpráv.' }, origin, cors, 400);
 
   await env.DB.prepare('UPDATE users SET ' + sloupec + ' = ? WHERE id = ?')
     .bind(data.on ? 1 : 0, session.sub).run();
+  return getNotify(env, session, origin, cors);
+}
+
+// -- Oznameni na telefon --------------------------------------------------
+//
+// Prohlizec si prihlasku vyrobi sam a posle sem tri udaje: adresu push
+// serveru a dva klice. Worker si je jen ulozi - poslat oznameni bez nich
+// nejde, protoze obsah sifruje prave jimi.
+
+export async function savePush(request, env, session, origin, cors) {
+  const data = await request.json().catch(() => ({}));
+
+  if (data.action === 'unsubscribe') {
+    // Odhlasujeme jen prihlasku, ktera patri tomuhle uzivateli - jinak
+    // by sel podle adresy odhlasit kdokoliv.
+    await env.DB.prepare('DELETE FROM push_subs WHERE endpoint = ? AND user_id = ?')
+      .bind(text(data.endpoint, 500), session.sub).run();
+    await env.DB.prepare('UPDATE users SET notify_push = 0 WHERE id = ?')
+      .bind(session.sub).run();
+    return getNotify(env, session, origin, cors);
+  }
+
+  const endpoint = text(data.endpoint, 500);
+  const p256dh = text(data.p256dh, 200);
+  const auth = text(data.auth, 100);
+
+  if (!/^https:\/\//i.test(endpoint) || !p256dh || !auth) {
+    return json({ error: 'Neúplná přihláška k odběru.' }, origin, cors, 400);
+  }
+
+  // Tataz adresa muze prijit znovu (prohlizec si ji obnovi) - pak jen
+  // prepiseme klice a majitele.
+  await env.DB.prepare(
+    `INSERT INTO push_subs (endpoint, user_id, p256dh, auth) VALUES (?, ?, ?, ?)
+     ON CONFLICT(endpoint) DO UPDATE SET user_id = excluded.user_id,
+       p256dh = excluded.p256dh, auth = excluded.auth`
+  ).bind(endpoint, session.sub, p256dh, auth).run();
+
+  await env.DB.prepare('UPDATE users SET notify_push = 1 WHERE id = ?')
+    .bind(session.sub).run();
+
   return getNotify(env, session, origin, cors);
 }
 

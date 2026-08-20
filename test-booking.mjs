@@ -1,6 +1,6 @@
 import {
   naDatum, jeDatum, jeCas, popisDatumu, popisBookingu,
-  konflikty, popisKonfliktu, coZamknout, serad, nadchazejici,
+  konflikty, popisKonfliktu, coZamknout, serad, nadchazejici, rychleTerminy, kPripomenuti,
 } from './src/lib/booking.js';
 import { sediSurovina, chybejici, pripravenost, podlePripravenosti } from './src/lib/match.js';
 
@@ -120,6 +120,47 @@ t('minule se nezobrazuji',
   nadchazejici(STAVAJICI, '2026-08-22').map(b => b.id), [3]);
 t('zrusene se nezobrazuji',
   nadchazejici(STAVAJICI, '2026-08-20').some(b => b.id === 4), false);
+
+console.log('\n--- Rychle terminy ---');
+// 20. 8. 2026 je ctvrtek.
+const rt = (s) => rychleTerminy(new Date(s));
+t('rano nabizi dnes vecer', rt('2026-08-20T09:00').map(o => o.id),
+  ['dnes-vecer', 'zitra', 'vikend']);
+t('dnes vecer je na 18:00', rt('2026-08-20T09:00')[0].cas, '18:00');
+t('po pul pate uz je "za hodinu"', rt('2026-08-20T17:10')[0].id, 'za-hodinu');
+t('za hodinu se zaokrouhli na pulhodinu', rt('2026-08-20T17:10')[0].cas, '18:30');
+t('cela hodina se neposouva', rt('2026-08-20T17:00')[0].cas, '18:00');
+t('pozde vecer uz dnesek nenabizi', rt('2026-08-20T23:00').map(o => o.id),
+  ['zitra', 'vikend']);
+t('sobota se nenabizi dvakrat, kdyz je to zitra',
+  rt('2026-08-21T10:00').map(o => o.id), ['dnes-vecer', 'zitra']);
+t('v sobotu ukazuje az tu pristi', rt('2026-08-22T10:00')[2].datum, '2026-08-29');
+t('vikend je na poledne', rt('2026-08-20T09:00')[2].cas, '12:00');
+t('zitrek je opravdu zitra', rt('2026-08-31T09:00')[1].datum, '2026-09-01');
+
+console.log('\n--- Pripominky na telefon ---');
+// 18:00 ceskeho casu = 16:00 UTC.
+const PB = [
+  { id: 1, state: 'planned', cook_date: '2026-08-20', cook_time: '18:00' },
+  { id: 2, state: 'planned', cook_date: '2026-08-20', cook_time: null },
+  { id: 3, state: 'planned', cook_date: '2026-08-20', cook_time: '18:00', push_sent: '2026-08-20T15:00' },
+  { id: 4, state: 'planned', cook_date: '2026-08-21', cook_time: '18:00' },
+  { id: 5, state: 'cancelled', cook_date: '2026-08-20', cook_time: '18:00' },
+];
+const kp = (t, p) => kPripomenuti(PB, new Date(t), p).map(b => b.id);
+t('hodinu pred varenim', kp('2026-08-20T15:00:00Z', 60), [1]);
+t('dve hodiny pred jeste ne', kp('2026-08-20T14:00:00Z', 60), []);
+t('s dvouhodinovym predstihem uz ano', kp('2026-08-20T14:00:00Z', 120), [1]);
+t('v case vareni uz se nepripomina', kp('2026-08-20T16:00:00Z', 60), []);
+t('po case vareni uz vubec', kp('2026-08-20T17:00:00Z', 60), []);
+t('pul hodiny pred se jeste chyti', kp('2026-08-20T15:30:00Z', 60), [1]);
+t('celodenni se nepripomina', kp('2026-08-20T15:00:00Z', 60).includes(2), false);
+t('uz odeslane se neopakuje', kp('2026-08-20T15:00:00Z', 60).includes(3), false);
+t('zrusene se nepripomina', kp('2026-08-20T15:00:00Z', 60).includes(5), false);
+t('zitrejsi vareni jeste ne', kp('2026-08-20T15:00:00Z', 60).includes(4), false);
+t('zitrejsi den hodinu pred', kp('2026-08-21T15:00:00Z', 60), [4]);
+t('nesmyslny predstih spadne na hodinu', kp('2026-08-20T15:00:00Z', 0), [1]);
+t('prazdny seznam nespadne', kPripomenuti([], new Date(), 60), []);
 
 console.log(fail === 0 ? '\n=== VSE PROSLO ===\n' : '\n=== ' + fail + ' CHYB ===\n');
 process.exit(fail === 0 ? 0 : 1);

@@ -13,11 +13,16 @@ preview_urls = false
 GOOGLE_CLIENT_ID = "947951400010-qfu21j9g331jd8t9imcaeolrphslhtkb.apps.googleusercontent.com"
 # Adresa, ze ktere chodi uvitaci e-mail. Musi byt overena v Brevu.
 MAIL_FROM = "honzavorel0@gmail.com"
+# Verejny klic pro oznameni na telefon. Verejny je doslova - appka ho
+# posila prohlizeci pri prihlaseni k odberu. Vyrobi se prikazem
+# `node scripts/vapid-keys.mjs`; soukromy protejsek patri do secrets.
+VAPID_PUBLIC_KEY = ""
 
 # Tyhle DVA naopak nikdy nepatri sem, nastavuji se jako secret:
 #   npx.cmd wrangler secret put ANTHROPIC_API_KEY
 #   npx.cmd wrangler secret put GOOGLE_CLIENT_SECRET
 #   npx.cmd wrangler secret put SESSION_SECRET
+#   npx.cmd wrangler secret put VAPID_PRIVATE_KEY
 
 # Strop na pocet dotazu: 20 za minutu z jedne IP.
 [[ratelimits]]
@@ -35,5 +40,9 @@ migrations_dir = "migrations"
 # Pravidelne zpravy. Casy jsou v UTC; digest.js si hlida, aby nic
 # neodeslo v noci ceskeho casu.
 [triggers]
-crons = ["0 5 * * *", "0 5 * * 1", "0 5 1 * *"]
-# denne 7:00 CEST (nakupni seznam), pondeli (nove recepty), 1. v mesici (souhrn)
+crons = ["0 * * * *", "0 5 * * *", "0 5 * * 1", "0 5 1 * *"]
+# kazdou hodinu (oznameni na telefon), denne 7:00 CEST (nakupni seznam),
+# pondeli (nove recepty), 1. v mesici (souhrn)
+#
+# POZOR: hodinovy beh se v 5:00 UTC potka s dennim. Nevadi to - Worker
+# se spusti dvakrat a podle `event.cron` pozna, ktery beh ma delat.

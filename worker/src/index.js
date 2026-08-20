@@ -17,7 +17,7 @@ import { verifySession, bearerToken } from './session.js';
 import {
   updateProfile, listInventory, saveInventory, getNotify, setNotify,
   syncState, markIntroDone, listBookings, saveBooking,
-  listShopping, saveShopping,
+  listShopping, saveShopping, savePush,
 } from './api.js';
 import { spustCron } from './digest.js';
 import { adminError } from './mail.js';
@@ -175,6 +175,10 @@ export default {
         return request.method === 'POST'
           ? setNotify(request, env, session, origin, corsHeaders)
           : getNotify(env, session, origin, corsHeaders);
+      }
+
+      if (path === '/api/push' && request.method === 'POST') {
+        return savePush(request, env, session, origin, corsHeaders);
       }
 
       if (path === '/api/state' && request.method === 'POST') {

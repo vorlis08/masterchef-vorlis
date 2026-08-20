@@ -359,6 +359,22 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         </div>
 
         <div id="book-form">
+          <div id="book-zamky" class="hidden mb-4 p-3 rounded-lg bg-surface border border-border">
+            <p class="text-[12px] text-text-muted leading-relaxed">
+              <span class="text-accent font-medium">Ve spíži se zamkne:</span>
+              <span id="book-zamky-seznam" class="text-text"></span><br>
+              Zůstane ti tam — jen bude slíbená tomuhle vaření.
+            </p>
+          </div>
+
+          <!-- Rychla volba. Nejcastejsi pripad ma byt jeden tap, ne vyplnovani. -->
+          <div id="book-rychle" class="grid gap-2 mb-3"></div>
+
+          <button id="book-jindy" class="w-full text-[12px] text-text-muted hover:text-accent transition-colors mb-4">
+            Vybrat jiný den&hellip;
+          </button>
+
+          <div id="book-podrobne" class="hidden">
           <label class="block text-[12px] text-text-muted mb-1.5">Datum</label>
           <input id="book-date" type="date" class="w-full bg-surface border border-border rounded-lg py-2.5 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-4" />
 
@@ -372,17 +388,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <input id="book-time" type="time" value="18:00" class="w-full bg-surface border border-border rounded-lg py-2.5 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-4" />
           </div>
 
-          <div id="book-zamky" class="hidden mb-4 p-3 rounded-lg bg-surface border border-border">
-            <p class="text-[12px] text-text-muted leading-relaxed">
-              <span class="text-accent font-medium">Ve spíži se zamkne:</span>
-              <span id="book-zamky-seznam" class="text-text"></span><br>
-              Zůstane ti tam — jen bude slíbená tomuhle vaření.
-            </p>
-          </div>
-
           <button id="book-ulozit" class="w-full py-3 rounded-xl bg-accent text-white font-medium text-[14px] hover:bg-accent-hover active:scale-[0.98] transition-all">
             Naplánovat
           </button>
+          </div>
+
           <p id="book-chyba" class="mt-2 text-[12px] text-red-400 hidden"></p>
         </div>
 
@@ -624,6 +634,25 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <p class="text-[11px] text-text-muted">Nejvýš jedna zpráva denně a tři týdně. V noci nic nechodí.</p>
           </div>
 
+          <div id="push-section" class="mt-5 mb-4 hidden">
+            <h4 class="text-[12px] font-semibold text-text-muted uppercase tracking-wider mb-2">Oznámení na telefon</h4>
+            <label class="flex items-center gap-2 mb-2 cursor-pointer">
+              <input type="checkbox" id="push-on" />
+              <span class="text-[13px] text-text">Pípnout, než začnu vařit</span>
+            </label>
+
+            <div id="push-predstih-radek" class="hidden items-center gap-2 mb-2">
+              <span class="text-[12px] text-text-muted">Kolik napřed:</span>
+              <select id="push-predstih" class="bg-surface border border-border rounded-lg py-1 px-2 text-text text-[12px] focus:outline-none focus:border-accent">
+                <option value="30">půl hodiny</option>
+                <option value="60">hodinu</option>
+                <option value="120">dvě hodiny</option>
+              </select>
+            </div>
+
+            <p id="push-hlaska" class="text-[11px] text-text-muted"></p>
+          </div>
+
           <div class="flex items-center gap-3">
             <button id="profile-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
             <button id="profile-logout" class="px-4 py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] hover:text-accent hover:border-accent transition-colors">Odhlásit se</button>
@@ -819,7 +848,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     import { pripravenost, sediSurovina } from '../lib/match.js';
     import {
       dnes as dnesniDatum, jeDatum, jeCas, popisBookingu, popisDatumu,
-      konflikty, popisKonfliktu, coZamknout, nadchazejici,
+      konflikty, popisKonfliktu, coZamknout, nadchazejici, rychleTerminy,
     } from '../lib/booking.js';
     import {
       DNY_ZKRATKY, mesicniMrizka, posunMesic, pocetVMesici, bookingyDne,
@@ -2436,6 +2465,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       document.getElementById('book-date').value = dnesniDatum();
       document.getElementById('book-chyba').classList.add('hidden');
       ukazZamky(r);
+      vykresliRychle();
+      document.getElementById('book-podrobne').classList.add('hidden');
+      document.getElementById('book-jindy').classList.remove('hidden');
       vykresliBookingy();
 
       bookOverlay.classList.remove('hidden');
@@ -2467,11 +2499,41 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     document.getElementById('book-ulozit').addEventListener('click', () => ulozBooking(false));
 
-    async function ulozBooking(force) {
+    document.getElementById('book-jindy').addEventListener('click', e => {
+      document.getElementById('book-podrobne').classList.remove('hidden');
+      e.target.classList.add('hidden');
+    });
+
+    /** Rychle terminy - jeden tap misto vyplnovani data a casu. */
+    function vykresliRychle() {
+      const blok = document.getElementById('book-rychle');
+      const nabidka = rychleTerminy();
+
+      // Prvni volba je ta nejpravdepodobnejsi, tak at je i videt jako
+      // prvni. Tri stejne barevne knofliky pod sebou vypadaji jako
+      // nabidka, ve ktere si mate vybrat - a to je presne naopak.
+      blok.innerHTML = nabidka.map((o, i) =>
+        '<button class="book-rychly flex items-center justify-between gap-2 w-full py-3 px-4 rounded-xl text-[14px] font-medium active:scale-[0.98] transition-all ' +
+        (i === 0
+          ? 'bg-accent text-white hover:bg-accent-hover'
+          : 'bg-surface border border-border text-text hover:border-accent hover:text-accent') + '" ' +
+        'data-datum="' + escAttr(o.datum) + '" data-cas="' + escAttr(o.cas) + '">' +
+        '<span>' + esc(o.popis) + '</span>' +
+        '<span class="' + (i === 0 ? 'text-white/70' : 'text-text-muted') + ' text-[12px]">' + esc(o.cas) + '</span>' +
+        '</button>'
+      ).join('');
+
+      blok.querySelectorAll('.book-rychly').forEach(b =>
+        b.addEventListener('click', () => ulozBooking(false, b.dataset.datum, b.dataset.cas)));
+    }
+
+    // rychlyDatum/rychlyCas prijdou z rychle nabidky; bez nich se cte formular.
+    async function ulozBooking(force, rychlyDatum, rychlyCas) {
+      const zRychle = !!rychlyDatum;
       const chyba = document.getElementById('book-chyba');
-      const datum = document.getElementById('book-date').value;
-      const celyDen = document.getElementById('book-cely-den').checked;
-      const cas = celyDen ? null : document.getElementById('book-time').value;
+      const datum = zRychle ? rychlyDatum : document.getElementById('book-date').value;
+      const celyDen = zRychle ? false : document.getElementById('book-cely-den').checked;
+      const cas = zRychle ? rychlyCas : (celyDen ? null : document.getElementById('book-time').value);
 
       chyba.classList.add('hidden');
       if (!jeDatum(datum)) return ukazChybu('Vyber datum.');
@@ -2501,6 +2563,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         // Zamek se hned promitne do spize, at je videt volne mnozstvi.
         loadPantry();
         renderGrid();
+        // Z rychle nabidky okno zavreme: uzivatel udelal jeden tap a je
+        // hotovo. U podrobneho formulare zustava otevrene, at je videt
+        // seznam naplanovaneho.
+        if (zRychle) zavriBooking();
       } catch (e) {
         ukazChybu(e.message);
       }
@@ -3446,6 +3512,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           const el = document.getElementById(NOTIFY_POLE[k]);
           if (el) el.checked = !!stav[k];
         });
+        await nactiPush(stav);
       } catch {}
     }
 
@@ -3456,6 +3523,164 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         catch (e) { alert(e.message); el.checked = !el.checked; }
       });
     });
+
+    // --- Oznameni na telefon -------------------------------------------
+    //
+    // Tri veci musi klapnout najednou, jinak oznameni nechodi:
+    //   1. service worker (registruje se v Layout.astro)
+    //   2. povoleni od uzivatele - da se dat jen jako reakce na klik
+    //   3. prihlaska ulozena ve Workeru
+    //
+    // Na iPhonu k tomu navic musi byt appka pridana na plochu. V okne
+    // Safari `PushManager` vubec neexistuje, takze se to pozna dopredu
+    // a uzivateli se rekne co delat - misto tiche nefunkcnosti.
+
+    let pushVapid = '';
+
+    const jdePush = () =>
+      'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+
+    const naPloše = () =>
+      window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    /** Klic ze serveru je text, prohlizec chce bajty. */
+    function klicNaBajty(base64) {
+      const s = String(base64).replace(/-/g, '+').replace(/_/g, '/');
+      const bin = atob(s + '='.repeat((4 - s.length % 4) % 4));
+      const out = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+      return out;
+    }
+
+    function pushHlaska(text) {
+      const el = document.getElementById('push-hlaska');
+      if (el) el.textContent = text;
+    }
+
+    function pushStav(zapnuto) {
+      const radek = document.getElementById('push-predstih-radek');
+      if (radek) {
+        radek.classList.toggle('hidden', !zapnuto);
+        radek.classList.toggle('flex', zapnuto);
+      }
+    }
+
+    async function nactiPush(stav) {
+      const box = document.getElementById('push-section');
+      if (!box) return;
+      box.classList.toggle('hidden', !currentUser);
+      if (!currentUser) return;
+
+      pushVapid = stav.vapid || '';
+      const prepinac = document.getElementById('push-on');
+      const vyber = document.getElementById('push-predstih');
+      if (vyber) vyber.value = String(stav.predstih || 60);
+
+      if (!jdePush()) {
+        prepinac.checked = false;
+        prepinac.disabled = true;
+        pushStav(false);
+        pushHlaska(naPloše()
+          ? 'Tenhle prohlížeč oznámení neumí.'
+          : 'Na iPhonu to jde až po přidání aplikace na plochu: v Safari „Sdílet“ → „Přidat na plochu“, pak sem zajdi znovu.');
+        return;
+      }
+
+      if (!pushVapid) {
+        prepinac.checked = false;
+        prepinac.disabled = true;
+        pushStav(false);
+        pushHlaska('Oznámení zatím nejsou nastavená na serveru.');
+        return;
+      }
+
+      // Rozhoduje skutecny stav prohlizece, ne to, co je v databazi.
+      // Uzivatel mohl oznameni zakazat v nastaveni telefonu a databaze
+      // by o tom nevedela - pak by prepinac lhal, ze je zapnuto.
+      const reg = await navigator.serviceWorker.ready.catch(() => null);
+      const sub = reg && await reg.pushManager.getSubscription();
+      const zapnuto = !!(stav.push && sub && Notification.permission === 'granted');
+
+      prepinac.disabled = false;
+      prepinac.checked = zapnuto;
+      pushStav(zapnuto);
+      pushHlaska(zapnuto
+        ? 'Chodí na tohle zařízení. Jinam se přihlásíš tam.'
+        : 'Připomínka přijde, i když máš appku zavřenou. V noci nic nechodí.');
+    }
+
+    async function zapniPush() {
+      pushHlaska('Zapínám…');
+
+      const povoleni = await Notification.requestPermission();
+      if (povoleni !== 'granted') {
+        pushHlaska(povoleni === 'denied'
+          ? 'Oznámení máš pro tuhle stránku zakázaná — povolit se dají jen v nastavení prohlížeče.'
+          : 'Bez povolení to nepůjde.');
+        return false;
+      }
+
+      const reg = await navigator.serviceWorker.ready;
+      // Uz prihlasene zarizeni muze mit prihlasku k jinemu klici (kdyby
+      // se klice menily). Stara se proto zahodi a udela nova.
+      const stara = await reg.pushManager.getSubscription();
+      if (stara) await stara.unsubscribe().catch(() => {});
+
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: klicNaBajty(pushVapid),
+      });
+
+      const json = sub.toJSON();
+      await api('/api/push', {
+        endpoint: sub.endpoint,
+        p256dh: json.keys && json.keys.p256dh,
+        auth: json.keys && json.keys.auth,
+      });
+      return true;
+    }
+
+    async function vypniPush() {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await api('/api/push', { action: 'unsubscribe', endpoint: sub.endpoint }).catch(() => {});
+        await sub.unsubscribe().catch(() => {});
+      } else {
+        await api('/api/push', { action: 'unsubscribe', endpoint: '' }).catch(() => {});
+      }
+    }
+
+    (function () {
+      const prepinac = document.getElementById('push-on');
+      if (prepinac) prepinac.addEventListener('change', async () => {
+        prepinac.disabled = true;
+        try {
+          if (prepinac.checked) {
+            const ok = await zapniPush();
+            prepinac.checked = ok;
+            pushStav(ok);
+            if (ok) pushHlaska('Hotovo. Pípne to, než začneš vařit.');
+          } else {
+            await vypniPush();
+            pushStav(false);
+            pushHlaska('Vypnuto. Připomínka na telefon chodit nebude.');
+          }
+        } catch (e) {
+          prepinac.checked = false;
+          pushStav(false);
+          pushHlaska('Nepovedlo se: ' + (e && e.message ? e.message : 'zkus to znovu'));
+        } finally {
+          prepinac.disabled = false;
+        }
+      });
+
+      const vyber = document.getElementById('push-predstih');
+      if (vyber) vyber.addEventListener('change', async () => {
+        try { await api('/api/notify', { kind: 'predstih', minut: Number(vyber.value) }); }
+        catch (e) { pushHlaska(e.message); }
+      });
+    })();
 
     // --- Profil ---
     function paintProfile() {

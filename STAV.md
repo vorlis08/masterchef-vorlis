@@ -1,6 +1,6 @@
 # Stav projektu — předávka do nového chatu
 
-> Rychlý přehled k 20. 8. 2026. Podrobnosti, rozhodnutí a nástrahy jsou
+> Rychlý přehled k 20. 8. 2026 (naposledy: oznámení na telefon a rychlé plánování). Podrobnosti, rozhodnutí a nástrahy jsou
 > v **PROJEKT.md** — tenhle soubor je jen rozcestník a seznam toho, co dál.
 >
 > **Nejdřív si přečti PROJEKT.md**, hlavně sekci 8 (technické nástrahy).
@@ -29,7 +29,7 @@ používej **`npx.cmd`**.
 ## Jak spolu pracujeme
 
 - **Česky.** Honza dělá vibecoding — vysvětlovat lidsky, ne žargonem.
-- **Pushuje se bez ptaní**, když projde build a všech 12 sad testů.
+- **Pushuje se bez ptaní**, když projde build a všech 13 sad testů.
   (Tohle přebíjí sekci 9 v PROJEKT.md, která říká opak — ta je zastaralá.)
 - **Přístupové klíče nikdy nechodí chatem.** Vkládají se přes
   `npx.cmd wrangler secret put NAZEV` z Honzova terminálu.
@@ -44,8 +44,8 @@ používej **`npx.cmd`**.
 
 ### Refaktoring: „mozek" oddělený od „vzhledu" (sekce 6 a 7)
 
-Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **497 testů**
-ve 12 sadách, pouštějí se z kořene (`node test-*.mjs`).
+Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **540 testů**
+ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
 
 | Soubor | Co dělá |
 |---|---|
@@ -60,6 +60,7 @@ ve 12 sadách, pouštějí se z kořene (`node test-*.mjs`).
 | `booking.js` | termíny, konflikty, zámky surovin |
 | `kalendar.js` | měsíční mřížka |
 | `tour.js` | 24 kroků prohlídky aplikace |
+| `booking.js` → `rychleTerminy`, `kPripomenuti` | rychlé termíny a výběr, komu pípnout |
 
 ### Aplikace
 
@@ -67,7 +68,10 @@ ve 12 sadách, pouštějí se z kořene (`node test-*.mjs`).
 - Přihlášení přes Google, profil, nastavení e-mailů
 - Úvodní okno po registraci + průvodce aplikací (24 kroků)
 - Spíž: dlouhý seznam ~115 surovin, krokovadla − / +, „mám doma standardně"
-- Bookingy „TO UVAŘÍM!" se zámky surovin
+- Bookingy „TO UVAŘÍM!" se zámky surovin — nově **rychlé termíny**
+  („Dnes večer / Zítra večer / V sobotu") jedním tapem; podrobný
+  formulář je schovaný pod „Vybrat jiný den"
+- **Oznámení na telefon** (Web Push) hodinu před vařením
 - Kalendář vaření + „Chybějící do nákupu"
 - Nákupní seznam **v databázi** (sdílí se mezi zařízeními)
 - Filtry: Chod / Čas / Stav (přepínač) + „Můžu uvařit", zvýraznění, počítadlo `3×`
@@ -80,8 +84,11 @@ ve 12 sadách, pouštějí se z kořene (`node test-*.mjs`).
   `mail.js` (6 druhů zpráv), `digest.js` (Cron)
 - 6 migrací, tabulky: `users`, `inventory`, `bookings`, `reservations`,
   `shopping_list`, `recipe_state`, `email_log`, `known_recipes`
-- Cron: denně 7:00 (nákupní seznam + připomínka), pondělí (nové recepty
-  + wishlist), 1. v měsíci (souhrn)
+- Cron: **každou hodinu (oznámení na telefon)**, denně 7:00 (nákupní
+  seznam + připomínka), pondělí (nové recepty + wishlist), 1. v měsíci
+  (souhrn)
+- `push.js`: VAPID podpis + šifrování obsahu (RFC 8291), bez knihovny.
+  Ověřené `test-push.mjs`, který zprávu zase rozšifruje.
 
 ### Bezpečnost — vyřešeno
 
@@ -105,6 +112,13 @@ ve 12 sadách, pouštějí se z kořene (`node test-*.mjs`).
    u sporáku.
 3. **Obsah Fáze 1**: 23 uložených YouTube Shorts (chybí seznam),
    Fancy verze u 5 receptů.
+4. **Zprovoznit oznámení** — bez tohohle nepípne nic (postup je
+   v PROJEKT.md 8.17):
+   - `node scripts/vapid-keys.mjs`
+   - veřejný klíč do `worker/wrangler.toml`, soukromý přes
+     `npx.cmd wrangler secret put VAPID_PRIVATE_KEY`
+   - `cd worker && npx.cmd wrangler deploy` (spustí i migraci 0007)
+   - na iPhonu appku **přidat na plochu**, jinak oznámení neexistují
 
 ---
 
@@ -118,8 +132,8 @@ ve 12 sadách, pouštějí se z kořene (`node test-*.mjs`).
   má **každý** recept.)
 - **Plánování rovnou z kalendáře** — dnes jde vaření naplánovat jen
   z detailu receptu.
-- **Push notifikace** místo e-mailu na připomínku vaření (8.6).
-  Vyžaduje PWA a přidání na plochu.
+- **Ověřit oznámení na skutečném telefonu.** Šifrování je otestované
+  proti sobě samému, ale že to pípne na iPhonu, nikdo neviděl.
 
 **Dál:**
 
@@ -148,3 +162,6 @@ Všechny jsou rozepsané v PROJEKT.md sekce 8. Nejčastější:
   `match.js`. (8.14)
 - **Prohlídku nejde otestovat ve skrytém okně** — animační smyčka se
   nespustí a krokování uvázne. (8.12)
+- **`BASE_URL` nemá lomítko na konci.** `base + 'soubor'` dá
+  `/masterchef-vorlissoubor`. Takhle byl dlouho rozbitý favicon;
+  `Layout.astro` teď lomítko doplňuje. (8.18)

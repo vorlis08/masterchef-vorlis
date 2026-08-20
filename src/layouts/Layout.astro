@@ -4,7 +4,10 @@ interface Props {
 }
 
 const { title } = Astro.props;
-const base = import.meta.env.BASE_URL;
+// POZOR: BASE_URL je "/masterchef-vorlis" BEZ lomitka na konci, takze
+// prosty `base + 'soubor'` da "/masterchef-vorlissoubor". Takhle byl
+// dlouho rozbity favicon. Lomitko proto doplnujeme natvrdo.
+const base = import.meta.env.BASE_URL.replace(/\/*$/, '/');
 ---
 
 <!DOCTYPE html>
@@ -18,8 +21,19 @@ const base = import.meta.env.BASE_URL;
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>{title}</title>
   <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+  <link rel="apple-touch-icon" href={`${base}icons/apple-touch-icon.png`} />
+  <link rel="manifest" href={`${base}manifest.webmanifest`} />
   <script is:inline>
     (function(){var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);})();
+  </script>
+  <script is:inline define:vars={{ base }}>
+    // Service worker se registruje vzdy - je potreba jen kvuli
+    // oznamenim, ale musi bezet driv, nez si o ne uzivatel rekne.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register(base + 'sw.js', { scope: base }).catch(function () {});
+      });
+    }
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

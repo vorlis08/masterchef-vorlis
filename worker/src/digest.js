@@ -15,7 +15,8 @@ import {
   adminError, unsubUrl,
 } from './mail.js';
 import { chybejici } from '../../src/lib/match.js';
-import { zitra, popisBookingu } from '../../src/lib/booking.js';
+import { zitra, popisBookingu, kPripomenuti } from '../../src/lib/booking.js';
+import { poslatPush } from './push.js';
 
 const RECIPES_URL =
   'https://raw.githubusercontent.com/vorlis08/masterchef-vorlis/main/src/data/recipes.json';
@@ -261,6 +262,76 @@ export async function denniBeh(env, origin) {
   return { bookingu: bookingy.length, posláno: posláno };
 }
 
+// -- Pripominka na telefon -------------------------------------------------
+//
+// Bezi kazdou hodinu. Na rozdil od e-mailu se tady neuplatnuje strop
+// "jedna zprava denne" - oznameni je jina vec: uzivatel si ho vyslovne
+// zapnul a tyka se toho, co ma za hodinu delat.
+
+export async function pushBeh(env, ted) {
+  if (!env.VAPID_PRIVATE_KEY || !env.VAPID_PUBLIC_KEY) return { poslano: 0, duvod: 'bez klicu' };
+
+  const ted2 = ted || new Date();
+  const recepty = await nactiRecepty();
+
+  // Bereme dnesek i zitrek: pozdni vecerni vareni ceskeho casu uz
+  // v UTC spada na dalsi den a naopak.
+  const { results: bookingy } = await env.DB.prepare(
+    `SELECT b.id, b.user_id, b.recipe_slug, b.cook_date, b.cook_time, b.state,
+            b.push_sent, u.push_predstih
+       FROM bookings b JOIN users u ON u.id = b.user_id
+      WHERE u.notify_push = 1 AND b.state = 'planned' AND b.push_sent IS NULL
+        AND b.cook_date BETWEEN date('now', '-1 day') AND date('now', '+2 days')`
+  ).all();
+
+  let poslano = 0;
+
+  for (const b of bookingy || []) {
+    if (!kPripomenuti([b], ted2, b.push_predstih).length) continue;
+
+    const recept = recepty.find(r => r.slug === b.recipe_slug);
+    const nazev = (recept && recept.title) || b.recipe_slug;
+
+    const { results: subs } = await env.DB.prepare(
+      'SELECT endpoint, p256dh, auth FROM push_subs WHERE user_id = ?'
+    ).bind(b.user_id).all();
+    if (!subs || !subs.length) continue;
+
+    const zprava = {
+      titul: 'Za chvíli vaříš',
+      text: nazev + ' — ' + b.cook_time,
+      slug: b.recipe_slug,
+    };
+
+    let doslo = false;
+    for (const sub of subs) {
+      let v;
+      try {
+        v = await poslatPush(env, sub, zprava);
+      } catch (e) {
+        console.error('push spadl: ' + String(e).slice(0, 200));
+        continue;
+      }
+      // Zarizeni, ktere uz neexistuje, se rovnou vyhodi - jinak by se
+      // na nej zkouselo posilat donekonecna.
+      if (v.mrtva) {
+        await env.DB.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
+      } else if (v.ok) {
+        doslo = true;
+      }
+    }
+
+    // Zapisujeme, i kdyz to nikam nedoslo. Booking, u ktereho se to
+    // nepovedlo, uz stejne za hodinu nebude aktualni - opakovat by
+    // znamenalo poslat pripominku po case vareni.
+    await env.DB.prepare("UPDATE bookings SET push_sent = datetime('now') WHERE id = ?")
+      .bind(b.id).run();
+    if (doslo) poslano++;
+  }
+
+  return { poslano: poslano };
+}
+
 // -- Spousteni ------------------------------------------------------------
 
 /** Tydenni beh: nove recepty + co jde uvarit z wishlistu. */
@@ -316,6 +387,9 @@ export async function mesicniBeh(env, origin) {
 export async function spustCron(event, env, origin) {
   try {
     if (!jeVhodnaDoba(new Date())) return;
+    // Hodinovy beh musi mit svoji vetev PRED vychozi - jinak by kazdou
+    // hodinu probehl denni beh a nakupni seznam by se plnil dokola.
+    if (event.cron === '0 * * * *') return void (await pushBeh(env));
     if (event.cron === '0 5 1 * *') return void (await mesicniBeh(env, origin));
     if (event.cron === '0 5 * * 1') return void (await tydenniBeh(env, origin));
     return void (await denniBeh(env, origin));

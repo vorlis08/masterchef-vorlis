@@ -89,6 +89,11 @@ Tohle je jádro celého projektu. Všechno níže je **odsouhlasené**, ne návr
 ### 4.1 Bookingy („TO UVAŘÍM!")
 
 - U každého receptu je tlačítko **„TO UVAŘÍM!"**, které vytvoří rezervaci v kalendáři
+- **Rychlé termíny (20. 8. 2026):** okno nabízí „Dnes večer / Zítra večer / V sobotu"
+  jedním tapem a podrobný formulář schová pod „Vybrat jiný den". Nabídka je
+  v `rychleTerminy()` v `booking.js`, tedy v mozku, ne ve vzhledu.
+  Po 16:30 se „Dnes večer" mění na „Za hodinu" — nabízet v sedm večer termín
+  na šestou by znamenalo připomínku do minulosti.
 - Dvě varianty:
   - **Na konkrétní čas** → spustí **notifikaci** (ne budík — viz technická poznámka níže)
   - **Na celý den (all-day)** → bez notifikace
@@ -379,6 +384,8 @@ na iOS.
 Řešení: **Web Push přes service worker**. Na iOS to vyžaduje appku **přidanou na plochu
 jako PWA**. Případná záloha: export do kalendáře (.ics), který zvoní nativně.
 
+**Postaveno 20. 8. 2026** — podrobnosti a nástrahy v 8.17.
+
 ### 8.7 Deploy a GitHub API
 
 - Push do `main` spustí deploy sám (GitHub Actions); stav přes `/actions/runs`
@@ -531,6 +538,64 @@ initialization` ještě před prvním vykreslením.
 
 Stejný druh pasti jako 8.13: build i testy projdou, protože syntakticky
 je všechno v pořádku.
+
+### 8.17 Oznámení na telefon (Web Push)
+
+Postaveno 20. 8. 2026. Skládá se ze čtyř kusů, které musí sedět všechny:
+
+| Kus | Kde |
+|---|---|
+| Service worker | `public/sw.js` — jediný, kdo umí oznámení zobrazit |
+| Manifest + ikony | `public/manifest.webmanifest`, `public/icons/` |
+| Šifrování a podpis | `worker/src/push.js` |
+| Rozesílání | `pushBeh()` v `worker/src/digest.js`, Cron každou hodinu |
+
+**Než to začne fungovat**, musí Honza jednorázově:
+
+1. `node scripts/vapid-keys.mjs`
+2. veřejný klíč do `worker/wrangler.toml` (`VAPID_PUBLIC_KEY`), soukromý
+   přes `npx.cmd wrangler secret put VAPID_PRIVATE_KEY`
+3. `cd worker && npx.cmd wrangler deploy`
+
+Dokud klíče nejsou, `pushBeh` se rovnou vrátí a appka v nastavení napíše,
+že oznámení nejsou nastavená. **Nic nespadne — jen nic nechodí.**
+
+**Nástrahy:**
+
+- **Obsah zprávy push server nevidí.** Šifruje se klíči prohlížeče
+  (RFC 8291). Když se v postupu splete jediný bajt, push server zprávu
+  **přijme** a telefon ji **tiše zahodí**. Proto `test-push.mjs` hraje obě
+  strany — zašifruje jako Worker a zase rozšifruje jako prohlížeč.
+  Bez toho by se chyba poznala až na telefonu, a to nijak.
+- **Pořadí klíčů v „info" je závazné**: nejdřív prohlížeč, pak my.
+  Prohozené dá jiný klíč a zase — ticho, žádná chyba.
+- **`aud` v podpisu je původ push serveru**, ne naše adresa.
+- **Na iPhonu Web Push mimo appku na ploše neexistuje.** V Safari
+  `PushManager` chybí úplně, takže se to pozná dopředu a appka řekne
+  „přidej na plochu" místo toho, aby přepínač tiše nefungoval.
+- **Rozhoduje stav prohlížeče, ne databáze.** Uživatel může oznámení
+  zakázat v nastavení telefonu a databáze o tom neví. Přepínač se proto
+  plní z `pushManager.getSubscription()` a `Notification.permission`.
+- **Hodinový Cron musí mít svoji větev před výchozí** ve `spustCron`.
+  Jinak by se každou hodinu spustil denní běh a nákupní seznam by se
+  plnil dokola.
+- **`push_sent` se zapíše, i když se odeslání nepovede.** Opakovat by
+  znamenalo poslat připomínku po čase vaření.
+- Mrtvé přihlášky (404/410) se rovnou mažou — jinak se na ně zkouší
+  posílat donekonečna.
+
+### 8.18 `BASE_URL` nemá lomítko na konci
+
+`import.meta.env.BASE_URL` je `/masterchef-vorlis`, ne
+`/masterchef-vorlis/`. Prosté `base + 'soubor'` tedy dá
+`/masterchef-vorlissoubor`.
+
+**Takhle byl dlouho rozbitý favicon** a nikdo si toho nevšiml — prohlížeč
+místo něj tiše ukáže výchozí ikonu. Objevilo se to až u service workeru,
+který se registroval na nesmyslné adrese.
+
+`Layout.astro` teď lomítko doplňuje natvrdo. Nová cesta se vždycky
+skládá z `base`, ne z ručně psaného `/masterchef-vorlis/`.
 
 ### 8.9 Obrázky
 

@@ -163,3 +163,101 @@ export function nadchazejici(bookingy, dnesniDatum) {
   const den = dnesniDatum || dnes();
   return serad(bookingy).filter(b => b.state === 'planned' && b.cook_date >= den);
 }
+
+/** Zaokrouhli cas nahoru na nejblizsi celou nebo pulhodinu. */
+function naPulhodinu(d) {
+  const v = new Date(d.getTime());
+  v.setSeconds(0, 0);
+  const m = v.getMinutes();
+  if (m === 0 || m === 30) return v;
+  v.setMinutes(m < 30 ? 30 : 60);
+  return v;
+}
+
+function hhmm(d) {
+  return String(d.getHours()).padStart(2, '0') + ':' +
+    String(d.getMinutes()).padStart(2, '0');
+}
+
+/**
+ * Rychle terminy pro tlacitko "TO UVAŘÍM!".
+ *
+ * Duvod: nejcastejsi pripad je "dneska vecer" nebo "zitra". Vyplnovat
+ * kvuli tomu datum a cas je pet tapu misto jednoho. Nabidka je tedy
+ * zkratka, ne nahrada - detailni formular zustava vedle.
+ *
+ * Vecerni nabidka zmizi, jakmile uz je vecer za rohem (po 16:30), a
+ * nahradi ji "za hodinu". Nabizet v sedm vecer termin na sestou by byl
+ * nesmysl - pripominka by dorazila do minulosti.
+ *
+ * @param {Date} [ted]
+ * @returns {Array<{id: string, popis: string, datum: string, cas: string}>}
+ */
+export function rychleTerminy(ted) {
+  const t = ted || new Date();
+  const out = [];
+
+  if (t.getHours() * 60 + t.getMinutes() < 16 * 60 + 30) {
+    out.push({ id: 'dnes-vecer', popis: 'Dnes večer', datum: naDatum(t), cas: '18:00' });
+  } else {
+    const zaHodinu = naPulhodinu(new Date(t.getTime() + 60 * 60 * 1000));
+    // Po 22:30 uz by "za hodinu" spadlo na zitrek - pak nabidku vynechame.
+    if (naDatum(zaHodinu) === naDatum(t)) {
+      out.push({ id: 'za-hodinu', popis: 'Za hodinu', datum: naDatum(t), cas: hhmm(zaHodinu) });
+    }
+  }
+
+  const z = new Date(t.getTime());
+  z.setDate(z.getDate() + 1);
+  out.push({ id: 'zitra', popis: 'Zítra večer', datum: naDatum(z), cas: '18:00' });
+
+  // Nejblizsi sobota. Kdyz vyjde na dnesek nebo zitrek, uz ji nabidka
+  // pokryva vys a druhe tlacitko na tentyz den by jen matlo.
+  const s = new Date(t.getTime());
+  s.setDate(s.getDate() + ((6 - s.getDay() + 7) % 7 || 7));
+  const sobota = naDatum(s);
+  if (!out.some(o => o.datum === sobota)) {
+    out.push({ id: 'vikend', popis: 'V sobotu', datum: sobota, cas: '12:00' });
+  }
+
+  return out;
+}
+
+/**
+ * Ktere bookingy uz maji dostat pripominku na telefon.
+ *
+ * Bezi to v Cronu Workeru, ktery se probouzi jednou za hodinu. Vybira
+ * se podle toho, kolik minut do vareni zbyva - ne podle "je 17:00",
+ * protoze uzivatel si predstih muze prestavit.
+ *
+ * Bookingy na cely den nemaji cas, takze se nepripominaji (4.1) - a uz
+ * odeslane (`push_sent`) se preskakuji, jinak by pripominka chodila
+ * kazdou hodinu znovu.
+ *
+ * Casy bookingu jsou v ceskem case, `ted` je v UTC. Prepocet je hruby
+ * (+2 h, letni cas), stejne jako jinde ve Workeru - u pripominky
+ * s hodinovym predstihem hodina sem nebo tam nevadi, ale posun o cely
+ * den by vadil, takze se pocita pres Date.UTC a ne pres lokalni Date.
+ *
+ * @param {Array} bookingy
+ * @param {Date} ted        aktualni cas v UTC
+ * @param {number} predstih kolik minut pred varenim pipnout
+ * @param {number} [posunHodin]
+ */
+export function kPripomenuti(bookingy, ted, predstih, posunHodin) {
+  const posun = posunHodin == null ? 2 : posunHodin;
+  const limit = Number(predstih) > 0 ? Number(predstih) : 60;
+
+  return (bookingy || []).filter(b => {
+    if (b.state !== 'planned' || !b.cook_time || b.push_sent) return false;
+
+    const d = rozloz(b.cook_date);
+    const m = /^(\d{2}):(\d{2})$/.exec(String(b.cook_time));
+    if (!d || !m) return false;
+
+    const kdyUtc = Date.UTC(d.rok, d.mesic - 1, d.den, +m[1] - posun, +m[2]);
+    const zbyva = (kdyUtc - ted.getTime()) / 60000;
+
+    return zbyva > 0 && zbyva <= limit;
+  });
+}
