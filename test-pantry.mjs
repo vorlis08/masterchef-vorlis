@@ -1,6 +1,7 @@
 import {
   cleanName, guessKind, needsQuantity, freeQuantity, starterList,
-  pantryView, statusLabel, STATUSES, isCountable, defaultUnit
+  pantryView, statusLabel, STATUSES, isCountable, defaultUnit,
+  krokMnozstvi, posunMnozstvi
 } from './src/lib/pantry.js';
 
 let fail = 0;
@@ -57,6 +58,26 @@ t('kazda surovina jen jednou', seznam.length, new Set(seznam.map(x => x.name)).s
 t('poradi je vyplnene', seznam[0].sort_order, 0);
 t('prazdny vstup nespadne', starterList([]), []);
 t('recept bez ingredienci nespadne', starterList([{}]), []);
+
+console.log('\n--- Krok pri tuknuti na plus/minus ---');
+const kus = (u, k) => ({ kind: k || 'exact', unit: u, quantity: 0 });
+t('maso v gramech po 100', krokMnozstvi(kus('g')), 100);
+t('brambory v kilech po pul', krokMnozstvi(kus('kg')), 0.5);
+t('smetana v ml po 50', krokMnozstvi(kus('ml')), 50);
+t('mleko v litrech po pul', krokMnozstvi(kus('l')), 0.5);
+t('kusy po jednom', krokMnozstvi(kus('ks')), 1);
+t('baleni po jednom', krokMnozstvi(kus('balení')), 1);
+t('pocitana surovina po jednom', krokMnozstvi(kus(null, 'count')), 1);
+t('neznama jednotka po jednom', krokMnozstvi(kus('křáplo')), 1);
+
+t('plus prida krok', posunMnozstvi({ kind: 'exact', unit: 'g', quantity: 200 }, 1), 300);
+t('minus ubere krok', posunMnozstvi({ kind: 'exact', unit: 'g', quantity: 200 }, -1), 100);
+t('do zaporu to nejde', posunMnozstvi({ kind: 'exact', unit: 'g', quantity: 50 }, -1), 0);
+t('prazdne mnozstvi zacina od nuly', posunMnozstvi({ kind: 'exact', unit: 'g' }, 1), 100);
+t('pulky kil nedelaji desetinne smeti',
+  posunMnozstvi({ kind: 'exact', unit: 'kg', quantity: 1 }, 1), 1.5);
+t('a ani po vice krocich',
+  posunMnozstvi({ kind: 'exact', unit: 'kg', quantity: 1.5 }, 1), 2);
 
 console.log('\n--- Podklad pro vykresleni ---');
 const pohled = pantryView([

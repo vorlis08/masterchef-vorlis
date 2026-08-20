@@ -1253,3 +1253,44 @@ body {
   max-height: calc(100vh - 24px);
   overflow-y: auto;
 }
+
+/* Krokovadlo mnozstvi: [−] [hodnota] [+].
+   Krok se ridi jednotkou - 100 g u masa, pul kila u brambor, kus u vajec. */
+.krokovadlo {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.krok-btn {
+  width: 30px;
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1;
+  transition: background .15s ease, color .15s ease;
+}
+.krok-btn:hover  { background: var(--color-surface-hover); color: var(--color-accent); }
+.krok-btn:active { background: var(--color-accent); color: #fff; }
+.krok-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+.krok-pole {
+  width: 54px;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  padding: 6px 4px;
+  color: var(--color-text);
+  font-size: 13px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.krok-pole:focus { outline: none; background: var(--color-surface-hover); }
+
+/* Sipky prohlizece by vedle vlastnich tlacitek jen prekazely. */
+.krok-pole::-webkit-outer-spin-button,
+.krok-pole::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.krok-pole { -moz-appearance: textfield; appearance: textfield; }

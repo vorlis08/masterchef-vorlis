@@ -748,7 +748,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     } from '../lib/recipe-logic.js';
     import { filterRecipes, headingFor, countLabel } from '../lib/filters.js';
     import { gridView } from '../lib/recipe-view.js';
-    import { pantryView, guessKind, starterList, STATUSES, statusLabel } from '../lib/pantry.js';
+    import {
+      pantryView, guessKind, starterList, STATUSES, statusLabel,
+      krokMnozstvi, posunMnozstvi,
+    } from '../lib/pantry.js';
     import { buildChecklist, checklistProgress } from '../lib/catalog.js';
     import { pripravenost, sediSurovina } from '../lib/match.js';
     import {
@@ -2642,6 +2645,24 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       }
     }
 
+    /**
+     * Mnozstvi s tlacitky - a +. Krok se ridi jednotkou (100 g u masa,
+     * pul kila u brambor, jeden kus u vajec) - viz krokMnozstvi.
+     *
+     * Pole zustava psatelne, aby slo hodnotu i prepsat rovnou.
+     */
+    function krokovadlo(trida, id, hodnota, jednotka, krok) {
+      const dataId = 'data-id="' + escAttr(id) + '"';
+      return '<div class="krokovadlo">' +
+        '<button type="button" class="' + trida + '-minus krok-btn" ' + dataId +
+          ' aria-label="O ' + escAttr(krok) + ' míň">&minus;</button>' +
+        '<input class="' + trida + '-qty krok-pole" type="number" min="0" step="any" ' +
+          'inputmode="decimal" placeholder="—" value="' + escAttr(hodnota) + '" ' + dataId + ' />' +
+        '<button type="button" class="' + trida + '-plus krok-btn" ' + dataId +
+          ' aria-label="O ' + escAttr(krok) + ' víc">+</button>' +
+        '</div>';
+    }
+
     function renderPantry() {
       const views = pantryView(pantryItems, Store.getPantryDetail());
       document.getElementById('pantry-empty').classList.toggle('hidden', views.length > 0);
@@ -2649,10 +2670,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         views.length === 0 ? '' : views.length + (views.length < 5 ? ' suroviny' : ' surovin');
 
       pantryList.innerHTML = views.map(v => {
+        const polozka = pantryItems.find(x => String(x.id) === String(v.id)) || v;
         const ovladani = v.showQuantity
           ? '<div class="flex items-center gap-1.5">' +
-              '<input class="pantry-qty w-20 bg-surface border border-border rounded-lg py-1.5 px-2 text-text text-[13px] text-right focus:outline-none focus:border-accent" ' +
-              'type="number" min="0" step="any" placeholder="—" value="' + escAttr(v.quantity) + '" data-id="' + escAttr(v.id) + '" />' +
+              krokovadlo('pantry', v.id, v.quantity, v.unit, krokMnozstvi(polozka)) +
               '<input class="pantry-unit w-14 bg-surface border border-border rounded-lg py-1.5 px-2 text-text-muted text-[13px] focus:outline-none focus:border-accent" ' +
               'type="text" maxlength="20" placeholder="' + (v.countable ? 'ks' : 'g') + '" value="' + escAttr(v.unit) + '" data-id="' + escAttr(v.id) + '" />' +
             '</div>'
@@ -2704,6 +2725,14 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         })
       );
       // Ukladame az pri odchodu z policka, ne pri kazde stisknute klavese.
+      pantryList.querySelectorAll('.pantry-minus, .pantry-plus').forEach(b =>
+        b.addEventListener('click', () => {
+          const it = itemById(b.dataset.id);
+          if (!it) return;
+          const smer = b.classList.contains('pantry-plus') ? 1 : -1;
+          savePantryItem({ ...it, quantity: posunMnozstvi(it, smer) });
+        })
+      );
       pantryList.querySelectorAll('.pantry-qty, .pantry-unit').forEach(inp =>
         inp.addEventListener('change', () => {
           const it = itemById(inp.dataset.id);
@@ -2830,8 +2859,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             '" data-name="' + klic + '" data-status="' + escAttr(st) + '">' + esc(statusLabel(st)) + '</button>'
           ).join('') + '</div>'
         : '<div class="flex items-center gap-1.5 shrink-0">' +
-            '<input class="chk-qty w-16 bg-surface border border-border rounded-lg py-1.5 px-2 text-text text-[13px] text-right focus:outline-none focus:border-accent" ' +
-            'type="number" min="0" step="any" placeholder="—" value="' + escAttr(it.quantity) + '" data-name="' + klic + '" />' +
+            krokovadloSeznam(it, klic) +
             jednotka +
           '</div>';
 
@@ -2840,6 +2868,18 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         '<span class="flex-1 min-w-0 text-[14px] text-text truncate">' + esc(it.name) + '</span>' +
         ovladani +
       '</li>';
+    }
+
+    /** Krokovadlo v dlouhem seznamu. Klic je nazev, ne id - polozka
+     *  jeste nemusi ve spizi existovat. */
+    function krokovadloSeznam(it, klic) {
+      const krok = krokMnozstvi({ kind: it.kind, unit: it.unit || (it.units && it.units[0]) });
+      return '<div class="krokovadlo">' +
+        '<button type="button" class="chk-minus krok-btn" data-name="' + klic + '" aria-label="O ' + escAttr(krok) + ' míň">&minus;</button>' +
+        '<input class="chk-qty krok-pole" type="number" min="0" step="any" inputmode="decimal" ' +
+          'placeholder="—" value="' + escAttr(it.quantity) + '" data-name="' + klic + '" />' +
+        '<button type="button" class="chk-plus krok-btn" data-name="' + klic + '" aria-label="O ' + escAttr(krok) + ' víc">+</button>' +
+        '</div>';
     }
 
     function checklistItem(name) {
@@ -2884,6 +2924,18 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         b.addEventListener('click', () => {
           const it = checklistItem(b.dataset.name);
           if (it) saveChecklistRow(it, { status: b.dataset.status });
+        })
+      );
+      checklistBody.querySelectorAll('.chk-minus, .chk-plus').forEach(b =>
+        b.addEventListener('click', () => {
+          const it = checklistItem(b.dataset.name);
+          if (!it) return;
+          const smer = b.classList.contains('chk-plus') ? 1 : -1;
+          const jednotka = it.unit || (it.units && it.units[0]) || '';
+          saveChecklistRow(it, {
+            quantity: posunMnozstvi({ kind: it.kind, unit: jednotka, quantity: it.quantity }, smer),
+            unit: jednotka,
+          });
         })
       );
       checklistBody.querySelectorAll('.chk-qty, .chk-unit').forEach(inp =>

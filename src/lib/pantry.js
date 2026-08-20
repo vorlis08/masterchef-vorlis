@@ -91,6 +91,57 @@ export function isCountable(item) {
   return item.kind === 'count';
 }
 
+/**
+ * O kolik se ma mnozstvi hnout pri jednom tuknuti.
+ *
+ * Hodnota se ridi JEDNOTKOU, ne surovinou: u masa v gramech je rozumny
+ * skok 100 g, u brambor v kilech pul kila, u vajec jeden kus. Klikat
+ * z 0 na 500 g po jednom gramu nikdo nebude.
+ */
+export const KROKY_JEDNOTEK = {
+  g: 100,
+  dkg: 5,
+  kg: 0.5,
+  ml: 50,
+  dl: 1,
+  l: 0.5,
+  ks: 1,
+  kus: 1,
+  kusy: 1,
+  balení: 1,
+  konzerva: 1,
+  kelímek: 1,
+  sklenice: 1,
+  plátek: 1,
+  stroužek: 1,
+  lžíce: 1,
+  lžička: 1,
+  svazek: 1,
+  hrst: 1,
+};
+
+/** Krok pro danou polozku. Neznama jednotka se hybe po jedne. */
+export function krokMnozstvi(item) {
+  const jednotka = fold(defaultUnit(item) || '').trim();
+  const tabulka = {};
+  Object.keys(KROKY_JEDNOTEK).forEach(k => { tabulka[fold(k)] = KROKY_JEDNOTEK[k]; });
+  return tabulka[jednotka] || 1;
+}
+
+/**
+ * Prida nebo ubere jeden krok. Do zaporu to nejde - "minus 100 g masa"
+ * nedava smysl.
+ *
+ * Vraci cislo zaokrouhlene na jedno desetinne misto, aby z pulek kil
+ * nevznikaly hodnoty jako 1.5000000000000002.
+ */
+export function posunMnozstvi(item, smer) {
+  const krok = krokMnozstvi(item);
+  const ted = Number(item.quantity) || 0;
+  const nove = Math.max(0, ted + krok * (smer < 0 ? -1 : 1));
+  return Math.round(nove * 10) / 10;
+}
+
 /** Vychozi jednotka podle druhu. */
 export function defaultUnit(item) {
   if (isCountable(item)) return 'ks';
