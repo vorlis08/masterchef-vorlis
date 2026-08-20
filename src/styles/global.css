@@ -954,3 +954,118 @@ body {
 #tour-dira {
   box-shadow: 0 0 0 9999px rgba(0, 0, 0, .78), 0 0 0 2px var(--color-accent);
 }
+
+/* ==========================================================================
+   Uvitaci obrazovka (brana)
+
+   Vidi ji kazdy, kdo neni prihlaseny. Je to prvni vec, kterou clovek
+   z appky uvidi, tak drzi stejny nadech jako uvitaci e-mail: tmava
+   plocha, teply akcent, patkovy nadpis.
+   ========================================================================== */
+
+#brana {
+  background: var(--color-bg);
+  opacity: 1;
+  transition: opacity .35s ease, visibility .35s;
+}
+
+/* Skryta brana nesmi jen zprusvitnet - musela by pod ni jit klikat. */
+#brana.je-pryc {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Teple svetlo za nadpisem. Radialni prechod, at plocha neni placata. */
+.brana-zare {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60rem 34rem at 50% 6%, color-mix(in srgb, var(--color-accent) 22%, transparent), transparent 70%),
+    radial-gradient(30rem 24rem at 85% 88%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 70%);
+  pointer-events: none;
+}
+
+.brana-znak {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  box-shadow: 0 14px 40px color-mix(in srgb, var(--color-accent) 34%, transparent);
+}
+
+.brana-surovina {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .55rem 1rem;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.brana-tlacitko {
+  display: inline-flex;
+  align-items: center;
+  gap: .7rem;
+  padding: 1rem 2rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 12px 34px color-mix(in srgb, var(--color-accent) 30%, transparent);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.brana-tlacitko:hover  { transform: translateY(-2px); box-shadow: 0 18px 44px color-mix(in srgb, var(--color-accent) 38%, transparent); }
+.brana-tlacitko:active { transform: translateY(0); }
+
+.brana-karty {
+  display: grid;
+  gap: .8rem;
+  grid-template-columns: 1fr;
+  text-align: left;
+}
+@media (min-width: 640px) {
+  .brana-karty { grid-template-columns: repeat(3, 1fr); }
+}
+
+.brana-karta {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding: 1.1rem 1.2rem;
+  border-radius: 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.brana-karta strong { color: var(--color-text); font-size: 14px; font-weight: 600; }
+.brana-karta span:last-child { color: var(--color-text-muted); font-size: 13px; line-height: 1.55; }
+
+/* Obsah nabehne odspodu. Kdo ma vypnute animace, uvidi ho rovnou. */
+.brana-obsah > * {
+  animation: brana-nabeh .6s cubic-bezier(.22,.61,.36,1) backwards;
+}
+.brana-obsah > *:nth-child(1) { animation-delay: .05s }
+.brana-obsah > *:nth-child(2) { animation-delay: .12s }
+.brana-obsah > *:nth-child(3) { animation-delay: .19s }
+.brana-obsah > *:nth-child(4) { animation-delay: .26s }
+.brana-obsah > *:nth-child(5) { animation-delay: .33s }
+.brana-obsah > *:nth-child(6) { animation-delay: .40s }
+.brana-obsah > *:nth-child(7) { animation-delay: .47s }
+.brana-obsah > *:nth-child(8) { animation-delay: .54s }
+.brana-obsah > *:nth-child(9) { animation-delay: .61s }
+
+@keyframes brana-nabeh {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brana-obsah > * { animation: none; }
+  #brana { transition: none; }
+}

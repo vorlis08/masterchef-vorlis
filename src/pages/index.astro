@@ -277,6 +277,73 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
+  <!-- Uvitaci obrazovka. Vidi ji kazdy, kdo neni prihlaseny. -->
+  <div id="brana" class="fixed inset-0 z-[200] overflow-y-auto">
+    <div class="brana-zare"></div>
+
+    <div class="relative min-h-full flex flex-col items-center justify-center px-5 py-14">
+
+      <div class="brana-obsah w-full max-w-[640px] text-center">
+
+        <div class="brana-znak mx-auto mb-7">
+          <span class="text-[34px] leading-none">🍳</span>
+        </div>
+
+        <div class="label text-accent mb-5">MasterChef&nbsp;Vorlis</div>
+
+        <h1 class="display text-[40px] sm:text-[58px] leading-[1.05] text-text mb-6">
+          Tak co dneska?
+        </h1>
+
+        <p class="text-text-muted text-[16px] sm:text-[17px] leading-relaxed max-w-[30rem] mx-auto mb-8">
+          Je šest, máš hlad, otevřeš lednici — a koukáš na tři věci, ze kterých
+          nevíš co udělat.
+        </p>
+
+        <div class="flex items-center justify-center gap-3 sm:gap-6 mb-8 flex-wrap">
+          <span class="brana-surovina"><span class="text-[24px]">🍗</span>kuřecí prsa</span>
+          <span class="brana-surovina"><span class="text-[24px]">🥛</span>půlka smetany</span>
+          <span class="brana-surovina"><span class="text-[24px]">🧅</span>cibule</span>
+        </div>
+
+        <p class="display text-[20px] sm:text-[23px] text-text italic leading-snug mb-10 max-w-[28rem] mx-auto">
+          Tahle kuchařka existuje přesně kvůli téhle chvíli.
+        </p>
+
+        <button id="brana-prihlasit" class="brana-tlacitko">
+          <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#fff" d="M12 11v2.8h6.6c-.27 1.5-1.9 4.4-6.6 4.4A7.2 7.2 0 1 1 16.8 6l2.2-2.1A10.4 10.4 0 1 0 12 22.4c6 0 10-4.2 10-10.1 0-.7-.08-1.2-.18-1.7H12z"/>
+          </svg>
+          Pokračovat přes Google
+        </button>
+
+        <p class="text-text-muted text-[12.5px] mt-4">
+          Účet je potřeba, aby si appka pamatovala tvoji spíž a hodnocení.<br>
+          Nic víc po tobě nechceme.
+        </p>
+
+        <div class="brana-karty mt-14">
+          <div class="brana-karta">
+            <span class="text-[22px]">🥫</span>
+            <strong>Spíž</strong>
+            <span>Zaškrtáš, co máš doma. Appka pak ví, co ti chybí.</span>
+          </div>
+          <div class="brana-karta">
+            <span class="text-[22px]">⏱️</span>
+            <strong>Režim vaření</strong>
+            <span>Krok za krokem, s časovači. Displej nezhasne.</span>
+          </div>
+          <div class="brana-karta">
+            <span class="text-[22px]">👨‍🍳</span>
+            <strong>Kuchařský kámoš</strong>
+            <span>Poradí, když ti v půlce receptu něco dojde.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- Uvodni okno po registraci -->
   <div id="uvod-overlay" class="fixed inset-0 bg-black/80 z-[95] hidden opacity-0 transition-opacity duration-300">
     <div class="fixed inset-0 flex items-center justify-center p-4">
@@ -631,9 +698,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // server neposila, takze listek nezustane v zadnem logu po ceste.
     let currentUser = null;
 
-    // Uvodni okno se sklada az po nacteni stranky, takze na nej odsud
-    // primo nevidime. Az bude hotove, samo se sem prihlasi.
-    let uvodHook = null;
+    // Uvodni okno a brana se skladaji az po nacteni stranky, takze na ne
+    // odsud primo nevidime. Az budou hotove, samy se sem prihlasi.
+    // Vsechno, co se ma stat po overeni prihlaseni. Sklada se to az
+    // s nactenou strankou, takze odsud na to primo nevidime.
+    let poPrihlaseni = null;
+    let branaHook = null;
 
     function readTokenFromUrl() {
       const m = /[#&]token=([^&]+)/.exec(location.hash || '');
@@ -661,7 +731,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (!token) {
         currentUser = null;
         paintAuth();
-        if (uvodHook) uvodHook();   // odkaz z e-mailu plati i pro neprihlaseneho
+        if (branaHook) branaHook(true);
+        if (poPrihlaseni) poPrihlaseni();
         return;
       }
       try {
@@ -677,10 +748,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         }
       } catch { currentUser = null; }
       paintAuth();
-      paintProfile();
-      nactiUpozorneni();
-      nactiStav();
-      if (uvodHook) uvodHook();
+      if (branaHook) branaHook(!currentUser);
+      if (poPrihlaseni) poPrihlaseni();
     }
 
     function startGoogleLogin() {
@@ -738,6 +807,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       // "Vypisovat mnozstvi u vseho" - viz spiz. Ulozeno lokalne,
       // je to preference vzhledu, ne data.
+      // Prisel z e-mailu na uvod, ale jeste nebyl prihlaseny.
+      getUvodPoPrihlaseni()  { return this._raw('uvodPotom', '') === '1'; },
+      setUvodPoPrihlaseni(a) { if (a) this._write('uvodPotom', '1'); else this._remove('uvodPotom'); },
+
       getPantryDetail()   { return this._raw('pantryDetail', '') === '1'; },
       setPantryDetail(on) { if (on) this._write('pantryDetail', '1'); else this._remove('pantryDetail'); },
 
@@ -2024,6 +2097,26 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     updateFilters();
     renderGrid();
 
+    // --- Uvitaci obrazovka pro neprihlasene ---------------------------------
+    //
+    // Ukazuje se hned pri nacteni, jeste nez se overi prihlaseni na serveru -
+    // jinak by na okamzik problikla cela aplikace. Rozhoduje se podle listku
+    // v prohlizeci, protoze ten je k dispozici okamzite.
+
+    const brana = document.getElementById('brana');
+
+    function ukazBranu(ukaz) {
+      if (!brana) return;
+      brana.classList.toggle('je-pryc', !ukaz);
+      document.body.style.overflow = ukaz ? 'hidden' : '';
+    }
+
+    document.getElementById('brana-prihlasit').addEventListener('click', startGoogleLogin);
+
+    // Kdo ma listek, tomu branu nezobrazujeme vubec. Kdyby uz neplatil,
+    // loadUser ji vrati zpatky.
+    ukazBranu(!Store.getSession());
+
     // --- Uvodni okno a prohlidka ------------------------------------------
 
     const uvodOverlay = document.getElementById('uvod-overlay');
@@ -2156,16 +2249,30 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.getElementById('tour-konec').addEventListener('click', ukonciProhlidku);
 
     // Prihlasime se prihlasovacimu kodu, ktery bezi mimo tenhle blok.
-    uvodHook = zvazUvod;
+    branaHook = ukazBranu;
+    poPrihlaseni = () => {
+      paintProfile();
+      nactiUpozorneni();
+      nactiStav();
+      zvazUvod();
+    };
 
     /** Otevre uvod: po registraci, nebo kdyz na to vede odkaz z e-mailu. */
     function zvazUvod() {
       const zEmailu = new URLSearchParams(location.search).get('uvod') === '1';
       if (zEmailu) {
         history.replaceState(null, '', location.pathname);
+        // Nepřihlášený vidí bránu; přání otevřít úvod si schováme na potom,
+        // ať odkaz z e-mailu neskončí schovaný pod ní.
+        if (!currentUser) { Store.setUvodPoPrihlaseni(true); return; }
         return otevriUvod();
       }
-      if (currentUser && !currentUser.intro_done) otevriUvod();
+      if (!currentUser) return;
+      if (Store.getUvodPoPrihlaseni()) {
+        Store.setUvodPoPrihlaseni(false);
+        return otevriUvod();
+      }
+      if (!currentUser.intro_done) otevriUvod();
     }
 
     // --- Spiz a profil -----------------------------------------------------
@@ -2645,6 +2752,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       pantryItems = [];
       paintAuth(); paintProfile();
       closeSettings();
+      ukazBranu(true);
     });
 
     // Az uplne nakonec - drive jeste neexistuje Store ani adresa Workeru.
