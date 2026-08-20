@@ -197,3 +197,11 @@ export async function syncState(request, env, session, origin, cors) {
 
   return json({ items: results || [] }, origin, cors);
 }
+
+// -- Uvodni okno ----------------------------------------------------------
+
+/** Oznaci, ze uzivatel uvod uz videl. Zpatky se otevre jen odkazem ?uvod=1. */
+export async function markIntroDone(env, session, origin, cors) {
+  await env.DB.prepare('UPDATE users SET intro_done = 1 WHERE id = ?').bind(session.sub).run();
+  return json({ ok: true }, origin, cors);
+}

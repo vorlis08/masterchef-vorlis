@@ -277,6 +277,62 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
+  <!-- Uvodni okno po registraci -->
+  <div id="uvod-overlay" class="fixed inset-0 bg-black/80 z-[95] hidden opacity-0 transition-opacity duration-300">
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <div id="uvod-okno" class="bg-bg border border-border rounded-3xl w-full max-w-lg overflow-hidden scale-95 opacity-0 transition-all duration-300">
+
+        <div class="uvod-pruh px-8 py-9 text-center">
+          <div class="text-[44px] leading-none mb-2">🍳</div>
+          <div class="text-[11px] tracking-[0.3em] uppercase font-bold" style="color:#3a1e10">MasterChef&nbsp;Vorlis</div>
+        </div>
+
+        <div class="px-8 py-8">
+          <h2 class="display text-[26px] sm:text-[30px] text-text mb-4 leading-tight">Vítej v kuchyni</h2>
+
+          <p class="text-text-muted text-[15px] leading-relaxed mb-4">
+            Tohle není další sbírka receptů opsaných z internetu. Každý recept tady někdo
+            doopravdy uvařil, ochutnal a doladil.
+          </p>
+          <p class="text-text-muted text-[15px] leading-relaxed mb-4">
+            Appka tě provede vařením krok za krokem, pohlídá časovače a pamatuje si,
+            co ti chutnalo. A když jí řekneš, co máš ve spíži, poradí ti, co dneska
+            zvládneš uvařit, aniž bys musel do obchodu.
+          </p>
+          <p class="text-text text-[15px] leading-relaxed mb-7">
+            Chceš to projít spolu? Ukážu ti postupně všechno — potrvá to dvě minuty.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button id="uvod-projit" class="flex-1 py-3.5 rounded-xl bg-accent text-white font-medium text-[15px] hover:bg-accent-hover active:scale-[0.98] transition-all">
+              Proveď mě appkou
+            </button>
+            <button id="uvod-preskocit" class="flex-1 py-3.5 rounded-xl bg-surface border border-border text-text-muted font-medium text-[15px] hover:text-text hover:border-accent active:scale-[0.98] transition-all">
+              Zvládnu to sám
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prohlidka: zvyrazneni a bublina -->
+  <div id="tour" class="hidden">
+    <div id="tour-dira" class="fixed rounded-xl pointer-events-none z-[96] transition-all duration-300"></div>
+    <div id="tour-bublina" class="fixed z-[97] w-[300px] max-w-[calc(100vw-24px)] bg-bg border border-accent rounded-2xl p-5 shadow-2xl transition-all duration-300">
+      <div class="flex items-center justify-between mb-2">
+        <span id="tour-postup" class="meta text-accent text-[11px]"></span>
+        <button id="tour-konec" class="text-text-muted hover:text-text text-[12px] transition-colors">Ukončit</button>
+      </div>
+      <h3 id="tour-nadpis" class="display text-[19px] text-text mb-2 leading-snug"></h3>
+      <p id="tour-text" class="text-text-muted text-[13.5px] leading-relaxed mb-4"></p>
+      <div class="flex gap-2">
+        <button id="tour-zpet" class="px-4 py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] hover:text-text transition-colors disabled:opacity-30 disabled:pointer-events-none">Zpět</button>
+        <button id="tour-dal" class="flex-1 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Dál</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Spiz -->
   <div id="pantry-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden opacity-0 transition-opacity duration-200">
     <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6">
@@ -554,6 +610,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     import { pantryView, guessKind, starterList, STATUSES, statusLabel } from '../lib/pantry.js';
     import { buildChecklist, checklistProgress } from '../lib/catalog.js';
     import {
+      krok as tourKrokData, omez as tourOmez, jePrvni as tourPrvni,
+      jePosledni as tourPosledni, popisPostupu as tourPostup,
+      popisekDopredu as tourDopredu, akceKroku as tourAkce,
+    } from '../lib/tour.js';
+    import {
       createSession, stepCount, currentStep, stepNumber, isLast, goTo,
       progressPercent, stepLabel, progressLabel, ghostLabel, nextLabel,
       finishText, finishLabel
@@ -569,6 +630,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // Worker po prihlaseni vrati listek za mrizkou v adrese. Mrizka se na
     // server neposila, takze listek nezustane v zadnem logu po ceste.
     let currentUser = null;
+
+    // Uvodni okno se sklada az po nacteni stranky, takze na nej odsud
+    // primo nevidime. Az bude hotove, samo se sem prihlasi.
+    let uvodHook = null;
 
     function readTokenFromUrl() {
       const m = /[#&]token=([^&]+)/.exec(location.hash || '');
@@ -593,7 +658,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     async function loadUser() {
       const token = Store.getSession();
-      if (!token) { currentUser = null; paintAuth(); return; }
+      if (!token) {
+        currentUser = null;
+        paintAuth();
+        if (uvodHook) uvodHook();   // odkaz z e-mailu plati i pro neprihlaseneho
+        return;
+      }
       try {
         const res = await fetch(AI_WORKER + '/api/me', {
           headers: { Authorization: 'Bearer ' + token },
@@ -610,6 +680,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       paintProfile();
       nactiUpozorneni();
       nactiStav();
+      if (uvodHook) uvodHook();
     }
 
     function startGoogleLogin() {
@@ -1952,6 +2023,150 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // --- Init ---
     updateFilters();
     renderGrid();
+
+    // --- Uvodni okno a prohlidka ------------------------------------------
+
+    const uvodOverlay = document.getElementById('uvod-overlay');
+    const uvodOkno = document.getElementById('uvod-okno');
+
+    function otevriUvod() {
+      uvodOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        uvodOverlay.classList.remove('opacity-0');
+        uvodOkno.classList.remove('scale-95', 'opacity-0');
+      });
+      document.body.style.overflow = 'hidden';
+    }
+
+    function zavriUvod() {
+      uvodOverlay.classList.add('opacity-0');
+      uvodOkno.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => uvodOverlay.classList.add('hidden'), 300);
+      document.body.style.overflow = '';
+      // At uz prohlidku prijal nebo ne, podruhe uz se samo neotevre.
+      api('/api/intro-done', {}).catch(() => {});
+      if (currentUser) currentUser.intro_done = 1;
+    }
+
+    document.getElementById('uvod-preskocit').addEventListener('click', zavriUvod);
+    document.getElementById('uvod-projit').addEventListener('click', () => {
+      zavriUvod();
+      setTimeout(spustProhlidku, 350);
+    });
+
+    // -- Prohlidka --
+
+    const tour = document.getElementById('tour');
+    const tourDira = document.getElementById('tour-dira');
+    const tourBublina = document.getElementById('tour-bublina');
+    let tourKrok = 0;
+
+    /**
+     * Akce, ktere si kroky vyzadaji, aby bylo na co ukazovat.
+     * Nazvy jsou dohodnute s tour.js.
+     */
+    const TOUR_AKCE = {
+      otevriRecept: () => {
+        const prvni = document.querySelector('.menu-row, .recipe-card');
+        if (prvni) prvni.click();
+      },
+      zavriRecept: () => closeDetailModal(),
+      otevriSpiz: () => openPantry(),
+      zavriSpiz: () => closePantry(),
+      otevriNastaveni: () => document.getElementById('settings-btn').click(),
+      zavriNastaveni: () => closeSettings(),
+    };
+
+    function spustProhlidku() {
+      tourKrok = 0;
+      tour.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      vykresliKrok();
+    }
+
+    function ukonciProhlidku() {
+      tour.classList.add('hidden');
+      document.body.style.overflow = '';
+      // Uklid po krocich, ktere neco otevrely.
+      try { closeDetailModal(); } catch {}
+      try { closePantry(); } catch {}
+      try { closeSettings(); } catch {}
+    }
+
+    function vykresliKrok() {
+      const k = tourKrokData(tourKrok);
+      if (!k) return ukonciProhlidku();
+
+      const akce = tourAkce(tourKrok);
+      if (akce && TOUR_AKCE[akce]) TOUR_AKCE[akce]();
+
+      // Modaly maji vlastni animaci, tak chvili pockame, nez zmerime misto.
+      setTimeout(() => umistiKrok(k), akce ? 380 : 60);
+
+      document.getElementById('tour-postup').textContent = tourPostup(tourKrok);
+      document.getElementById('tour-nadpis').textContent = k.nadpis;
+      document.getElementById('tour-text').textContent = k.text;
+      document.getElementById('tour-dal').textContent = tourDopredu(tourKrok);
+      document.getElementById('tour-zpet').disabled = tourPrvni(tourKrok);
+    }
+
+    /** Zvyrazni prvek a postavi k nemu bublinu. */
+    function umistiKrok(k) {
+      const cil = document.querySelector(k.cil);
+      if (!cil) {
+        // Krok, ktery na teto obrazovce nema co ukazovat, radeji preskocime.
+        tourKrok = tourOmez(tourKrok + 1);
+        return vykresliKrok();
+      }
+
+      cil.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+      setTimeout(() => {
+        const r = cil.getBoundingClientRect();
+        const okraj = 8;
+        tourDira.style.left = (r.left - okraj) + 'px';
+        tourDira.style.top = (r.top - okraj) + 'px';
+        tourDira.style.width = (r.width + okraj * 2) + 'px';
+        tourDira.style.height = (r.height + okraj * 2) + 'px';
+
+        // Bublina pod prvek, a kdyz se tam nevejde, nad nej.
+        const vyskaBubliny = tourBublina.offsetHeight || 220;
+        const podNim = r.bottom + 14;
+        const vejdeSe = podNim + vyskaBubliny < window.innerHeight - 10;
+        tourBublina.style.top = (vejdeSe ? podNim : Math.max(10, r.top - vyskaBubliny - 14)) + 'px';
+
+        const sirka = tourBublina.offsetWidth || 300;
+        let x = r.left + r.width / 2 - sirka / 2;
+        x = Math.max(12, Math.min(x, window.innerWidth - sirka - 12));
+        tourBublina.style.left = x + 'px';
+      }, 220);
+    }
+
+    document.getElementById('tour-dal').addEventListener('click', () => {
+      if (tourPosledni(tourKrok)) return ukonciProhlidku();
+      tourKrok = tourOmez(tourKrok + 1);
+      vykresliKrok();
+    });
+
+    document.getElementById('tour-zpet').addEventListener('click', () => {
+      tourKrok = tourOmez(tourKrok - 1);
+      vykresliKrok();
+    });
+
+    document.getElementById('tour-konec').addEventListener('click', ukonciProhlidku);
+
+    // Prihlasime se prihlasovacimu kodu, ktery bezi mimo tenhle blok.
+    uvodHook = zvazUvod;
+
+    /** Otevre uvod: po registraci, nebo kdyz na to vede odkaz z e-mailu. */
+    function zvazUvod() {
+      const zEmailu = new URLSearchParams(location.search).get('uvod') === '1';
+      if (zEmailu) {
+        history.replaceState(null, '', location.pathname);
+        return otevriUvod();
+      }
+      if (currentUser && !currentUser.intro_done) otevriUvod();
+    }
 
     // --- Spiz a profil -----------------------------------------------------
 

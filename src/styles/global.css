@@ -943,3 +943,14 @@ body {
 
 /* Rating stars in menu rows */
 .menu-stars { color: var(--color-accent); font-size: 0.8em; margin-left: 4px; }
+
+/* Uvodni okno: teply pruh v hlavicce, stejny jako v uvitacim e-mailu. */
+.uvod-pruh {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 55%, #a4502f 100%);
+}
+
+/* Prohlidka: zvyrazneny prvek. Tmu kolem delame stinem, ne prekryvem -
+   diky tomu jde na zvyrazneny prvek porad videt ostre. */
+#tour-dira {
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, .78), 0 0 0 2px var(--color-accent);
+}

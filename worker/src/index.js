@@ -14,7 +14,7 @@
 
 import { startLogin, finishLogin } from './google.js';
 import { verifySession, bearerToken } from './session.js';
-import { updateProfile, listInventory, saveInventory, getNotify, setNotify, syncState } from './api.js';
+import { updateProfile, listInventory, saveInventory, getNotify, setNotify, syncState, markIntroDone } from './api.js';
 import { spustCron } from './digest.js';
 import { adminError } from './mail.js';
 
@@ -151,7 +151,7 @@ export default {
 
       if (path === '/api/me') {
         const user = await env.DB
-          .prepare('SELECT id, email, name, role, avatar FROM users WHERE id = ?')
+          .prepare('SELECT id, email, name, role, avatar, intro_done FROM users WHERE id = ?')
           .bind(session.sub).first();
         if (!user) return deny(401, 'Účet už neexistuje.', origin);
         return new Response(JSON.stringify(user), {
@@ -161,6 +161,10 @@ export default {
 
       if (path === '/api/profile' && request.method === 'POST') {
         return updateProfile(request, env, session, origin, corsHeaders);
+      }
+
+      if (path === '/api/intro-done' && request.method === 'POST') {
+        return markIntroDone(env, session, origin, corsHeaders);
       }
 
       if (path === '/api/notify') {
