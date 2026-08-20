@@ -35,4 +35,5 @@ migrations_dir = "migrations"
 # Pravidelne zpravy. Casy jsou v UTC; digest.js si hlida, aby nic
 # neodeslo v noci ceskeho casu.
 [triggers]
-crons = ["0 5 * * 1", "0 5 1 * *"]   # pondeli 7:00 CEST, 1. v mesici 7:00 CEST
+crons = ["0 5 * * *", "0 5 * * 1", "0 5 1 * *"]
+# denne 7:00 CEST (nakupni seznam), pondeli (nove recepty), 1. v mesici (souhrn)

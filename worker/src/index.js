@@ -14,7 +14,10 @@
 
 import { startLogin, finishLogin } from './google.js';
 import { verifySession, bearerToken } from './session.js';
-import { updateProfile, listInventory, saveInventory, getNotify, setNotify, syncState, markIntroDone } from './api.js';
+import {
+  updateProfile, listInventory, saveInventory, getNotify, setNotify,
+  syncState, markIntroDone, listBookings, saveBooking,
+} from './api.js';
 import { spustCron } from './digest.js';
 import { adminError } from './mail.js';
 
@@ -175,6 +178,12 @@ export default {
 
       if (path === '/api/state' && request.method === 'POST') {
         return syncState(request, env, session, origin, corsHeaders);
+      }
+
+      if (path === '/api/bookings') {
+        return request.method === 'POST'
+          ? saveBooking(request, env, session, origin, corsHeaders)
+          : listBookings(env, session, origin, corsHeaders);
       }
 
       if (path === '/api/inventory') {

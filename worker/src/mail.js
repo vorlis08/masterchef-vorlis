@@ -246,6 +246,38 @@ export function wishlistMail(user, polozky, odhlasit) {
   };
 }
 
+// -- Pripominka na zitrejsi vareni (4.6) ----------------------------------
+
+export function reminderMail(user, plan, odhlasit) {
+  const radky = plan.map(p => {
+    const chybi = p.chybi.length
+      ? '<div style="font-family:' + SANS + ';font-size:13px;color:#9a9083;margin-top:3px">Chybí: ' +
+        esc(p.chybi.join(', ')) + '</div>'
+      : '<div style="font-family:' + SANS + ';font-size:13px;color:#2a9d5c;margin-top:3px">Máš všechno.</div>';
+    return '<li style="margin-bottom:14px"><strong>' + esc(p.title) + '</strong>' +
+      '<span style="color:#888"> — ' + esc(p.kdy) + '</span>' + chybi + '</li>';
+  }).join('');
+
+  const neco = plan.some(p => p.chybi.length);
+  const nadpis = neco ? 'Zítra vaříš — něco ti chybí 🛒' : 'Zítra vaříš 🍳';
+
+  const telo =
+    '<p>Ahoj ' + esc(jmeno(user)) + ', zítra podle plánu vaříš:</p>' +
+    '<ul style="padding-left:18px">' + radky + '</ul>' +
+    (neco
+      ? '<p>Chybějící suroviny jsem ti hodil do nákupního seznamu v aplikaci.</p>'
+      : '<p>Nakupovat nemusíš. To se povedlo.</p>');
+
+  return {
+    subject: nadpis,
+    text: 'Ahoj ' + jmeno(user) + ',\n\nzítra podle plánu vaříš:\n' +
+      plan.map(p => '  • ' + p.title + ' (' + p.kdy + ')' +
+        (p.chybi.length ? '\n    chybí: ' + p.chybi.join(', ') : '\n    máš všechno')).join('\n') +
+      '\n\n' + APP_URL + '\n',
+    html: layout(nadpis, telo, odhlasit),
+  };
+}
+
 // -- 8. Souhrn ------------------------------------------------------------
 
 export function summaryMail(user, s, odhlasit) {

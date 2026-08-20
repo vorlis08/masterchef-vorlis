@@ -8,11 +8,14 @@
 // Kdyby je mel ve svoji kopii, rozesly by se s appkou do tydne.
 // ==========================================================================
 
+import { sediSurovina } from '../../src/lib/match.js';
 import { cleanName } from '../../src/lib/pantry.js';
-import { fold } from '../../src/lib/recipe-logic.js';
 import {
-  sendMail, newRecipesMail, wishlistMail, summaryMail, adminError, unsubUrl,
+  sendMail, newRecipesMail, wishlistMail, summaryMail, reminderMail,
+  adminError, unsubUrl,
 } from './mail.js';
+import { chybejici } from '../../src/lib/match.js';
+import { zitra, popisBookingu } from '../../src/lib/booking.js';
 
 const RECIPES_URL =
   'https://raw.githubusercontent.com/vorlis08/masterchef-vorlis/main/src/data/recipes.json';
@@ -92,26 +95,6 @@ export async function noveRecepty(env) {
 // -- 6. Z wishlistu jde uvarit -------------------------------------------
 
 /**
- * Sedi surovina ze spize na surovinu z receptu?
- *
- * Nepouziva se ingredientMatch z recipe-logic: to porovnava podretezce,
- * takze "smetana" a "smetany" mu nesednou. Cestina sklonuje, proto se
- * porovnavaji koreny slov stejne jako v katalogu.
- */
-function koreny(text) {
-  return String(text).trim().split(/\s+/)
-    .map(w => fold(w).replace(/[^a-z]/g, ''))
-    .filter(w => w.length >= 3)     // "sul" a "med" musi projit
-    .map(w => w.slice(0, 4));
-}
-
-export function sediSurovina(mamNazev, potreba) {
-  const a = new Set(koreny(mamNazev));
-  if (!a.size) return false;
-  return koreny(potreba).some(st => a.has(st));
-}
-
-/**
  * Kolik surovin receptu uzivateli chybi.
  *
  * Pocita se jen s NEZAMCENYMI zasobami (4.2) a polozky oznacene
@@ -187,6 +170,97 @@ export async function mesicniSouhrn(env, user) {
   };
 }
 
+// -- Denni beh: nakupni seznam a pripominka (4.6) -------------------------
+
+/**
+ * Projde zitrejsi bookingy, porovna je se spizi a chybejici suroviny
+ * doplni do nakupniho seznamu.
+ *
+ * Polozky oznacene "mam doma standardne" se preskakuji (4.5) - o to se
+ * stara uz `chybejici`, ktera je povazuje za dostupne vzdy.
+ *
+ * Bezi ve Workeru, aby to fungovalo i pri zavrene appce.
+ */
+export async function denniBeh(env, origin) {
+  const den = zitra();
+  const recepty = await nactiRecepty();
+
+  const { results: bookingy } = await env.DB.prepare(
+    `SELECT b.id, b.user_id, b.recipe_slug, b.cook_date, b.cook_time,
+            u.email, u.name, u.unsub_token, u.notify_wishlist
+       FROM bookings b JOIN users u ON u.id = b.user_id
+      WHERE b.cook_date = ? AND b.state = 'planned'`
+  ).bind(den).all();
+
+  if (!bookingy || !bookingy.length) return { bookingu: 0, posláno: 0 };
+
+  // Podle uzivatele, at kazdy dostane jednu zpravu se vsim.
+  const podleUzivatele = new Map();
+  bookingy.forEach(b => {
+    if (!podleUzivatele.has(b.user_id)) podleUzivatele.set(b.user_id, []);
+    podleUzivatele.get(b.user_id).push(b);
+  });
+
+  let posláno = 0;
+
+  for (const [userId, jehoBookingy] of podleUzivatele) {
+    const { results: spiz } = await env.DB.prepare(
+      `SELECT i.id, i.name, i.kind, i.quantity, i.status, i.staple,
+              COALESCE((SELECT SUM(r.amount) FROM reservations r
+                         WHERE r.inventory_id = i.id AND r.booking_id != ?), 0) AS reserved
+         FROM inventory i WHERE i.user_id = ?`
+    ).bind(jehoBookingy[0].id, userId).all();
+
+    const plan = [];
+    const doNakupu = [];
+
+    for (const b of jehoBookingy) {
+      const recept = recepty.find(r => r.slug === b.recipe_slug);
+      if (!recept) continue;
+      const m = chybejici(recept, spiz.results || []);
+      plan.push({
+        title: recept.title || b.recipe_slug,
+        kdy: popisBookingu(b, den),
+        chybi: m.chybi,
+      });
+      m.chybi.forEach(sur => {
+        if (!doNakupu.includes(sur)) doNakupu.push(sur);
+      });
+    }
+
+    if (!plan.length) continue;
+
+    // Do nakupniho seznamu jen to, co tam jeste neni.
+    if (doNakupu.length) {
+      const { results: uzTam } = await env.DB.prepare(
+        'SELECT text FROM shopping_list WHERE user_id = ? AND done = 0'
+      ).bind(userId).all();
+      const mam = new Set((uzTam || []).map(x => String(x.text).toLowerCase()));
+
+      const nove = doNakupu.filter(x => !mam.has(x.toLowerCase()));
+      if (nove.length) {
+        const stmt = env.DB.prepare(
+          "INSERT INTO shopping_list (user_id, text, source, booking_id) VALUES (?, ?, 'auto', ?)"
+        );
+        await env.DB.batch(nove.map(x => stmt.bind(userId, x, jehoBookingy[0].id)));
+      }
+    }
+
+    // Pripominka chodi pod stejnym nastavenim jako ostatni zpravy.
+    const u = jehoBookingy[0];
+    if (!u.notify_wishlist) continue;
+    if (await poslednich(env, userId, 'reminder', 1)) continue;
+
+    const mail = reminderMail(u, plan, unsubUrl(origin, u, 'wishlist'));
+    if (await sendMail(env, { to: u.email, name: u.name, ...mail })) {
+      await zapisOdeslani(env, userId, 'reminder', den);
+      posláno++;
+    }
+  }
+
+  return { bookingu: bookingy.length, posláno: posláno };
+}
+
 // -- Spousteni ------------------------------------------------------------
 
 /** Tydenni beh: nove recepty + co jde uvarit z wishlistu. */
@@ -243,7 +317,8 @@ export async function spustCron(event, env, origin) {
   try {
     if (!jeVhodnaDoba(new Date())) return;
     if (event.cron === '0 5 1 * *') return void (await mesicniBeh(env, origin));
-    return void (await tydenniBeh(env, origin));
+    if (event.cron === '0 5 * * 1') return void (await tydenniBeh(env, origin));
+    return void (await denniBeh(env, origin));
   } catch (e) {
     console.error('Cron spadl: ' + String(e).slice(0, 300));
     await adminError(env, 'Cron ' + (event.cron || ''), e && e.stack ? e.stack : e);

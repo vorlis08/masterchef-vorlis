@@ -1,5 +1,5 @@
 import { chybejiciSuroviny, jeVhodnaDoba } from './worker/src/digest.js';
-import { welcomeMail, newRecipesMail, wishlistMail, summaryMail } from './worker/src/mail.js';
+import { welcomeMail, newRecipesMail, wishlistMail, summaryMail, reminderMail } from './worker/src/mail.js';
 
 let fail = 0;
 const t = (name, got, want) => {
@@ -84,6 +84,21 @@ t('prazdny souhrn to prizna', souhrn.html.includes('Zatím nic'), true);
 t('souhrn s daty nerýpe',
   summaryMail(U, { uvareno: 5, ruznych: 3, nejcastejsi: 'gulas', nejlepsi: 'gulas', spiz: 12 }, 'x')
     .html.includes('Zatím nic'), false);
+
+console.log('\n--- Pripominka na zitrek (4.6) ---');
+const pripominka = reminderMail(U, [
+  { title: 'Kuře na paprice', kdy: 'zítra v 18:30', chybi: ['smetany', 'cibule'] },
+  { title: 'Guláš', kdy: 'zítra, celý den', chybi: [] },
+], 'https://w/unsub');
+t('predmet rika, ze neco chybi', pripominka.subject.includes('něco ti chybí'), true);
+t('vypise chybejici', pripominka.html.includes('Chybí: smetany, cibule'), true);
+t('a u druheho rekne, ze mas vse', pripominka.html.includes('Máš všechno.'), true);
+t('zmini nakupni seznam', pripominka.html.includes('nákupního seznamu'), true);
+
+const vseHotovo = reminderMail(U, [{ title: 'Guláš', kdy: 'zítra', chybi: [] }], 'x');
+t('kdyz nic nechybi, predmet je jiny', vseHotovo.subject, 'Zítra vaříš 🍳');
+t('a o nakupu nemluvi', vseHotovo.html.includes('nákupního seznamu'), false);
+t('pripominka ma odhlasovaci odkaz', pripominka.html.includes('https://w/unsub'), true);
 
 t('nazev receptu se v HTML osetri',
   newRecipesMail(U, [{ title: '<script>zle()</script>' }], 'x').html.includes('<script>'), false);

@@ -44,6 +44,9 @@ export function cardView(recipe, opts) {
     blur: recipe.blur || '',
     initial: initialOf(recipe.title),
     favorite: !!o.favorite,
+    // Nakolik jde uvarit z toho, co mam doma (4.3). Prazdne = nevime.
+    pripravenost: o.pripravenost || null,
+    stav: o.stav || 'neuvareno',
   };
 }
 
@@ -66,6 +69,8 @@ export function rowView(recipe, opts) {
     image: recipe.image || '',
     blur: recipe.blur || '',
     favorite: !!o.favorite,
+    pripravenost: o.pripravenost || null,
+    stav: o.stav || 'neuvareno',
   };
 }
 
@@ -84,11 +89,19 @@ export function gridView(recipes, opts) {
   const isFavorite = o.isFavorite || (() => false);
   const ratingOf = o.ratingOf || (() => 0);
 
+  const pripravenostOf = o.pripravenostOf || (() => null);
+  const stavOf = o.stavOf || (() => 'neuvareno');
+
   const items = recipes.map((recipe, i) => {
-    const shared = { favorite: !!isFavorite(recipe.slug), rating: ratingOf(recipe.slug) };
+    const shared = {
+      favorite: !!isFavorite(recipe.slug),
+      rating: ratingOf(recipe.slug),
+      pripravenost: pripravenostOf(recipe),
+      stav: stavOf(recipe.slug),
+    };
     return mode === 'grid'
       ? cardView(recipe, shared)
-      : rowView(recipe, { favorite: shared.favorite, rating: shared.rating, number: i + 1 });
+      : rowView(recipe, { ...shared, number: i + 1 });
   });
 
   return { mode: mode, items: items, count: items.length, empty: items.length === 0 };

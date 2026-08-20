@@ -165,7 +165,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <div id="modal-rating" class="mt-6 pt-6 border-t border-border">
           <div class="flex items-center justify-between mb-4">
             <h3 class="label text-accent">Moje hodnocení</h3>
-            <button id="wish-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">
+            <button id="book-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-[12px] font-medium hover:bg-accent-hover active:scale-[0.98] transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+            TO UVAŘÍM!
+          </button>
+          <button id="wish-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M11.48 3.5a.56.56 0 011.04 0l2.12 4.3 4.75.69c.46.07.64.63.31.95l-3.44 3.35.81 4.73c.08.46-.4.81-.81.6L12 15.9l-4.26 2.23c-.41.21-.89-.14-.81-.6l.81-4.73-3.44-3.35a.56.56 0 01.31-.95l4.75-.69 2.12-4.3z" /></svg>
             <span id="wish-label">Chci vyzkoušet</span>
           </button>
@@ -273,6 +277,56 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <div id="checklist-body" class="overflow-y-auto flex-1 min-h-0 -mx-1 px-1"></div>
 
         <p class="text-[11px] text-text-muted mt-3 shrink-0">Ukládá se hned, jak něco změníš. Seznam jde po kuchyni — spíž, koření, lednice, mrazák.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Naplanovani vareni -->
+  <div id="book-overlay" class="fixed inset-0 bg-black/70 z-[85] hidden opacity-0 transition-opacity duration-200">
+    <div class="fixed inset-0 flex items-center justify-center p-4">
+      <div id="book-modal" class="bg-bg border border-border rounded-2xl w-full max-w-md p-6 sm:p-7 scale-95 opacity-0 transition-all duration-200 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-start justify-between gap-3 mb-5">
+          <div class="min-w-0">
+            <h2 class="display text-[20px] text-text">Kdy to uvaříš?</h2>
+            <p id="book-recept" class="meta text-text-muted truncate"></p>
+          </div>
+          <button id="book-close" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div id="book-form">
+          <label class="block text-[12px] text-text-muted mb-1.5">Datum</label>
+          <input id="book-date" type="date" class="w-full bg-surface border border-border rounded-lg py-2.5 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-4" />
+
+          <label class="flex items-center gap-2 mb-3 cursor-pointer">
+            <input type="checkbox" id="book-cely-den" />
+            <span class="text-[13px] text-text">Na celý den (bez připomínky)</span>
+          </label>
+
+          <div id="book-cas-radek">
+            <label class="block text-[12px] text-text-muted mb-1.5">Čas</label>
+            <input id="book-time" type="time" value="18:00" class="w-full bg-surface border border-border rounded-lg py-2.5 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-4" />
+          </div>
+
+          <div id="book-zamky" class="hidden mb-4 p-3 rounded-lg bg-surface border border-border">
+            <p class="text-[12px] text-text-muted leading-relaxed">
+              <span class="text-accent font-medium">Ve spíži se zamkne:</span>
+              <span id="book-zamky-seznam" class="text-text"></span><br>
+              Zůstane ti tam — jen bude slíbená tomuhle vaření.
+            </p>
+          </div>
+
+          <button id="book-ulozit" class="w-full py-3 rounded-xl bg-accent text-white font-medium text-[14px] hover:bg-accent-hover active:scale-[0.98] transition-all">
+            Naplánovat
+          </button>
+          <p id="book-chyba" class="mt-2 text-[12px] text-red-400 hidden"></p>
+        </div>
+
+        <div id="book-seznam-blok" class="hidden mt-6 pt-5 border-t border-border">
+          <p class="label text-accent mb-3">Naplánováno</p>
+          <ul id="book-seznam" class="space-y-2"></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -696,6 +750,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     import { gridView } from '../lib/recipe-view.js';
     import { pantryView, guessKind, starterList, STATUSES, statusLabel } from '../lib/pantry.js';
     import { buildChecklist, checklistProgress } from '../lib/catalog.js';
+    import { pripravenost, sediSurovina } from '../lib/match.js';
+    import {
+      dnes as dnesniDatum, jeDatum, jeCas, popisBookingu,
+      konflikty, popisKonfliktu, coZamknout, nadchazejici,
+    } from '../lib/booking.js';
     import {
       krok as tourKrokData, omez as tourOmez, jePrvni as tourPrvni,
       jePosledni as tourPosledni, popisPostupu as tourPostup,
@@ -865,6 +924,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     let activeCategory = 'all';
     let favorites = Store.getFavorites();
 
+    // Tyhle tri drzi stav, ze ktereho pocita renderGrid (odznaky, filtry).
+    // Musi vzniknout drive nez prvni vykresleni, jinak spadne na TDZ.
+    let wishlist = Store.getWishlist();
+    let pantryItems = [];
+    let bookings = [];
+
     function toggleFavorite(slug) {
       const i = favorites.indexOf(slug);
       if (i >= 0) favorites.splice(i, 1);
@@ -951,6 +1016,26 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // Tohle je jediné místo, které ví, jak recept vypadá. Nový skin nahradí
     // tyhle dvě funkce a mozku se nedotkne.
 
+    /**
+     * Odznak "co ti chybi" (4.3). Nikdy netvrdi ano/ne - ukazuje miru,
+     * protoze inventar se vzdycky rozejde s realitou.
+     */
+    function odznakPripravenosti(v) {
+      const p = v.pripravenost;
+      if (!p || p.stav === 'nevim') return '';
+      return '<div class="odznak odznak-' + p.stav + '">' + esc(p.popisek) + '</div>';
+    }
+
+    /**
+     * Stav receptu (4.7). Barva nesmi byt jediny signal, proto tvar:
+     * kolecko = neuvareno, hvezdicka = chci vyzkouset, fajfka = uvareno.
+     */
+    function odznakStavu(v) {
+      if (v.stav === 'uvareno') return '<span class="stav-znak" title="Uvařeno">✓</span>';
+      if (v.stav === 'wishlist') return '<span class="stav-znak stav-chci" title="Chci vyzkoušet">☆</span>';
+      return '<span class="stav-znak stav-ne" title="Neuvařeno">○</span>';
+    }
+
     function cardMarkup(v) {
       return `
           <article class="recipe-card reveal relative text-left cursor-pointer" data-slug="${escAttr(v.slug)}">
@@ -964,6 +1049,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             </div>
             ${v.category ? `<div class="label text-accent mb-1.5">${esc(v.category)}</div>` : ''}
             <h3 class="display text-[16px] sm:text-[19px] text-text mb-2">${esc(v.title)}</h3>
+            ${odznakPripravenosti(v)}
             <div class="card-rule mb-2"></div>
             <div class="meta text-text-muted flex items-center gap-2">
               ${v.time ? `<span>${esc(v.time)}</span><span class="opacity-40">/</span>` : ''}
@@ -977,7 +1063,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       return `
           <div class="menu-row reveal" data-slug="${escAttr(v.slug)}" data-img="${escAttr(v.image)}">
             <span class="menu-num">${esc(v.number)}</span>
-            <span class="menu-title">${esc(v.title)}${v.favorite ? ' <span class="text-accent align-middle" style="font-size:0.42em">♥</span>' : ''}</span>
+            <span class="menu-title">${odznakStavu(v)}${esc(v.title)}${v.favorite ? ' <span class="text-accent align-middle" style="font-size:0.42em">♥</span>' : ''}</span>
             <span class="menu-time hidden sm:inline">${esc(v.time)}</span>
             ${v.image ? photoTag(v, { cls: 'menu-thumb sm:hidden', alt: '', style: 'grid-row:1/span 2;grid-column:3' }) : ''}
             <span class="menu-sub">${esc(v.subtitle)} ${v.stars ? '<span class="menu-stars">' + '★'.repeat(v.stars) + '</span>' : ''}</span>
@@ -994,11 +1080,27 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         favorites: favorites,
       });
 
+      // Filtr podle spize a stavu receptu. Pripravenost pocita mozek
+      // ze spize, ktera je k dispozici jen prihlasenemu.
+      const podleStavu = !activeStav ? matched : matched.filter(r => {
+        if (activeStav === 'muzu') {
+          const p = pripravenost(r, pantryItems);
+          return p.stav === 'vse' || p.stav === 'skoro';
+        }
+        if (activeStav === 'wishlist') return jeVeWishlistu(r.slug);
+        if (activeStav === 'neuvareno') return !(Store.getReview(r.slug).cooked > 0);
+        return true;
+      });
+
       // Mozek pripravi podklad pro kazdy recept, vzhled uz jen sklada HTML.
-      const view = gridView(matched, {
+      const view = gridView(podleStavu, {
         mode: viewMode === 'grid' ? 'grid' : 'list',
         isFavorite: slug => favorites.includes(slug),
         ratingOf: getUserRating,
+        pripravenostOf: r => (pantryItems.length ? pripravenost(r, pantryItems) : null),
+        stavOf: slug => (Store.getReview(slug).cooked > 0
+          ? 'uvareno'
+          : (jeVeWishlistu(slug) ? 'wishlist' : 'neuvareno')),
       });
       const visible = view.count;
       const html = view.items
@@ -1088,6 +1190,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // active secondary filters
     let activeMeal = '';
     let activeTime = '';
+    let activeStav = '';
 
     function updateFilters() {
       const bar  = document.getElementById('filter-bar');
@@ -1124,11 +1227,21 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       timeBuckets.forEach(b => {
         h2 += `<button class="filter-btn pill pill-sm ${activeTime === b.key ? 'is-active' : ''}" data-time="${b.key}">${b.label}</button>`;
       });
+
+      // Filtry podle spize a podle toho, co uz mam za sebou (4.3, 4.7).
+      [
+        { key: 'muzu', label: '🥫 Můžu uvařit' },
+        { key: 'neuvareno', label: '○ Neuvařeno' },
+        { key: 'wishlist', label: '☆ Chci vyzkoušet' },
+      ].forEach(b => {
+        h2 += `<button class="filter-btn pill pill-sm ${activeStav === b.key ? 'is-active' : ''}" data-stav="${b.key}">${b.label}</button>`;
+      });
       bar2.innerHTML = h2;
       bar2.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           if (btn.dataset.meal !== undefined) activeMeal = activeMeal === btn.dataset.meal ? '' : btn.dataset.meal;
           if (btn.dataset.time !== undefined) activeTime = activeTime === btn.dataset.time ? '' : btn.dataset.time;
+          if (btn.dataset.stav !== undefined) activeStav = activeStav === btn.dataset.stav ? '' : btn.dataset.stav;
           updateFilters(); renderGrid();
         });
       });
@@ -2117,6 +2230,148 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     updateFilters();
     renderGrid();
 
+    // --- Naplanovani vareni ("TO UVAŘÍM!") ---------------------------------
+    //
+    // 4.2: booking surovinu NEODECTE, jen ji zamkne. Odecet prijde az
+    // po "DOVAŘENO" - do te doby ji uzivatel musi ve spizi videt.
+
+    const bookOverlay = document.getElementById('book-overlay');
+    const bookModal = document.getElementById('book-modal');
+    let bookSlug = null;
+
+    function otevriBooking() {
+      const r = recipes.find(x => x.slug === currentSlug);
+      if (!r) return;
+      if (!currentUser) {
+        alert('Na plánování se musíš přihlásit — ať víme, komu to uložit.');
+        return;
+      }
+      bookSlug = r.slug;
+      document.getElementById('book-recept').textContent = r.title;
+      document.getElementById('book-date').value = dnesniDatum();
+      document.getElementById('book-chyba').classList.add('hidden');
+      ukazZamky(r);
+      vykresliBookingy();
+
+      bookOverlay.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        bookOverlay.classList.remove('opacity-0');
+        bookModal.classList.remove('scale-95', 'opacity-0');
+      });
+    }
+
+    function zavriBooking() {
+      bookOverlay.classList.add('opacity-0');
+      bookModal.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => bookOverlay.classList.add('hidden'), 200);
+    }
+
+    /** Ukaze dopredu, co se ve spizi zamkne - at to neni prekvapeni. */
+    function ukazZamky(recept) {
+      const blok = document.getElementById('book-zamky');
+      const zamky = coZamknout(recept, pantryItems, sediSurovina);
+      if (!zamky.length) { blok.classList.add('hidden'); return; }
+      document.getElementById('book-zamky-seznam').textContent =
+        zamky.map(z => z.ingredient).join(', ');
+      blok.classList.remove('hidden');
+    }
+
+    document.getElementById('book-cely-den').addEventListener('change', e => {
+      document.getElementById('book-cas-radek').classList.toggle('hidden', e.target.checked);
+    });
+
+    document.getElementById('book-ulozit').addEventListener('click', () => ulozBooking(false));
+
+    async function ulozBooking(force) {
+      const chyba = document.getElementById('book-chyba');
+      const datum = document.getElementById('book-date').value;
+      const celyDen = document.getElementById('book-cely-den').checked;
+      const cas = celyDen ? null : document.getElementById('book-time').value;
+
+      chyba.classList.add('hidden');
+      if (!jeDatum(datum)) return ukazChybu('Vyber datum.');
+      if (!celyDen && !jeCas(cas)) return ukazChybu('Vyber čas.');
+
+      // Konflikt zkontrolujeme rovnou tady, at se uzivatel nemusi ptat serveru.
+      if (!force && cas) {
+        const srazky = konflikty({ cook_date: datum, cook_time: cas }, bookings.map(b => ({
+          ...b, recipe_title: (recipes.find(r => r.slug === b.recipe_slug) || {}).title,
+        })));
+        if (srazky.length && !confirm(popisKonfliktu(srazky))) return;
+        if (srazky.length) force = true;
+      }
+
+      const recept = recipes.find(r => r.slug === bookSlug);
+      try {
+        const data = await api('/api/bookings', {
+          slug: bookSlug,
+          date: datum,
+          time: cas,
+          servings: currentServings || null,
+          force: !!force,
+          locks: coZamknout(recept, pantryItems, sediSurovina),
+        });
+        bookings = data.items || [];
+        vykresliBookingy();
+        // Zamek se hned promitne do spize, at je videt volne mnozstvi.
+        loadPantry();
+        renderGrid();
+      } catch (e) {
+        ukazChybu(e.message);
+      }
+    }
+
+    function ukazChybu(text) {
+      const el = document.getElementById('book-chyba');
+      el.textContent = text;
+      el.classList.remove('hidden');
+    }
+
+    function vykresliBookingy() {
+      const blok = document.getElementById('book-seznam-blok');
+      const seznam = document.getElementById('book-seznam');
+      const nadchazi = nadchazejici(bookings);
+
+      blok.classList.toggle('hidden', nadchazi.length === 0);
+      seznam.innerHTML = nadchazi.map(b => {
+        const r = recipes.find(x => x.slug === b.recipe_slug);
+        return '<li class="flex items-center gap-2 text-[13px]">' +
+          '<span class="flex-1 min-w-0"><span class="text-text">' + esc(r ? r.title : b.recipe_slug) + '</span>' +
+          '<span class="text-text-muted"> — ' + esc(popisBookingu(b)) + '</span></span>' +
+          '<button class="book-hotovo px-2 py-1 rounded-md bg-surface border border-border text-text-muted text-[11px] hover:text-accent hover:border-accent transition-colors" data-id="' + escAttr(b.id) + '">Dovařeno</button>' +
+          '<button class="book-zrusit w-6 h-6 rounded-md text-text-muted hover:text-red-400 transition-colors" data-id="' + escAttr(b.id) + '" title="Zrušit">&times;</button>' +
+          '</li>';
+      }).join('');
+
+      seznam.querySelectorAll('.book-hotovo').forEach(b =>
+        b.addEventListener('click', () => bookingAkce('done', b.dataset.id)));
+      seznam.querySelectorAll('.book-zrusit').forEach(b =>
+        b.addEventListener('click', () => bookingAkce('cancel', b.dataset.id)));
+    }
+
+    async function bookingAkce(akce, id) {
+      if (akce === 'done' && !confirm('Uvařeno? Suroviny se teď odečtou ze spíže.')) return;
+      try {
+        const data = await api('/api/bookings', { action: akce, id: Number(id) });
+        bookings = data.items || [];
+        vykresliBookingy();
+        loadPantry();
+        renderGrid();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function nactiBookingy() {
+      if (!currentUser) { bookings = []; return; }
+      try {
+        const data = await api('/api/bookings');
+        bookings = data.items || [];
+      } catch { bookings = []; }
+    }
+
+    document.getElementById('book-btn').addEventListener('click', otevriBooking);
+    document.getElementById('book-close').addEventListener('click', zavriBooking);
+    bookOverlay.addEventListener('click', e => { if (e.target === bookOverlay) zavriBooking(); });
+
     // --- Uvitaci obrazovka pro neprihlasene ---------------------------------
     //
     // Ukazuje se hned pri nacteni, jeste nez se overi prihlaseni na serveru -
@@ -2279,6 +2534,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       paintProfile();
       nactiUpozorneni();
       nactiStav();
+      // Spiz potrebujeme i mimo okno spize - pocita se z ni pripravenost
+      // receptu a co booking zamkne.
+      loadPantry().then(renderGrid);
+      nactiBookingy();
       zvazUvod();
     };
 
@@ -2322,7 +2581,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     const pantryOverlay = document.getElementById('pantry-overlay');
     const pantryModal   = document.getElementById('pantry-modal');
     const pantryList    = document.getElementById('pantry-list');
-    let pantryItems = [];
 
     function openPantry() {
       pantryOverlay.classList.remove('hidden');
@@ -2343,12 +2601,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     async function loadPantry() {
+      if (!currentUser) return;
       try {
         const data = await api('/api/inventory');
         pantryItems = data.items || [];
         renderPantry();
       } catch (e) {
-        pantryList.innerHTML = '<li class="py-4 text-[13px] text-red-400">' + esc(e.message) + '</li>';
+        if (pantryList) pantryList.innerHTML = '<li class="py-4 text-[13px] text-red-400">' + esc(e.message) + '</li>';
       }
     }
 
@@ -2629,7 +2888,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // Zatim se drzi v prohlizeci a do databaze se posila navic - diky tomu
     // appka funguje i bez prihlaseni a data se srovnaji mezi zarizenimi.
 
-    let wishlist = Store.getWishlist();
 
     function jeVeWishlistu(slug) {
       return wishlist.indexOf(slug) >= 0;
