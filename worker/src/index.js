@@ -158,6 +158,13 @@ export default {
           .prepare('SELECT id, email, name, role, avatar, intro_done FROM users WHERE id = ?')
           .bind(session.sub).first();
         if (!user) return deny(401, 'Účet už neexistuje.', origin);
+
+        // "Naposledy viden". Appka sem chodi pri kazdem nacteni, takze
+        // je to nejlevnejsi merítko aktivity - a podle nej se pozna,
+        // komu po tydnu pripomenout, ze kucharka existuje.
+        // ctx.waitUntil: uzivatel nema cekat na zapis, ktery nepotrebuje.
+        ctx.waitUntil(env.DB.prepare("UPDATE users SET last_seen = datetime('now') WHERE id = ?")
+          .bind(session.sub).run().catch(() => {}));
         return new Response(JSON.stringify(user), {
           headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
         });

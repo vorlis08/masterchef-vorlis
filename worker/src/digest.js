@@ -17,6 +17,7 @@ import {
 import { chybejici } from '../../src/lib/match.js';
 import { zitra, popisBookingu, kPripomenuti } from '../../src/lib/booking.js';
 import { poslatPush } from './push.js';
+import { zpravaVareni, zpravaNeaktivita } from './push-zpravy.js';
 
 const RECIPES_URL =
   'https://raw.githubusercontent.com/vorlis08/masterchef-vorlis/main/src/data/recipes.json';
@@ -50,15 +51,20 @@ async function poslednich(env, userId, kind, dni) {
 /**
  * Strop: nejvyse jedna zprava denne a tri tydne na cloveka.
  * Radsi vynechat nez poslat dve za sebou.
+ *
+ * Pocitaji se jen E-MAILY. Oznameni na telefon (kind `push_*`) se do
+ * stropu nezapocitava - je to jiny kanal, uzivatel si ho zapnul zvlast
+ * a jinak by jedno pipnuti tise umlcelo tydenni e-mail o novych
+ * receptech. Vlastni strop na oznameni hlida `neaktivniBeh`.
  */
 async function smiSePoslat(env, userId) {
   const dnes = await env.DB.prepare(
-    "SELECT COUNT(*) AS pocet FROM email_log WHERE user_id = ? AND sent_at > datetime('now', '-20 hours')"
+    "SELECT COUNT(*) AS pocet FROM email_log WHERE user_id = ? AND kind NOT LIKE 'push%' AND sent_at > datetime('now', '-20 hours')"
   ).bind(userId).first();
   if ((dnes && dnes.pocet) > 0) return false;
 
   const tyden = await env.DB.prepare(
-    "SELECT COUNT(*) AS pocet FROM email_log WHERE user_id = ? AND sent_at > datetime('now', '-7 days')"
+    "SELECT COUNT(*) AS pocet FROM email_log WHERE user_id = ? AND kind NOT LIKE 'push%' AND sent_at > datetime('now', '-7 days')"
   ).bind(userId).first();
   return ((tyden && tyden.pocet) || 0) < 3;
 }
@@ -297,11 +303,7 @@ export async function pushBeh(env, ted) {
     ).bind(b.user_id).all();
     if (!subs || !subs.length) continue;
 
-    const zprava = {
-      titul: 'Za chvíli vaříš',
-      text: nazev + ' — ' + b.cook_time,
-      slug: b.recipe_slug,
-    };
+    const zprava = zpravaVareni(nazev, b.cook_time, b.recipe_slug);
 
     let doslo = false;
     for (const sub of subs) {
@@ -327,6 +329,74 @@ export async function pushBeh(env, ted) {
     await env.DB.prepare("UPDATE bookings SET push_sent = datetime('now') WHERE id = ?")
       .bind(b.id).run();
     if (doslo) poslano++;
+  }
+
+  return { poslano: poslano };
+}
+
+// -- Pripomenuti po tydnu neaktivity ---------------------------------------
+//
+// Bezi v dennim behu (7:00), ne kazdou hodinu - pripomenuti neni
+// naléhavé a v sedm rano se na nej clovek podiva u kavy.
+//
+// Posila se nejvys jednou za 14 dni. Kdo appku neotevrel, tomu by
+// jinak chodilo "tyden ses tu neukazal" kazdy den donekonecna - a to
+// je presne ten druh oznameni, po kterem si je clovek vypne uplne.
+
+const NEAKTIVITA_DNI = 7;
+
+export async function neaktivniBeh(env) {
+  if (!env.VAPID_PRIVATE_KEY || !env.VAPID_PUBLIC_KEY) return { poslano: 0 };
+
+  const { results: lide } = await env.DB.prepare(
+    `SELECT id, name, last_seen FROM users
+      WHERE notify_push = 1
+        AND last_seen IS NOT NULL
+        AND last_seen < datetime('now', ?)`
+  ).bind('-' + NEAKTIVITA_DNI + ' days').all();
+
+  if (!lide || !lide.length) return { poslano: 0 };
+
+  const recepty = await nactiRecepty();
+  let poslano = 0;
+
+  for (const u of lide) {
+    if (await poslednich(env, u.id, 'push_neaktivita', 14)) continue;
+
+    const { results: subs } = await env.DB.prepare(
+      'SELECT endpoint, p256dh, auth FROM push_subs WHERE user_id = ?'
+    ).bind(u.id).all();
+    if (!subs || !subs.length) continue;
+
+    // Kdyz ma neco v "chci vyzkouset" a suroviny na to doma, zmini se
+    // to jmenem. Obecne "vrat se do appky" je reklama, konkretni
+    // recept je duvod.
+    const hotove = await wishlistHotove(env, u, recepty).catch(() => []);
+    const dni = Math.round(
+      (Date.now() - Date.parse(String(u.last_seen).replace(' ', 'T') + 'Z')) / 86400000
+    );
+    const zprava = zpravaNeaktivita(dni, hotove.length ? hotove[0].title : null);
+
+    let doslo = false;
+    for (const sub of subs) {
+      let v;
+      try {
+        v = await poslatPush(env, sub, zprava);
+      } catch (e) {
+        console.error('push spadl: ' + String(e).slice(0, 200));
+        continue;
+      }
+      if (v.mrtva) {
+        await env.DB.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
+      } else if (v.ok) {
+        doslo = true;
+      }
+    }
+
+    if (doslo) {
+      await zapisOdeslani(env, u.id, 'push_neaktivita', String(dni));
+      poslano++;
+    }
   }
 
   return { poslano: poslano };
@@ -392,7 +462,10 @@ export async function spustCron(event, env, origin) {
     if (event.cron === '0 * * * *') return void (await pushBeh(env));
     if (event.cron === '0 5 1 * *') return void (await mesicniBeh(env, origin));
     if (event.cron === '0 5 * * 1') return void (await tydenniBeh(env, origin));
-    return void (await denniBeh(env, origin));
+    await denniBeh(env, origin);
+    // Az po dennim behu: ten resi zitrejsi vareni, tohle lidi, kteri
+    // nemaji naplanovaneho nic. Kdyz spadne, nakupni seznam uz je hotovy.
+    return void (await neaktivniBeh(env));
   } catch (e) {
     console.error('Cron spadl: ' + String(e).slice(0, 300));
     await adminError(env, 'Cron ' + (event.cron || ''), e && e.stack ? e.stack : e);

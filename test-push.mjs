@@ -8,6 +8,9 @@
 import {
   b64urlDecode, b64urlEncode, zasifruj, vapidHlavicka,
 } from './worker/src/push.js';
+import {
+  zpravaVareni, zpravaUvitani, zpravaNeaktivita,
+} from './worker/src/push-zpravy.js';
 
 let fail = 0;
 const t = (name, got, want) => {
@@ -139,6 +142,42 @@ t('push server podpis overi', await crypto.subtle.verify(
 t('podvrzeny podpis neprojde', await crypto.subtle.verify(
   { name: 'ECDSA', hash: 'SHA-256' }, overovaci,
   b64urlDecode(podpis), utf8(hlava + '.' + telo2 + 'x')), false);
+
+console.log('\n--- Texty oznameni ---');
+
+t('pripominka rekne co a kdy',
+  zpravaVareni('Krémové kuřecí tagliatelle', '18:00', 'kremove-kureci-tagliatelle'),
+  { titul: 'Za chvíli vaříš', text: 'Krémové kuřecí tagliatelle — 18:00', slug: 'kremove-kureci-tagliatelle' });
+t('pripominka bez casu nema pomlcku',
+  zpravaVareni('Kuře na paprice', null).text, 'Kuře na paprice');
+t('dlouhy nazev se ustrihne v mezere',
+  zpravaVareni('Pečený bůček s bramborovou kaší a zelím podle babičky z Vysočiny', '17:00').text.includes('…'), true);
+t('ustrizeny nazev nekonci pulkou slova',
+  /[ ]…/.test(zpravaVareni('Pečený bůček s bramborovou kaší a zelím podle babičky z Vysočiny', '17:00').text), false);
+
+t('uvitani oslovi krestnim jmenem',
+  zpravaUvitani('Honza Vorel').text.startsWith('Honza, takhle'), true);
+t('uvitani bez jmena nespadne',
+  zpravaUvitani('').text.startsWith('Takhle'), true);
+t('uvitani slibuje, ze nebude otravovat',
+  zpravaUvitani('Honza').text.includes('Víc už toho posílat nebudu'), true);
+t('titulek uvitani je kratky', zpravaUvitani('Honza').titul.length <= 30, true);
+
+t('neaktivita bez wishlistu zmini pocet dni',
+  zpravaNeaktivita(9).text.startsWith('9 dní'), true);
+t('neaktivita s receptem ho zmini jmenem',
+  zpravaNeaktivita(9, 'Chilli con carne').text.startsWith('Chilli con carne'), true);
+t('neaktivita nikdy nerekne min nez tyden',
+  zpravaNeaktivita(3).text.startsWith('7 dní'), true);
+t('neaktivita snese nesmyslny vstup',
+  zpravaNeaktivita(null).text.startsWith('7 dní'), true);
+t('vsechny titulky se vejdou na zamcenou obrazovku',
+  [zpravaVareni('Kuře na paprice', '18:00'), zpravaUvitani('Honza'), zpravaNeaktivita(7)]
+    .every(z => z.titul.length <= 30), true);
+t('zadna zprava nema prazdny text',
+  [zpravaVareni('Kuře na paprice', '18:00'), zpravaUvitani(''),
+   zpravaNeaktivita(7), zpravaNeaktivita(7, 'Chilli con carne')]
+    .every(z => z.text.length > 10), true);
 
 console.log(fail === 0 ? '\n=== VSE PROSLO ===\n' : '\n=== ' + fail + ' CHYB ===\n');
 process.exit(fail === 0 ? 0 : 1);

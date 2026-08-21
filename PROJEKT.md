@@ -549,6 +549,7 @@ Postaveno 20. 8. 2026. Skládá se ze čtyř kusů, které musí sedět všechny
 | Manifest + ikony | `public/manifest.webmanifest`, `public/icons/` |
 | Šifrování a podpis | `worker/src/push.js` |
 | Rozesílání | `pushBeh()` v `worker/src/digest.js`, Cron každou hodinu |
+| Texty | `worker/src/push-zpravy.js` — oddělené, aby šly testovat bez šifrování |
 
 **Než to začne fungovat**, musí Honza jednorázově:
 
@@ -559,6 +560,31 @@ Postaveno 20. 8. 2026. Skládá se ze čtyř kusů, které musí sedět všechny
 
 Dokud klíče nejsou, `pushBeh` se rovnou vrátí a appka v nastavení napíše,
 že oznámení nejsou nastavená. **Nic nespadne — jen nic nechodí.**
+
+**Chodí tři druhy oznámení, víc ne:**
+
+| Zpráva | Kdy | Kde |
+|---|---|---|
+| Připomínka před vařením | podle předstihu uživatele | `pushBeh()`, Cron hodinově |
+| Uvítací | hned po zapnutí oznámení | `uvitaciPush()` v `api.js` |
+| Po týdnu neaktivity | denní běh 7:00, nejvýš 1× za 14 dní | `neaktivniBeh()` |
+
+**Proč se uvítací posílá při zapnutí a ne při registraci:** při registraci
+uživatel ještě žádnou přihlášku k odběru nemá, takže není kam poslat.
+Okamžik zapnutí je zároveň jediná chvíle, kdy jde ukázat, že to funguje —
+slíbit „pípne to před vařením" a nechat ho týden čekat na důkaz znamená,
+že si to mezitím vypne. Posílá se **jednou za život účtu**
+(`users.push_welcome_at`), ne při každém dalším telefonu.
+
+**Neaktivita se počítá z `users.last_seen`**, což se zapisuje při
+`/api/me`, tedy při každém načtení appky. Je to „naposledy viděn", ne
+„naposledy vařil" — a to je záměr: kdo se týden ani nepodíval, je přesně
+ten, komu má připomenutí přijít. Zápis jde přes `ctx.waitUntil()`, aby na
+něj uživatel nečekal.
+
+**Strop na e-maily se oznámení netýká.** `smiSePoslat()` vynechává
+řádky s `kind LIKE 'push%'` — jinak by jedno pípnutí tiše umlčelo
+týdenní e-mail o nových receptech.
 
 **Nástrahy:**
 
@@ -583,6 +609,12 @@ Dokud klíče nejsou, `pushBeh` se rovnou vrátí a appka v nastavení napíše,
   znamenalo poslat připomínku po čase vaření.
 - Mrtvé přihlášky (404/410) se rovnou mažou — jinak se na ně zkouší
   posílat donekonečna.
+- **Připomenutí po neaktivitě má vlastní strop 14 dní.** Bez něj by
+  „týden ses tu neukázal" chodilo každý den donekonečna — a to je přesně
+  ten druh oznámení, po kterém si je člověk vypne úplně.
+- **Uvítací oznámení mlčí, když se nepovede.** Uživatel zrovna zapíná
+  oznámení a chybová hláška by vypadala, že selhalo celé zapnutí.
+  Nezapíše se `push_welcome_at`, takže se to zkusí příště.
 
 ### 8.18 `BASE_URL` nemá lomítko na konci
 

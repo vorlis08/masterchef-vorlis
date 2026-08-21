@@ -6,6 +6,9 @@
 // si kdokoli precetl cizi spiz.
 // ==========================================================================
 
+import { poslatPush } from './push.js';
+import { zpravaUvitani } from './push-zpravy.js';
+
 const KINDS = ['exact', 'approx', 'count'];
 const STATUSES = ['mam', 'dochazi', 'doslo'];
 
@@ -216,7 +219,39 @@ export async function savePush(request, env, session, origin, cors) {
   await env.DB.prepare('UPDATE users SET notify_push = 1 WHERE id = ?')
     .bind(session.sub).run();
 
+  await uvitaciPush(env, session.sub, { endpoint, p256dh, auth });
+
   return getNotify(env, session, origin, cors);
+}
+
+/**
+ * Uvitaci oznameni. Posila se hned po zapnuti - je to jediny okamzik,
+ * kdy jde uzivateli ukazat, ze to funguje. Slibit mu "pipne to pred
+ * varenim" a nechat ho tyden cekat na dukaz znamena, ze si to mezitim
+ * vypne.
+ *
+ * Posila se jednou za zivot uctu, ne pri kazdem prihlaseni dalsiho
+ * telefonu - druhe "oznameni fungují" uz je otravovani.
+ *
+ * Kdyz se to nepovede, mlcime: uzivatel prave nastavuje oznameni a
+ * chybova hlaska u zapinani by vypadala, ze nefunguje cele zapnuti.
+ */
+async function uvitaciPush(env, userId, sub) {
+  try {
+    if (!env.VAPID_PRIVATE_KEY) return;
+    const u = await env.DB.prepare(
+      'SELECT name, push_welcome_at FROM users WHERE id = ?'
+    ).bind(userId).first();
+    if (!u || u.push_welcome_at) return;
+
+    const v = await poslatPush(env, sub, zpravaUvitani(u.name));
+    if (!v.ok) return;   // priste to zkusi znovu
+
+    await env.DB.prepare("UPDATE users SET push_welcome_at = datetime('now') WHERE id = ?")
+      .bind(userId).run();
+  } catch (e) {
+    console.error('uvitaci push spadl: ' + String(e).slice(0, 200));
+  }
 }
 
 // -- Vztah uzivatele k receptum -------------------------------------------

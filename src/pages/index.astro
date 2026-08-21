@@ -651,6 +651,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             </div>
 
             <p id="push-hlaska" class="text-[11px] text-text-muted"></p>
+            <p class="text-[11px] text-text-muted mt-1">Chodí připomínka před vařením a jednou za čas připomenutí, když se tu dlouho neukážeš. Nic víc.</p>
           </div>
 
           <div class="flex items-center gap-3">
@@ -3606,7 +3607,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       pushStav(zapnuto);
       pushHlaska(zapnuto
         ? 'Chodí na tohle zařízení. Jinam se přihlásíš tam.'
-        : 'Připomínka přijde, i když máš appku zavřenou. V noci nic nechodí.');
+        : 'Chodí, i když máš appku zavřenou. V noci nic nechodí.');
     }
 
     async function zapniPush() {
@@ -3660,7 +3661,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             const ok = await zapniPush();
             prepinac.checked = ok;
             pushStav(ok);
-            if (ok) pushHlaska('Hotovo. Pípne to, než začneš vařit.');
+            // Uvitaci oznameni posila Worker hned po prihlaseni odberu,
+            // takze uzivatel dukaz uvidi driv, nez tuhle vetu docte.
+            if (ok) pushHlaska('Hotovo — za okamžik ti přijde zkušební oznámení.');
           } else {
             await vypniPush();
             pushStav(false);

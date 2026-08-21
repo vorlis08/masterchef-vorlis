@@ -44,7 +44,7 @@ používej **`npx.cmd`**.
 
 ### Refaktoring: „mozek" oddělený od „vzhledu" (sekce 6 a 7)
 
-Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **540 testů**
+Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **554 testů**
 ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
 
 | Soubor | Co dělá |
@@ -71,7 +71,8 @@ ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
 - Bookingy „TO UVAŘÍM!" se zámky surovin — nově **rychlé termíny**
   („Dnes večer / Zítra večer / V sobotu") jedním tapem; podrobný
   formulář je schovaný pod „Vybrat jiný den"
-- **Oznámení na telefon** (Web Push) hodinu před vařením
+- **Oznámení na telefon** (Web Push): připomínka před vařením, uvítací
+  hned po zapnutí a připomenutí, když se uživatel týden neukáže
 - Kalendář vaření + „Chybějící do nákupu"
 - Nákupní seznam **v databázi** (sdílí se mezi zařízeními)
 - Filtry: Chod / Čas / Stav (přepínač) + „Můžu uvařit", zvýraznění, počítadlo `3×`
