@@ -644,6 +644,16 @@ týdenní e-mail o nových receptech.
 Naplánované vaření se ukládá i do soukromého Google kalendáře uživatele
 (`worker/src/gcal.js`). Zapíná se v nastavení, výchozí je vypnuto.
 
+**Migrace se nasazením NEPOUŠTĚJÍ.** `wrangler deploy` nahraje jen kód.
+Schéma se mění zvlášť:
+
+```
+cd worker && npx.cmd wrangler d1 migrations apply masterchef --remote
+```
+
+Když se na to zapomene, Worker sahá na sloupce, které neexistují, a padá
+na `Error 1101`. Nasadit kód a migraci je proto vždycky dvojice.
+
 **Bez tohohle to nepojede** — jednorázově v Google Cloud Console:
 
 1. K OAuth consent screen přidat rozsah
@@ -677,6 +687,10 @@ se uložený token nikdy nepřepisuje prázdnou hodnotou.
   k cizímu kalendáři, když o něj člověk nestojí, není v pořádku.
 - **Maže se výhradně událost, jejíž id máme uložené.** Nic jiného
   v cizím kalendáři appka nesmí smazat.
+- **Uložení přístupu ke kalendáři je v `try`.** Přihlášení je kritická
+  cesta a nesmí spadnout kvůli doplňku — draze zjištěno: bez toho
+  padal celý `/auth/callback` na `Error 1101` a do appky se nedalo
+  vůbec dostat.
 
 ### 8.18 `BASE_URL` nemá lomítko na konci
 

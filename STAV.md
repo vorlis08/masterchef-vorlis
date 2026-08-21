@@ -21,6 +21,10 @@
 **Nasazení:** push do `main` spustí GitHub Actions → Pages. Worker se nasazuje
 zvlášť: `cd worker && npx.cmd wrangler deploy`.
 
+**Migrace databáze se nasazením NEPOUŠTĚJÍ** — vždycky ještě
+`npx.cmd wrangler d1 migrations apply masterchef --remote`. Bez toho
+Worker sahá na neexistující sloupce a padá na `Error 1101`.
+
 **Pozor na Windows:** `npx` bez přípony spadne na zákazu skriptů —
 používej **`npx.cmd`**.
 
@@ -125,7 +129,8 @@ ve 14 sadách, pouštějí se z kořene (`node test-*.mjs`).
    - `node scripts/vapid-keys.mjs`
    - veřejný klíč do `worker/wrangler.toml`, soukromý přes
      `npx.cmd wrangler secret put VAPID_PRIVATE_KEY`
-   - `cd worker && npx.cmd wrangler deploy` (spustí i migraci 0007)
+   - `cd worker && npx.cmd wrangler deploy`
+   - `npx.cmd wrangler d1 migrations apply masterchef --remote`
    - na iPhonu appku **přidat na plochu**, jinak oznámení neexistují
 5. **Zprovoznit Google kalendář** (PROJEKT.md 8.21) — v Google Cloud
    Console přidat rozsah `calendar.events` a sebe mezi *Test users*,

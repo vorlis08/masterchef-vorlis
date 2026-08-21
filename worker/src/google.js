@@ -121,9 +121,18 @@ export async function finishLogin(request, env, allowed, ctx) {
   // Obnovovaci token prijde jen tehdy, kdyz uzivatel prave prosel
   // souhlasnou obrazovkou. Pri beznem prihlaseni nechodi - proto se
   // ten ulozeny NIKDY neprepisuje prazdnou hodnotou.
+  //
+  // V try schvalne: kalendar je DOPLNEK. Kdyz zapis selze (treba
+  // proto, ze jeste nedobehla migrace), uzivatel se musi prihlasit
+  // stejne. Draze zjisteno - bez toho padalo cele prihlaseni na
+  // Error 1101 a do appky se nedalo vubec dostat.
   if (data.refresh_token) {
-    await env.DB.prepare('UPDATE users SET google_refresh = ? WHERE id = ?')
-      .bind(data.refresh_token, user.id).run();
+    try {
+      await env.DB.prepare('UPDATE users SET google_refresh = ? WHERE id = ?')
+        .bind(data.refresh_token, user.id).run();
+    } catch (e) {
+      console.error('ulozeni pristupu ke kalendari selhalo: ' + String(e).slice(0, 200));
+    }
   }
 
   // Uvitaci e-mail az po prvnim prihlaseni. Posila se na pozadi - uzivatel
