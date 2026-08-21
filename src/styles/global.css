@@ -1469,3 +1469,111 @@ body {
   font-size: 10px;
   vertical-align: middle;
 }
+
+/* --------------------------------------------------------------------------
+   Spíž
+   Přes sto položek v jednom sloupci se nedá projít ani zkontrolovat.
+   Rozdělení do sekcí kopíruje kuchyni (4.9) a stav suroviny nese proužek
+   u levého okraje — barva sama by u „dochází" a „došlo" splynula, takže
+   ho doplňuje i popisek u ovládání (4.7).
+   -------------------------------------------------------------------------- */
+
+.spiz-sekce + .spiz-sekce { margin-top: 18px; }
+
+.spiz-nadpis {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  margin-bottom: 4px;
+  padding: 6px 2px 5px;
+  background: var(--color-bg);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.spiz-pocet {
+  font-size: 10px;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+  opacity: .7;
+  font-variant-numeric: tabular-nums;
+}
+
+.spiz-seznam { display: flex; flex-direction: column; }
+
+.spiz-radek {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px 9px 12px;
+  border-radius: 10px;
+  border-left: 3px solid transparent;
+  transition: background .15s ease;
+}
+.spiz-radek + .spiz-radek { margin-top: 2px; }
+.spiz-radek:hover { background: var(--color-surface); }
+
+.spiz-radek.je-mam     { border-left-color: color-mix(in srgb, #5cb85c 70%, transparent); }
+.spiz-radek.je-dochazi { border-left-color: color-mix(in srgb, #d4a843 80%, transparent); }
+.spiz-radek.je-doslo   { border-left-color: var(--color-border); }
+
+/* Co došlo, ať nekřičí stejně jako to, co doma je. */
+.spiz-radek.je-doslo .spiz-nazev { color: var(--color-text-muted); }
+
+.spiz-nazev {
+  font-size: 14px;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* „Mám doma standardně" bývalo zaškrtávátko s popiskem pod každým
+   názvem — u sta položek sto řádků textu navíc. Teď je to pilulka,
+   která je vidět jen když je zapnutá. */
+.spiz-staple {
+  margin-top: 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.6;
+  opacity: .45;
+  transition: opacity .15s ease, color .15s ease, border-color .15s ease;
+}
+.spiz-radek:hover .spiz-staple { opacity: 1; }
+.spiz-staple:hover { color: var(--color-accent); border-color: var(--color-accent); }
+
+.spiz-radek.je-staple .spiz-staple {
+  opacity: 1;
+  color: var(--color-accent);
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+}
+
+@media (max-width: 640px) {
+  .spiz-radek { gap: 8px; padding: 8px 6px 8px 10px; }
+  /* Na dotyku není hover, takže pilulka musí být vidět vždycky. */
+  .spiz-staple { opacity: .75; }
+}
+
+/* Den v minulosti, kde vaření nikdo neodklikl. Není to kosmetika —
+   dokud booking visí, drží ve spíži zamčené suroviny (4.2). */
+.kal-bunka.ma-propadle {
+  border-color: color-mix(in srgb, #d4a843 55%, var(--color-border));
+  background: color-mix(in srgb, #d4a843 7%, var(--color-surface));
+}
+.kal-bunka.ma-propadle .kal-cislo::after {
+  content: '!';
+  margin-left: 3px;
+  color: #d4a843;
+  font-weight: 700;
+}

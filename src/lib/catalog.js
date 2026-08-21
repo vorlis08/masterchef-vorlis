@@ -292,3 +292,51 @@ export function checklistProgress(groups) {
   }));
   return { total: total, filled: filled, label: filled + ' z ' + total };
 }
+
+/** Sekce pro veci, ktere katalog nezna - vlastni pridane suroviny. */
+export const OSTATNI = 'Ostatní';
+
+/**
+ * Rozdeli spiz do sekci podle toho, kde co v kuchyni lezi.
+ *
+ * Duvod: spiz je dlouhy seznam pres sto polozek. Jako jeden sloupec se
+ * v nem neda nic najit ani zkontrolovat - clovek stoji u police a chce
+ * projit "lednici", ne abecedu. Poradi sekci je stejne jako
+ * u onboardingu (4.9), at si oko zvykne na jedno usporadani.
+ *
+ * Sekce, ve kterych nic neni, se nevraci - prazdny nadpis je jen sum.
+ *
+ * @param {Array} views      vysledek `pantryView`
+ * @param {string} [hledane] filtr podle nazvu; prazdny = vse
+ * @returns {Array<{nazev: string, polozky: Array}>}
+ */
+export function spizPodleSekci(views, hledane) {
+  const kam = new Map();
+  CATALOG.forEach(c => kam.set(fold(c.name), c.group));
+
+  const hledat = fold(String(hledane || '').trim());
+
+  const podleSekce = new Map();
+  (views || []).forEach(v => {
+    if (hledat && !fold(v.name).includes(hledat)) return;
+
+    // Nejdriv presna shoda nazvu, pak podle prvniho slova - "smetana
+    // 31%" ma skoncit u smetany, ne v "Ostatní".
+    let sekce = kam.get(fold(v.name));
+    if (!sekce) {
+      const klic = stemKey(v.name);
+      for (const [nazev, group] of kam) {
+        if (stemKey(nazev) === klic) { sekce = group; break; }
+      }
+    }
+    sekce = sekce || OSTATNI;
+
+    if (!podleSekce.has(sekce)) podleSekce.set(sekce, []);
+    podleSekce.get(sekce).push(v);
+  });
+
+  const poradi = [...GROUPS, OSTATNI];
+  return poradi
+    .filter(nazev => podleSekce.has(nazev))
+    .map(nazev => ({ nazev: nazev, polozky: podleSekce.get(nazev) }));
+}

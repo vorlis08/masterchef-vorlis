@@ -44,7 +44,7 @@ používej **`npx.cmd`**.
 
 ### Refaktoring: „mozek" oddělený od „vzhledu" (sekce 6 a 7)
 
-Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **554 testů**
+Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **565 testů**
 ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
 
 | Soubor | Co dělá |
@@ -67,15 +67,20 @@ ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
 - Brána pro nepřihlášené (editorial layout, „Zase toast?")
 - Přihlášení přes Google, profil, nastavení e-mailů
 - Úvodní okno po registraci + průvodce aplikací (24 kroků)
-- Spíž: dlouhý seznam ~115 surovin, krokovadla − / +, „mám doma standardně"
-- Bookingy „TO UVAŘÍM!" se zámky surovin — nově **rychlé termíny**
+- Spíž: rozdělená do sekcí podle kuchyně, hledání, stav surovin barevným
+  proužkem, „mám doma standardně" jako pilulka. Krokovadla − / +.
+- Bookingy „TO UVAŘÍM!" se zámky surovin — tlačítko je nahoře u „Režim
+  vaření", tedy **před postupem**, ne až pod ním. Rychlé termíny
   („Dnes večer / Zítra večer / V sobotu") jedním tapem; podrobný
   formulář je schovaný pod „Vybrat jiný den"
 - **Oznámení na telefon** (Web Push): připomínka před vařením, uvítací
   hned po zapnutí a připomenutí, když se uživatel týden neukáže
-- Kalendář vaření + „Chybějící do nákupu"
+- Kalendář vaření + „Chybějící do nákupu" + **plánování rovnou z kalendáře**
+  (klik na den → výběr receptu, nahoře to, na co máš doma).
+  Propadlé vaření je v mřížce označené `!`
 - Nákupní seznam **v databázi** (sdílí se mezi zařízeními)
-- Filtry: Chod / Čas / Stav (přepínač) + „Můžu uvařit", zvýraznění, počítadlo `3×`
+- Filtry: Chod / Čas / Stav (přepínač) + „Můžu uvařit", zvýraznění, počítadlo `3×`.
+  Při filtrování se „Dnešní volba" schová — překážela.
 - Režim vaření, chef AI, náhrady surovin, barevná témata
 
 ### Backend
@@ -131,8 +136,6 @@ ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
   `kure-na-paprice`, `peceny-bucek`, `creamy-garlic-beef-pasta`,
   `sunko-eidamovy-wrap`. (Pozor: PROJEKT.md dřív tvrdil opak — Basic
   má **každý** recept.)
-- **Plánování rovnou z kalendáře** — dnes jde vaření naplánovat jen
-  z detailu receptu.
 - **Ověřit oznámení na skutečném telefonu.** Šifrování je otestované
   proti sobě samému, ale že to pípne na iPhonu, nikdo neviděl.
 

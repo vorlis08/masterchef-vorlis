@@ -144,6 +144,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z" /></svg>
             Režim vaření
           </button>
+          <button id="book-btn" class="flex-1 sm:flex-none justify-center px-4 py-2.5 sm:py-2 rounded-lg bg-surface border border-accent/50 text-accent text-[13px] font-medium active:scale-[0.98] hover:bg-accent hover:text-white hover:border-accent transition-all flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
+            TO UVAŘÍM!
+          </button>
           <button id="add-shop-btn" class="flex-1 sm:flex-none px-4 py-2.5 sm:py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] font-medium active:scale-[0.98] hover:text-accent hover:border-accent transition-all">
             Do nákupu
           </button>
@@ -174,10 +178,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <div id="modal-rating" class="mt-6 pt-6 border-t border-border">
           <div class="flex items-center justify-between mb-4">
             <h3 class="label text-accent">Moje hodnocení</h3>
-            <button id="book-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-white text-[12px] font-medium hover:bg-accent-hover active:scale-[0.98] transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" /></svg>
-            TO UVAŘÍM!
-          </button>
           <button id="wish-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-border text-text-muted text-[12px] font-medium hover:text-accent hover:border-accent transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M11.48 3.5a.56.56 0 011.04 0l2.12 4.3 4.75.69c.46.07.64.63.31.95l-3.44 3.35.81 4.73c.08.46-.4.81-.81.6L12 15.9l-4.26 2.23c-.41.21-.89-.14-.81-.6l.81-4.73-3.44-3.35a.56.56 0 01.31-.95l4.75-.69 2.12-4.3z" /></svg>
             <span id="wish-label">Chci vyzkoušet</span>
@@ -335,9 +335,30 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             </div>
             <ul id="cal-den-seznam" class="space-y-2"></ul>
             <p id="cal-den-prazdno" class="hidden text-text-muted text-[13px]">
-              Na tenhle den nic naplánovaného. Naplánovat jde z receptu tlačítkem „TO UVAŘÍM!“.
+              Na tenhle den nic naplánovaného.
             </p>
             <p id="cal-nakup-hlaska" class="hidden mt-2 text-[12px] text-accent"></p>
+
+            <!-- Planovani primo z kalendare. Do ted slo vareni naplanovat
+                 jen z detailu receptu - kdo mel otevreny kalendar a videl
+                 volny ctvrtek, musel ho zavrit a jit hledat recept. -->
+            <button id="cal-pridat" class="mt-3 w-full py-2.5 rounded-xl bg-surface border border-accent/50 text-accent text-[13px] font-medium hover:bg-accent hover:text-white transition-all">
+              + Naplánovat na tenhle den
+            </button>
+
+            <div id="cal-vyber" class="hidden mt-3 p-3 rounded-xl bg-surface border border-border">
+              <input id="cal-vyber-hledat" type="search" maxlength="60" placeholder="Který recept?" class="w-full bg-bg border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-2" />
+              <ul id="cal-vyber-seznam" class="max-h-52 overflow-y-auto space-y-1"></ul>
+
+              <div class="flex items-center gap-2 mt-3 pt-3 border-t border-border">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="cal-vyber-celyden" />
+                  <span class="text-[12px] text-text-muted">celý den</span>
+                </label>
+                <input id="cal-vyber-cas" type="time" value="18:00" class="ml-auto bg-bg border border-border rounded-lg py-1.5 px-2 text-text text-[13px] focus:outline-none focus:border-accent" />
+              </div>
+              <p id="cal-vyber-chyba" class="hidden mt-2 text-[12px] text-red-400"></p>
+            </div>
           </div>
         </div>
       </div>
@@ -573,6 +594,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <button id="pantry-add" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors shrink-0">Přidat</button>
           </div>
 
+          <input id="pantry-hledat" type="search" maxlength="40" placeholder="Najít ve spíži…" class="w-full bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-3 shrink-0" />
+
           <label class="flex items-center gap-2 mb-3 cursor-pointer shrink-0">
             <input type="checkbox" id="pantry-detail" />
             <span class="text-[12px] text-text-muted">Vypisovat množství úplně u všeho</span>
@@ -587,7 +610,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <button id="pantry-seed" class="px-4 py-2 rounded-lg bg-surface border border-border text-text text-[13px] hover:border-accent hover:text-accent transition-colors">Předvyplnit z receptů</button>
           </div>
 
-          <ul id="pantry-list" class="overflow-y-auto flex-1 min-h-0 divide-y divide-border"></ul>
+          <div id="pantry-list" class="overflow-y-auto flex-1 min-h-0"></div>
+          <p id="pantry-nenalezeno" class="hidden py-8 text-center text-text-muted text-[13px]"></p>
         </div>
       </div>
     </div>
@@ -845,7 +869,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       pantryView, guessKind, starterList, STATUSES, statusLabel,
       krokMnozstvi, posunMnozstvi,
     } from '../lib/pantry.js';
-    import { buildChecklist, checklistProgress } from '../lib/catalog.js';
+    import { buildChecklist, checklistProgress, spizPodleSekci } from '../lib/catalog.js';
     import { pripravenost, sediSurovina } from '../lib/match.js';
     import {
       dnes as dnesniDatum, jeDatum, jeCas, popisBookingu, popisDatumu,
@@ -1065,10 +1089,15 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     function renderHero() {
       const hero = document.getElementById('hero');
       if (!hero) return;
+      // Kdyz uzivatel filtruje, dnesni volba prekazi - hleda neco
+      // konkretniho a nabidka "co treba tohle" je v ceste.
+      // POZOR: kdyz pribude dalsi filtr, musi se dopsat i sem, jinak
+      // hero zustane viset. `activeStav` se sem takhle dostal az pozdeji.
       const browsing = activeCategory !== 'all'
         || searchInput.value.trim() !== ''
         || activeMeal !== ''
-        || activeTime !== '';
+        || activeTime !== ''
+        || activeStav !== '';
       if (browsing || recipes.length === 0) {
         hero.classList.add('hidden');
         hero.innerHTML = '';
@@ -2525,18 +2554,35 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       ).join('');
 
       blok.querySelectorAll('.book-rychly').forEach(b =>
-        b.addEventListener('click', () => ulozBooking(false, b.dataset.datum, b.dataset.cas)));
+        b.addEventListener('click', () => ulozBooking(false, { datum: b.dataset.datum, cas: b.dataset.cas })));
     }
 
-    // rychlyDatum/rychlyCas prijdou z rychle nabidky; bez nich se cte formular.
-    async function ulozBooking(force, rychlyDatum, rychlyCas) {
-      const zRychle = !!rychlyDatum;
-      const chyba = document.getElementById('book-chyba');
-      const datum = zRychle ? rychlyDatum : document.getElementById('book-date').value;
-      const celyDen = zRychle ? false : document.getElementById('book-cely-den').checked;
-      const cas = zRychle ? rychlyCas : (celyDen ? null : document.getElementById('book-time').value);
+    /**
+     * Ulozi booking. Volaji ji tri mista, ktera se lisi jen tim, odkud
+     * berou termin a kam hlasi chybu:
+     *
+     *   ulozBooking(false)                          -- podrobny formular
+     *   ulozBooking(false, { datum, cas })          -- rychla nabidka
+     *   ulozBooking(false, { datum, cas, slug, ... }) -- kalendar
+     *
+     * Logika konfliktu, zamku a ulozeni je tim na jednom miste. Kdyby
+     * existovala dvakrat, do tydne se rozejde a kalendar bude zamykat
+     * jine suroviny nez detail receptu.
+     */
+    async function ulozBooking(force, volby) {
+      const v = volby || {};
+      const zvenku = !!v.datum;
+      const chybaEl = document.getElementById(v.chyba || 'book-chyba');
+      const ukazChybu = (text) => {
+        chybaEl.textContent = text;
+        chybaEl.classList.remove('hidden');
+      };
 
-      chyba.classList.add('hidden');
+      const datum = zvenku ? v.datum : document.getElementById('book-date').value;
+      const celyDen = zvenku ? !v.cas : document.getElementById('book-cely-den').checked;
+      const cas = zvenku ? (v.cas || null) : (celyDen ? null : document.getElementById('book-time').value);
+
+      chybaEl.classList.add('hidden');
       if (!jeDatum(datum)) return ukazChybu('Vyber datum.');
       if (!celyDen && !jeCas(cas)) return ukazChybu('Vyber čas.');
 
@@ -2549,10 +2595,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         if (srazky.length) force = true;
       }
 
-      const recept = recipes.find(r => r.slug === bookSlug);
+      const slug = v.slug || bookSlug;
+      const recept = recipes.find(r => r.slug === slug);
       try {
         const data = await api('/api/bookings', {
-          slug: bookSlug,
+          slug: slug,
           date: datum,
           time: cas,
           servings: currentServings || null,
@@ -2567,16 +2614,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         // Z rychle nabidky okno zavreme: uzivatel udelal jeden tap a je
         // hotovo. U podrobneho formulare zustava otevrene, at je videt
         // seznam naplanovaneho.
-        if (zRychle) zavriBooking();
+        if (v.hotovo) v.hotovo();
+        else if (zvenku) zavriBooking();
       } catch (e) {
         ukazChybu(e.message);
       }
-    }
-
-    function ukazChybu(text) {
-      const el = document.getElementById('book-chyba');
-      el.textContent = text;
-      el.classList.remove('hidden');
     }
 
     function vykresliBookingy() {
@@ -2687,6 +2729,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (d.minulost) tridy.push('je-minulost');
       if (d.bookingy.length) tridy.push('ma-vareni');
       if (d.datum === calVybranyDen) tridy.push('je-vybrany');
+      // Vareni, ktere uz melo probehnout a nikdo ho neodklikl. Neni to
+      // kosmetika: dokud booking visi jako 'planned', drzi ve spizi
+      // zamcene suroviny (4.2) a "co muzu uvarit" s nimi nepocita.
+      if (d.minulost && d.bookingy.some(b => b.state === 'planned')) tridy.push('ma-propadle');
 
       const stitky = d.bookingy.slice(0, 3).map(b => {
         const r = recipes.find(x => x.slug === b.recipe_slug);
@@ -2715,6 +2761,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const dneska = bookingyDne(bookings, datum);
 
       blok.classList.remove('hidden');
+      zavriVyber();
       document.getElementById('cal-den-nazev').textContent =
         popisDatumu(datum, dnesniDatum()).replace(/^./, c => c.toUpperCase());
       document.getElementById('cal-den-prazdno').classList.toggle('hidden', dneska.length > 0);
@@ -2741,6 +2788,100 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       seznam.querySelectorAll('.cal-zrusit').forEach(b =>
         b.addEventListener('click', () => calBookingAkce('cancel', b.dataset.id)));
     }
+
+    // --- Planovani primo z kalendare ------------------------------------
+    //
+    // Ukladani resi `ulozBooking` se stejnymi zamky a kontrolou
+    // konfliktu jako z detailu receptu - tohle je jen jiny zpusob, jak
+    // do ni dostat datum a slug.
+
+    let calHledane = '';
+
+    /** Nahoru to, k cemu chybi nejmin. 'nevim' (prazdna spiz) az nakonec. */
+    function porovnejPripravenost(a, b) {
+      const poradi = { vse: 0, skoro: 1, daleko: 2, nevim: 3 };
+      const rozdil = (poradi[a.stav] ?? 3) - (poradi[b.stav] ?? 3);
+      return rozdil !== 0 ? rozdil : (a.chybi || 0) - (b.chybi || 0);
+    }
+
+    function zavriVyber() {
+      document.getElementById('cal-vyber').classList.add('hidden');
+      document.getElementById('cal-pridat').classList.remove('hidden');
+      calHledane = '';
+    }
+
+    function vykresliVyber() {
+      const seznam = document.getElementById('cal-vyber-seznam');
+      const hledat = fold(calHledane.trim());
+
+      // Nahore to, co jde uvarit z toho, co je doma - to je duvod,
+      // proc clovek planuje z kalendare a ne z receptu.
+      const nabidka = recipes
+        .filter(r => !hledat || fold(r.title).includes(hledat))
+        .map(r => ({ r: r, p: pripravenost(r, pantryItems) }))
+        // Kdo ma prazdnou spiz, ma u vseho stav 'nevim' - pak se
+        // neradi vubec a poradi zustane puvodni.
+        .sort((a, b) => porovnejPripravenost(a.p, b.p))
+        .slice(0, 40);
+
+      if (!nabidka.length) {
+        seznam.innerHTML = '<li class="text-[13px] text-text-muted py-2">Nic takového tu není.</li>';
+        return;
+      }
+
+      seznam.innerHTML = nabidka.map(({ r, p }) =>
+        '<li><button type="button" class="cal-vyber-recept w-full flex items-center gap-2 text-left px-2 py-2 rounded-lg hover:bg-surface-hover transition-colors" data-slug="' + escAttr(r.slug) + '">' +
+          '<span class="flex-1 min-w-0 text-[13px] text-text truncate">' + esc(r.title) + '</span>' +
+          (p && p.stav !== 'nevim'
+            ? '<span class="odznak odznak-' + p.stav + ' shrink-0">' + esc(p.popisek) + '</span>' : '') +
+        '</button></li>'
+      ).join('');
+
+      seznam.querySelectorAll('.cal-vyber-recept').forEach(b =>
+        b.addEventListener('click', () => naplanujZKalendare(b.dataset.slug)));
+    }
+
+    async function naplanujZKalendare(slug) {
+      const celyDen = document.getElementById('cal-vyber-celyden').checked;
+      const cas = celyDen ? null : document.getElementById('cal-vyber-cas').value;
+
+      await ulozBooking(false, {
+        datum: calVybranyDen,
+        cas: cas,
+        slug: slug,
+        chyba: 'cal-vyber-chyba',
+        hotovo: () => {
+          zavriVyber();
+          vykresliKalendar();
+          paintCalBadge();
+        },
+      });
+    }
+
+    (function () {
+      const pridat = document.getElementById('cal-pridat');
+      if (!pridat) return;
+
+      pridat.addEventListener('click', () => {
+        document.getElementById('cal-vyber').classList.remove('hidden');
+        pridat.classList.add('hidden');
+        document.getElementById('cal-vyber-chyba').classList.add('hidden');
+        const h = document.getElementById('cal-vyber-hledat');
+        h.value = '';
+        calHledane = '';
+        vykresliVyber();
+        h.focus();
+      });
+
+      document.getElementById('cal-vyber-hledat').addEventListener('input', e => {
+        calHledane = e.target.value;
+        vykresliVyber();
+      });
+
+      document.getElementById('cal-vyber-celyden').addEventListener('change', e => {
+        document.getElementById('cal-vyber-cas').classList.toggle('hidden', e.target.checked);
+      });
+    })();
 
     async function calBookingAkce(akce, id) {
       if (akce === 'done' && !confirm('Uvařeno? Suroviny se teď odečtou ze spíže.')) return;
@@ -3109,13 +3250,22 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         '</div>';
     }
 
+    let pantryHledane = '';
+
     function renderPantry() {
       const views = pantryView(pantryItems, Store.getPantryDetail());
       document.getElementById('pantry-empty').classList.toggle('hidden', views.length > 0);
       document.getElementById('pantry-count').textContent =
         views.length === 0 ? '' : views.length + (views.length < 5 ? ' suroviny' : ' surovin');
 
-      pantryList.innerHTML = views.map(v => {
+      const sekce = spizPodleSekci(views, pantryHledane);
+      const nenalezeno = document.getElementById('pantry-nenalezeno');
+      nenalezeno.classList.toggle('hidden', sekce.length > 0 || views.length === 0);
+      if (pantryHledane && !sekce.length) {
+        nenalezeno.textContent = 'Ve spíži nic jako „' + pantryHledane + '“ nemáš.';
+      }
+
+      const radek = v => {
         const polozka = pantryItems.find(x => String(x.id) === String(v.id)) || v;
         const ovladani = v.showQuantity
           ? '<div class="flex items-center gap-1.5">' +
@@ -3129,18 +3279,34 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
               '" data-id="' + escAttr(v.id) + '" data-status="' + escAttr(st) + '">' + esc(statusLabel(st)) + '</button>'
             ).join('') + '</div>';
 
-        return '<li class="py-3 flex items-center gap-3">' +
-          '<div class="flex-1 min-w-0">' +
-            '<p class="text-[14px] text-text truncate">' + esc(v.name) + '</p>' +
-            '<label class="inline-flex items-center gap-1.5 mt-1 cursor-pointer">' +
-              '<input type="checkbox" class="pantry-staple" data-id="' + escAttr(v.id) + '"' + (v.staple ? ' checked' : '') + ' />' +
-              '<span class="text-[11px] text-text-muted">mám doma standardně</span>' +
-            '</label>' +
+        // Stav se pozna barvou proužku i tvarem popisku - barva sama
+        // by u "dochází" a "došlo" splynula (4.7: barva nesmi byt
+        // jediny signal).
+        const stav = v.showQuantity
+          ? (Number(v.quantity) > 0 ? 'mam' : 'doslo')
+          : (v.status || 'doslo');
+
+        return '<li class="spiz-radek je-' + stav + (v.staple ? ' je-staple' : '') + '">' +
+          '<div class="min-w-0 flex-1">' +
+            '<p class="spiz-nazev">' + esc(v.name) + '</p>' +
+            '<button type="button" class="pantry-staple spiz-staple" data-id="' + escAttr(v.id) + '"' +
+              ' aria-pressed="' + (v.staple ? 'true' : 'false') + '"' +
+              ' title="Mám doma standardně — nikdy se nepřidá do nákupu">' +
+              (v.staple ? '&#8962; vždycky doma' : 'mám vždycky') +
+            '</button>' +
           '</div>' +
           ovladani +
           '<button class="pantry-del w-8 h-8 rounded-lg text-text-muted hover:text-red-400 transition-colors shrink-0" data-id="' + escAttr(v.id) + '" title="Odebrat">&times;</button>' +
         '</li>';
-      }).join('');
+      };
+
+      pantryList.innerHTML = sekce.map(sek =>
+        '<section class="spiz-sekce">' +
+          '<h4 class="spiz-nadpis">' + esc(sek.nazev) +
+            '<span class="spiz-pocet">' + sek.polozky.length + '</span></h4>' +
+          '<ul class="spiz-seznam">' + sek.polozky.map(radek).join('') + '</ul>' +
+        '</section>'
+      ).join('');
 
       bindPantryRows();
     }
@@ -3157,6 +3323,14 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       } catch (e) { alert(e.message); }
     }
 
+    (function () {
+      const h = document.getElementById('pantry-hledat');
+      if (h) h.addEventListener('input', () => {
+        pantryHledane = h.value;
+        renderPantry();
+      });
+    })();
+
     function bindPantryRows() {
       pantryList.querySelectorAll('.pantry-status').forEach(b =>
         b.addEventListener('click', () => {
@@ -3164,10 +3338,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           if (it) savePantryItem({ ...it, status: b.dataset.status });
         })
       );
+      // Uz to neni zaskrtavatko, ale prepinaci pilulka - stav se cte
+      // z aria-pressed, ne z .checked.
       pantryList.querySelectorAll('.pantry-staple').forEach(c =>
-        c.addEventListener('change', () => {
+        c.addEventListener('click', () => {
           const it = itemById(c.dataset.id);
-          if (it) savePantryItem({ ...it, staple: c.checked ? 1 : 0 });
+          if (it) savePantryItem({ ...it, staple: c.getAttribute('aria-pressed') === 'true' ? 0 : 1 });
         })
       );
       // Ukladame az pri odchodu z policka, ne pri kazde stisknute klavese.

@@ -529,6 +529,29 @@ složky (`../../src/lib/…`) a zabalí to bez potíží.
 kvůli odznaku u receptu a ve Workeru kvůli e-mailům. Kdyby existovala
 dvakrát, do týdne se rozejde a e-mail bude tvrdit něco jiného než obrazovka.
 
+### 8.19 „Dnešní volba" se musí schovat u KAŽDÉHO filtru
+
+`renderHero()` má vlastní seznam podmínek, kdy se skrýt. Když přibude
+nový filtr a nedopíše se i sem, hero zůstane viset nad vyfiltrovaným
+seznamem. Přesně tak se to stalo s filtrem Stav (`activeStav`), který
+přibyl později — build ani testy nic nenahlásí, protože syntakticky je
+všechno v pořádku.
+
+**Souvisí s 8.16:** `activeStav` je deklarovaný `let` až *pod*
+`renderHero()`. Funguje to jen proto, že první `renderGrid()` se volá
+ještě níž. Kdyby se hero někdy začalo kreslit dřív, spadne to na
+`Cannot access before initialization`.
+
+### 8.20 Ukládání bookingu je jedna funkce, ne tři
+
+`ulozBooking(force, volby)` obsluhuje podrobný formulář, rychlé termíny
+i plánování z kalendáře. Liší se jen tím, odkud berou termín a kam hlásí
+chybu (`volby.chyba` je id prvku, `volby.hotovo` co udělat po uložení).
+
+**Nekopírovat ji.** Kontrola konfliktů a výpočet zámků surovin musí
+zůstat na jednom místě — jinak se do týdne rozejdou a kalendář bude
+zamykat jiné suroviny než detail receptu. Stejný důvod jako 8.15.
+
 ### 8.16 Pozor na pořadí deklarací v `index.astro`
 
 Skript je jeden velký blok a `renderGrid()` se volá hned při startu.

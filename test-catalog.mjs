@@ -1,5 +1,5 @@
 import { fold } from './src/lib/recipe-logic.js';
-import { CATALOG, GROUPS, FROM_RECIPES, buildChecklist, checklistProgress, stemKey } from './src/lib/catalog.js';
+import { CATALOG, GROUPS, FROM_RECIPES, buildChecklist, checklistProgress, stemKey, spizPodleSekci, OSTATNI } from './src/lib/catalog.js';
 
 let fail = 0;
 const t = (name, got, want) => {
@@ -120,6 +120,31 @@ t('spocita vyplnene', postup.filled, 3);
 t('spocita celkem', postup.total > 50, true);
 t('popisek', postup.label, postup.filled + ' z ' + postup.total);
 t('prazdny vstup nespadne', checklistProgress([]).total, 0);
+
+console.log('\n--- Sekce spize ---');
+const SP = [
+  { id: 1, name: 'mouka hladká' },
+  { id: 2, name: 'smetana 31%' },
+  { id: 3, name: 'cibule' },
+  { id: 4, name: 'wasabi pasta' },
+];
+const sekce = spizPodleSekci(SP);
+t('mouka patri do spize', sekce[0].nazev, 'Spíž — základ');
+t('smetana s procenty spadne k lednici',
+  sekce.find(x => x.polozky.some(p => p.name === 'smetana 31%')).nazev, 'Lednice');
+t('co katalog nezna, jde do Ostatni',
+  sekce.find(x => x.polozky.some(p => p.name === 'wasabi pasta')).nazev, OSTATNI);
+t('poradi sekci kopiruje kuchyni', sekce.map(x => x.nazev).indexOf('Lednice') <
+  sekce.map(x => x.nazev).indexOf(OSTATNI), true);
+t('prazdne sekce se nevraci', sekce.every(x => x.polozky.length > 0), true);
+t('hledani filtruje napric sekcemi',
+  spizPodleSekci(SP, 'mouk').map(x => x.polozky.length), [1]);
+t('hledani ignoruje diakritiku',
+  spizPodleSekci(SP, 'CIBULE').length, 1);
+t('hledani bez shody vrati prazdno', spizPodleSekci(SP, 'xyz'), []);
+t('prazdny filtr vrati vse', spizPodleSekci(SP, '   ').length, sekce.length);
+t('prazdna spiz nespadne', spizPodleSekci([]), []);
+t('sekce nikdy neni bez nazvu', sekce.every(x => !!x.nazev), true);
 
 console.log(fail === 0 ? '\n=== VSE PROSLO ===\n' : '\n=== ' + fail + ' CHYB ===\n');
 process.exit(fail === 0 ? 0 : 1);
