@@ -639,6 +639,45 @@ týdenní e-mail o nových receptech.
   oznámení a chybová hláška by vypadala, že selhalo celé zapnutí.
   Nezapíše se `push_welcome_at`, takže se to zkusí příště.
 
+### 8.24 V nainstalované appce musí fungovat tlačítko zpět
+
+**Draze zjištěno 21. 8. 2026**, hned jak si Honza appku přidal na plochu.
+
+V okně prohlížeče je adresní řádek a šipka zpět, takže si toho nikdo
+nevšimne. V nainstalované appce nic z toho není — systémové gesto „zpět"
+zavře rovnou **celou aplikaci**. Kdo si otevřel spíž, neměl jak odejít
+jinak než křížkem.
+
+Řešení: při otevření okna se do historie položí jeden krok navíc, gesto
+zpět ho spotřebuje, appka zavře nejvrchnější okno a krok zase položí.
+
+**Nástrahy:**
+
+- **Krok se pokládá až když je co zavírat.** Kdyby v historii ležel
+  pořád, první „zpět" na hlavní obrazovce by nedělalo nic — a to na
+  telefonu vypadá jako zaseknutá appka.
+- **Zavření křížkem musí krok uklidit** (`uklidZpet`), jinak zbyde
+  v historii viset. Že jsme si ho odklidili sami, se pozná podle
+  `uklizimeKrok` — bez toho by se `popstate` pokusil zavírat podruhé.
+- **Okna se hlídají `MutationObserver`em**, ne úpravou desítek míst,
+  odkud se otevírají. Drží se to samo i u oken, která přibudou později.
+- **Pořadí zavírání je v `oknaOdVrchu()`** a musí odpovídat `z-index`u.
+  Nové okno je potřeba přidat i tam, jinak ho „zpět" přeskočí a zavře
+  něco pod ním.
+- Sledování se zapíná přes `setTimeout(…, 0)` — části oken se deklarují
+  až níž v souboru (8.16).
+
+### 8.25 Tlačítko profilu je mimo blok (znovu 8.13)
+
+Kliknutí na vlastní jméno v hlavičce nedělalo nic. Příčina není
+v profilu: obsluha tlačítka běží **mimo** blok čekající na načtení
+stránky, kdežto okno profilu se skládá uvnitř. `otevriProfil` odtamtud
+prostě není vidět a klik skončil na `ReferenceError`.
+
+Propojuje je `profilHook`, stejně jako `poPrihlaseni` a `branaHook`.
+**Tohle je už třetí případ téhož** — cokoli nového, co se z hlavičky
+volá dovnitř bloku, potřebuje vlastní hák.
+
 ### 8.22 V nastavení se nic nezapíná
 
 **Rozhodnutí z 21. 8. 2026.** Přepínače „co mi posílat e-mailem",

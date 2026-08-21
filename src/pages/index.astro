@@ -1000,6 +1000,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // s nactenou strankou, takze odsud na to primo nevidime.
     let poPrihlaseni = null;
     let branaHook = null;
+    // Tlacitko s vlastnim jmenem je TADY, ale okno profilu se sklada
+    // az uvnitr bloku po nacteni stranky - odsud na nej primo nevidime
+    // (8.13). Az bude hotove, samo se sem prihlasi.
+    let profilHook = null;
 
     function readTokenFromUrl() {
       const m = /[#&]token=([^&]+)/.exec(location.hash || '');
@@ -1074,7 +1078,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       // profilu. Odhlaseni je v nem dole - je to vzacnejsi ukon nez
       // "chci se na sebe podivat".
       if (currentUser) {
-        otevriProfil();
+        if (profilHook) profilHook();
         return;
       }
       startGoogleLogin();
@@ -2463,15 +2467,99 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.getElementById('nav-chef').addEventListener('click', () => document.getElementById('chef-btn').click());
     document.getElementById('nav-shop').addEventListener('click', () => document.getElementById('shopping-btn').click());
 
-    // --- Escape key ---
+    // --- Zavirani oken: Escape a tlacitko zpet ----------------------------
+    //
+    // V nainstalovane appce neni adresni radek ani sipka zpet, takze
+    // systemove gesto "zpet" by zavrelo rovnou CELOU aplikaci. Kdo si
+    // otevrel spiz, nemel jak z ni odejit jinak nez krizkem.
+    //
+    // Reseni: pri startu si do historie prohlizece polozime jeden krok
+    // navic. Gesto zpet ho spotrebuje, my zavreme nejvrchnejsi okno
+    // a krok zase polozime - takze dalsi "zpet" zavre dalsi okno.
+    // Kdyz uz nic otevreneho neni, krok nedoplnime a appka se zavre,
+    // jak uzivatel ceka.
+
+    /** Okna od nejvrchnejsiho po nejspodnejsi. Poradi = poradi zavirani. */
+    function oknaOdVrchu() {
+      return [
+        [cookOverlay, closeCookMode],
+        [bookOverlay, zavriBooking],
+        [checklistOverlay, closeChecklist],
+        [profilOverlay, zavriProfil],
+        [calOverlay, zavriKalendar],
+        [pantryOverlay, closePantry],
+        [shoppingOverlay, closeShopping],
+        [chefOverlay, closeChef],
+        [settingsOverlay, closeSettings],
+        [overlay, closeDetailModal],
+      ];
+    }
+
+    /** Zavre nejvrchnejsi otevrene okno. Vraci, jestli bylo co zavrit. */
+    function zavriNejvrchnejsiOkno() {
+      for (const [prvek, zavri] of oknaOdVrchu()) {
+        if (prvek && !prvek.classList.contains('hidden')) {
+          zavri();
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function jeNecoOtevrene() {
+      return oknaOdVrchu().some(([prvek]) => prvek && !prvek.classList.contains('hidden'));
+    }
+
     document.addEventListener('keydown', e => {
-      if (e.key !== 'Escape') return;
-      if (!cookOverlay.classList.contains('hidden')) closeCookMode();
-      else if (!shoppingOverlay.classList.contains('hidden')) closeShopping();
-      else if (!settingsOverlay.classList.contains('hidden')) closeSettings();
-      else if (!chefOverlay.classList.contains('hidden')) closeChef();
-      else if (!overlay.classList.contains('hidden')) closeDetailModal();
+      if (e.key === 'Escape') zavriNejvrchnejsiOkno();
     });
+
+    // Krok v historii se pokláda AZ ve chvili, kdy je co zavirat, a
+    // zase se uklidi, jakmile je vsechno zavrene. Kdyby lezel v historii
+    // porad, prvni "zpet" na hlavni obrazovce by nedelalo nic - a to je
+    // presne ten druh drobnosti, ktera na telefonu vypada jako zaseknuta
+    // appka.
+    let zpetPripraveno = false;
+    let uklizimeKrok = false;
+
+    function pripravZpet() {
+      if (zpetPripraveno) return;
+      zpetPripraveno = true;
+      history.pushState({ mcOkno: true }, '');
+    }
+
+    function uklidZpet() {
+      if (!zpetPripraveno) return;
+      zpetPripraveno = false;
+      uklizimeKrok = true;
+      history.back();
+    }
+
+    window.addEventListener('popstate', () => {
+      // Krok jsme prave uklidili sami - nic se zavirat nema.
+      if (uklizimeKrok) { uklizimeKrok = false; return; }
+
+      zpetPripraveno = false;
+      zavriNejvrchnejsiOkno();
+      // Kdyz pod zavrenym oknem lezi dalsi, chceme mit co spotrebovat
+      // priste.
+      if (jeNecoOtevrene()) pripravZpet();
+    });
+
+    // Okna se otviraji z desitek mist. Misto abychom kazde z nich
+    // upravovali, sledujeme, kdy se prestanou skryvat - drzi se to samo
+    // i u oken, ktera pribudou pozdeji.
+    // setTimeout schvalne: casti oken se deklaruji AZ nize v souboru
+    // (8.16). Kdybychom na ne sahli hned ted, spadne to na "Cannot
+    // access before initialization" jeste pred prvnim vykreslenim.
+    setTimeout(function () {
+      const hlidac = new MutationObserver(() => {
+        if (jeNecoOtevrene()) pripravZpet(); else uklidZpet();
+      });
+      oknaOdVrchu().forEach(([prvek]) => {
+        if (prvek) hlidac.observe(prvek, { attributes: true, attributeFilter: ['class'] });
+      });
+    }, 0);
 
 
     // --- Rating & notes ---
@@ -3264,6 +3352,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     // Prihlasime se prihlasovacimu kodu, ktery bezi mimo tenhle blok.
     branaHook = ukazBranu;
+    profilHook = otevriProfil;
     poPrihlaseni = () => {
       paintProfile();
       nactiUpozorneni();

@@ -170,6 +170,9 @@ v 15 sadách, pouštějí se z kořene (`node test-*.mjs`).
 
 Všechny jsou rozepsané v PROJEKT.md sekce 8. Nejčastější:
 
+- **Tlačítko zpět v nainstalované appce** zavírá okna, ne celou
+  aplikaci. Nové okno se musí přidat do `oknaOdVrchu()`, jinak ho
+  „zpět" přeskočí. (8.24)
 - **`index.astro` je jeden velký blok.** Přihlašovací kód běží **mimo**
   blok čekající na načtení stránky, zbytek uvnitř — přímo na sebe nevidí.
   Propojují je `poPrihlaseni` a `branaHook`. (8.13)
