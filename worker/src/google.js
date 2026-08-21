@@ -202,8 +202,12 @@ async function upsertUser(db, claims) {
 
   const id = crypto.randomUUID();
   const token = crypto.randomUUID();
-  await db.prepare('INSERT INTO users (id, email, name, role, unsub_token) VALUES (?, ?, ?, ?, ?)')
-    .bind(id, email, name, 'user', token).run();
+  // gcal_on rovnou zapnute - appka uz na to prepinac nema a vsechno
+  // chodi od zacatku. Zapis do kalendare stejne nic neudela, dokud
+  // uzivatel nedá Googlu souhlas.
+  await db.prepare(
+    'INSERT INTO users (id, email, name, role, unsub_token, gcal_on) VALUES (?, ?, ?, ?, ?, 1)'
+  ).bind(id, email, name, 'user', token).run();
   return {
     id: id, email: email, name: name, role: 'user',
     welcome_sent_at: null, unsub_token: token, jeNovy: true,

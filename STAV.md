@@ -33,7 +33,7 @@ používej **`npx.cmd`**.
 ## Jak spolu pracujeme
 
 - **Česky.** Honza dělá vibecoding — vysvětlovat lidsky, ne žargonem.
-- **Pushuje se bez ptaní**, když projde build a všech 14 sad testů.
+- **Pushuje se bez ptaní**, když projde build a všech 15 sad testů.
   (Tohle přebíjí sekci 9 v PROJEKT.md, která říká opak — ta je zastaralá.)
 - **Přístupové klíče nikdy nechodí chatem.** Vkládají se přes
   `npx.cmd wrangler secret put NAZEV` z Honzova terminálu.
@@ -48,8 +48,8 @@ používej **`npx.cmd`**.
 
 ### Refaktoring: „mozek" oddělený od „vzhledu" (sekce 6 a 7)
 
-Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **591 testů**
-ve 14 sadách, pouštějí se z kořene (`node test-*.mjs`).
+Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **621 testů**
+v 15 sadách, pouštějí se z kořene (`node test-*.mjs`).
 
 | Soubor | Co dělá |
 |---|---|
@@ -64,15 +64,20 @@ ve 14 sadách, pouštějí se z kořene (`node test-*.mjs`).
 | `booking.js` | termíny, konflikty, zámky surovin |
 | `kalendar.js` | měsíční mřížka |
 | `tour.js` | 24 kroků prohlídky aplikace |
+| `hodnosti.js` | hodnost podle počtu uvařených jídel |
 | `booking.js` → `rychleTerminy`, `kPripomenuti` | rychlé termíny a výběr, komu pípnout |
 
 ### Aplikace
 
 - Brána pro nepřihlášené (editorial layout, „Zase toast?")
-- Přihlášení přes Google, profil, nastavení e-mailů
+- Přihlášení přes Google, **profil ve vlastním okně** (hodnost, fotka
+  z knihovny nebo z telefonu, statistiky, rozcestník do spíže a plánu)
+- **V nastavení se nic nezapíná** — e-maily, oznámení i kalendář chodí
+  od začátku; vypíná se to v e-mailu, v telefonu a v účtu Google (8.22)
 - Úvodní okno po registraci + průvodce aplikací (24 kroků)
-- Spíž: rozdělená do sekcí podle kuchyně, hledání, stav surovin barevným
-  proužkem, „mám doma standardně" jako pilulka. Krokovadla − / +.
+- Spíž: přehled „mám doma / dochází / došlo", sekce podle kuchyně,
+  hledání, stav barevným proužkem, „mám doma standardně" jako pilulka.
+  Tlačítko v hlavičce nese barvu značky a odznak, kolik věcí dochází.
 - Bookingy „TO UVAŘÍM!" se zámky surovin — tlačítko je nahoře u „Režim
   vaření", tedy **před postupem**, ne až pod ním. Rychlé termíny
   („Dnes večer / Zítra večer / V sobotu") jedním tapem; podrobný

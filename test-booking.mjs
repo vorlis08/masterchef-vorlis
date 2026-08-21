@@ -89,11 +89,12 @@ const PLNA = [
   { name: 'cibule', kind: 'count', quantity: 3 },
 ];
 t('nechybi nic', pripravenost(RECEPT, PLNA).stav, 'vse');
-t('a rekne to', pripravenost(RECEPT, PLNA).popisek, 'Máš všechno');
+t('a rekne to', pripravenost(RECEPT, PLNA).popisek, 'Máš všechny suroviny');
 
 const skoro = pripravenost(RECEPT, PLNA.slice(0, 3));
 t('chybi jedna vec = skoro', skoro.stav, 'skoro');
-t('popisek jednotne', skoro.popisek, 'Chybí 1 věc');
+t('popisek jednotne', skoro.popisek, 'Chybí 1 surovina');
+t('popisek vzdycky rekne, CO chybi', pripravenost(RECEPT, PLNA).popisek.includes('surovin'), true);
 t('rekne i co chybi', skoro.chybiCo, ['cibule']);
 
 t('chybi dve = porad skoro', pripravenost(RECEPT, PLNA.slice(0, 2)).stav, 'skoro');

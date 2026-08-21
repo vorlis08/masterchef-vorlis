@@ -29,15 +29,32 @@ function text(value, max) {
 
 // -- Profil ---------------------------------------------------------------
 
+// Obrazek profilu muze prijit tremi zpusoby:
+//   1. nahrana fotka  -> data:image/... (prohlizec ji uz zmensil)
+//   2. z knihovny     -> odkaz na nas vlastni soubor
+//   3. od Googlu      -> https adresa (tak to chodilo drive)
+//
+// Delka: zmensena fotka ma ~10 kB, takze 60 000 znaku je pohodlna
+// rezerva a zaroven strop, aby nikdo neposlal do databaze megabajt.
+const AVATAR_MAX = 60000;
+
+function platnyAvatar(hodnota) {
+  if (!hodnota) return true;
+  if (/^https:\/\//i.test(hodnota)) return true;
+  if (/^\/[a-z0-9\-_/.]*\.svg$/i.test(hodnota)) return true;
+  // Jen rastr, ktery prohlizec umi zobrazit. SVG jako data-adresa NE -
+  // umi v sobe nést skript.
+  return /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(hodnota);
+}
+
 export async function updateProfile(request, env, session, origin, cors) {
   const data = await request.json().catch(() => ({}));
   const name = text(data.name, 80);
-  const avatar = text(data.avatar, 500);
+  const avatar = text(data.avatar, AVATAR_MAX);
 
   if (!name) return json({ error: 'Jméno nesmí být prázdné.' }, origin, cors, 400);
-  // Jen obrazek po https - jinak by slo do stranky vlozit cokoliv.
-  if (avatar && !/^https:\/\//i.test(avatar)) {
-    return json({ error: 'Odkaz na fotku musí začínat https://' }, origin, cors, 400);
+  if (!platnyAvatar(avatar)) {
+    return json({ error: 'Tenhle obrázek použít nejde.' }, origin, cors, 400);
   }
 
   await env.DB.prepare('UPDATE users SET name = ?, avatar = ? WHERE id = ?')

@@ -639,6 +639,65 @@ týdenní e-mail o nových receptech.
   oznámení a chybová hláška by vypadala, že selhalo celé zapnutí.
   Nezapíše se `push_welcome_at`, takže se to zkusí příště.
 
+### 8.22 V nastavení se nic nezapíná
+
+**Rozhodnutí z 21. 8. 2026.** Přepínače „co mi posílat e-mailem",
+„oznámení na telefon" a „Google kalendář" z appky **zmizely**. Všechno
+chodí od začátku a vypíná se tam, kde to člověk opravdu hledá:
+
+| Co | Kde se to vypne |
+|---|---|
+| E-maily | odhlašovací odkaz v každé zprávě (`/unsub`) |
+| Oznámení na telefon | nastavení prohlížeče / telefonu |
+| Google kalendář | nastavení účtu Google |
+
+**Proč:** nastavení plné vypínačů nutí člověka rozhodovat o věcech,
+které ještě neviděl. Kdo něco nechce, řekne si o to ve chvíli, kdy ho to
+obtěžuje — a tam už ovládání být musí.
+
+**Serverová strana zůstala.** `notify_*`, `gcal_on` i `/api/notify`
+existují dál (migrace 0010 je všem zapnula) — až přibude newsletter nebo
+něco, co se opravdu vybírá, je kam to pověsit.
+
+**Výjimka, která nejde obejít:** oznámení na telefon **nelze** zapnout
+za uživatele. Prohlížeč se na povolení smí zeptat jen jako reakce na
+kliknutí. „Od začátku" proto znamená: zeptáme se **jednou** proužkem
+dole (`#push-nabidka`), a odpověď respektujeme. Kdo odmítne, má to
+v `Store` (`pushOdmitnuto`) a už se ho nikdo neptá — zapnout to pak jde
+jen v nastavení prohlížeče, protože odtamtud to taky vyplo.
+
+### 8.23 Profil, hodnosti a obrázek
+
+Profil má **vlastní okno** (`#profil-overlay`). Vede do něj tlačítko
+v nastavení i kliknutí na svoje jméno v hlavičce — dřív se tím člověk
+odhlašoval, což je vzácnější úkon než „chci se na sebe podívat".
+Odhlášení je teď dole v profilu.
+
+**Hodnost** se počítá z **celkového počtu uvařených jídel**
+(`src/lib/hodnosti.js`), ne z počtu různých receptů. Kdo si desetkrát
+udělá tutéž omáčku, vařil desetkrát — tohle není sběratelská hra.
+Prahy jsou husté na začátku a řídké později.
+
+**Obrázek profilu** může být trojí a `platnyAvatar()` v `api.js` to
+hlídá:
+
+1. nahraná fotka → `data:image/...` (prohlížeč ji zmenšil na 160 px)
+2. z knihovny → cesta k našemu `.svg` v `public/avatary/`
+3. od Googlu → `https://` adresa (tak to chodilo dřív)
+
+**Nástrahy:**
+
+- **Fotka se zmenšuje v PROHLÍŽEČI, ne na serveru.** Jinak by uživatel
+  posílal čtyři megapixely z telefonu kvůli obrázku velikosti nehtu.
+  Výsledek má ~10 kB a jde rovnou do databáze — zakládat kvůli tomu
+  úložiště souborů, které je potřeba platit a zálohovat, se nevyplatí.
+- **SVG jako `data:` adresa se NEPŘIJÍMÁ.** Umí v sobě nést skript.
+  Knihovna obrázků jsou soubory na našem serveru, ne data.
+- **Prázdný `src=""` u `<img>` stahuje celou stránku znovu.** Prohlížeč
+  ho vyhodnotí jako adresu stránky. Atribut se proto nepíše vůbec,
+  dokud není co zobrazit — takhle dlouho vznikaly dvě 404 při každém
+  načtení.
+
 ### 8.21 Zápis do Google kalendáře
 
 Naplánované vaření se ukládá i do soukromého Google kalendáře uživatele

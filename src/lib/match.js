@@ -106,11 +106,20 @@ export function pripravenost(recept, spiz) {
   };
 }
 
-/** Kratky popisek na odznak u receptu. */
+/**
+ * Kratky popisek na odznak u receptu.
+ *
+ * Drive tu stalo jen "Chybí 3" - z toho nikdo nepozna, jestli chybi tri
+ * suroviny, tri kroky nebo tri porce. Podstatne jmeno tam proto musi
+ * byt vzdycky, i kdyz je odznak o pismenko sirsi.
+ */
 export function popisekPripravenosti(stav, chybi) {
-  if (stav === 'vse') return 'Máš všechno';
-  if (stav === 'skoro') return chybi === 1 ? 'Chybí 1 věc' : 'Chybí ' + chybi + ' věci';
-  if (stav === 'daleko') return 'Chybí ' + chybi;
+  if (stav === 'vse') return 'Máš všechny suroviny';
+  if (stav === 'skoro' || stav === 'daleko') {
+    if (chybi === 1) return 'Chybí 1 surovina';
+    if (chybi < 5) return 'Chybí ' + chybi + ' suroviny';
+    return 'Chybí ' + chybi + ' surovin';
+  }
   return '';
 }
 

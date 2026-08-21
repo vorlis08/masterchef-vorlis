@@ -1577,3 +1577,57 @@ body {
   color: #d4a843;
   font-weight: 700;
 }
+
+/* --------------------------------------------------------------------------
+   Spíž — tlačítko, přehled a knihovna obrázků
+   -------------------------------------------------------------------------- */
+
+/* Spíž je jádro appky (sekce 1), ne vedlejší nastavení. Tlačítko proto
+   nese barvu značky, ne šedou jako ostatní ikonky v hlavičce. */
+.spiz-tlacitko {
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  color: var(--color-accent);
+}
+.spiz-tlacitko:hover {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.spiz-dlazdice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 8px 4px 7px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-border);
+}
+.spiz-dlazdice.je-mam     { border-top-color: color-mix(in srgb, #5cb85c 70%, transparent); }
+.spiz-dlazdice.je-dochazi { border-top-color: color-mix(in srgb, #d4a843 80%, transparent); }
+
+.spiz-cislo {
+  font-family: var(--font-display);
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+.spiz-popisek {
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Knihovna obrázků v profilu. */
+.avatar-volba {
+  border-radius: 999px;
+  border: 2px solid transparent;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.avatar-volba:hover { border-color: var(--color-accent); transform: scale(1.06); }
+.avatar-volba:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
