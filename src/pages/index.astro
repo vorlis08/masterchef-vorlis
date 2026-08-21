@@ -678,6 +678,18 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             <p class="text-[11px] text-text-muted mt-1">Chodí připomínka před vařením a jednou za čas připomenutí, když se tu dlouho neukážeš. Nic víc.</p>
           </div>
 
+          <div id="gcal-section" class="mt-5 mb-4 hidden">
+            <h4 class="text-[12px] font-semibold text-text-muted uppercase tracking-wider mb-2">Google kalendář</h4>
+            <label class="flex items-center gap-2 mb-2 cursor-pointer">
+              <input type="checkbox" id="gcal-on" />
+              <span class="text-[13px] text-text">Ukládat naplánované vaření do mého kalendáře</span>
+            </label>
+            <button id="gcal-pripojit" class="hidden mb-2 px-3 py-1.5 rounded-lg bg-surface border border-accent/50 text-accent text-[12px] font-medium hover:bg-accent hover:text-white transition-all">
+              Připojit Google kalendář
+            </button>
+            <p id="gcal-hlaska" class="text-[11px] text-text-muted"></p>
+          </div>
+
           <div class="flex items-center gap-3">
             <button id="profile-save" class="px-4 py-2 rounded-lg bg-accent text-white font-medium text-[13px] hover:bg-accent-hover transition-colors">Uložit</button>
             <button id="profile-logout" class="px-4 py-2 rounded-lg bg-surface border border-border text-text-muted text-[13px] hover:text-accent hover:border-accent transition-colors">Odhlásit se</button>
@@ -955,9 +967,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (poPrihlaseni) poPrihlaseni();
     }
 
-    function startGoogleLogin() {
+    // `consent` posle uzivatele na souhlasnou obrazovku Googlu. Jen
+    // tam se da ziskat dlouhodoby pristup ke kalendari - pri beznem
+    // prihlaseni ho Google neposila.
+    function startGoogleLogin(consent) {
       const back = location.origin + location.pathname;
-      location.href = AI_WORKER + '/auth/start?return=' + encodeURIComponent(back);
+      location.href = AI_WORKER + '/auth/start?return=' + encodeURIComponent(back) +
+        (consent ? '&consent=1' : '');
     }
 
     document.getElementById('auth-btn')?.addEventListener('click', () => {
@@ -3690,6 +3706,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           if (el) el.checked = !!stav[k];
         });
         await nactiPush(stav);
+        nactiGcal(stav);
       } catch {}
     }
 
@@ -3859,6 +3876,63 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         try { await api('/api/notify', { kind: 'predstih', minut: Number(vyber.value) }); }
         catch (e) { pushHlaska(e.message); }
       });
+    })();
+
+    // --- Google kalendar ------------------------------------------------
+    //
+    // Pristup ke kalendari je NOVE opravneni. Kdo se prihlasil driv, ho
+    // nema - a Google ho nedá jen tak: dlouhodoby pristup posila
+    // vyhradne pri souhlasne obrazovce. Proto tu je tlacitko, ktere
+    // uzivatele posle prihlasit se znovu.
+
+    function nactiGcal(stav) {
+      const box = document.getElementById('gcal-section');
+      if (!box) return;
+      box.classList.toggle('hidden', !currentUser);
+      if (!currentUser) return;
+
+      const prepinac = document.getElementById('gcal-on');
+      const pripojit = document.getElementById('gcal-pripojit');
+
+      prepinac.checked = !!stav.gcal;
+      // Tlacitko se ukazuje jen tehdy, kdyz to uzivatel chce, ale
+      // pristup chybi. Nabizet ho vypnutym je matouci.
+      pripojit.classList.toggle('hidden', !stav.gcal || !!stav.gcalPripojeno);
+
+      if (stav.gcal && !stav.gcalPripojeno) {
+        gcalHlaska('Chybí povolení ke kalendáři — přihlas se znovu a odklepni ho.');
+      } else if (stav.gcal) {
+        gcalHlaska('Co naplánuješ, objeví se ti v kalendáři. Zrušené vaření se odtud zase smaže.');
+      } else {
+        gcalHlaska('Vypnuto. Do kalendáře se nic nezapisuje.');
+      }
+    }
+
+    function gcalHlaska(text) {
+      const el = document.getElementById('gcal-hlaska');
+      if (el) el.textContent = text;
+    }
+
+    (function () {
+      const prepinac = document.getElementById('gcal-on');
+      if (prepinac) prepinac.addEventListener('change', async () => {
+        prepinac.disabled = true;
+        try {
+          const stav = await api('/api/notify', { kind: 'gcal', on: prepinac.checked });
+          nactiGcal(stav);
+          // Zapnuti bez povoleni nema smysl odkladat - poslem uzivatele
+          // rovnou tam, kde se povoleni da dat.
+          if (prepinac.checked && !stav.gcalPripojeno) startGoogleLogin(true);
+        } catch (e) {
+          prepinac.checked = !prepinac.checked;
+          gcalHlaska(e.message);
+        } finally {
+          prepinac.disabled = false;
+        }
+      });
+
+      const pripojit = document.getElementById('gcal-pripojit');
+      if (pripojit) pripojit.addEventListener('click', () => startGoogleLogin(true));
     })();
 
     // --- Profil ---

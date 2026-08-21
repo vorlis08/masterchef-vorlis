@@ -639,6 +639,45 @@ týdenní e-mail o nových receptech.
   oznámení a chybová hláška by vypadala, že selhalo celé zapnutí.
   Nezapíše se `push_welcome_at`, takže se to zkusí příště.
 
+### 8.21 Zápis do Google kalendáře
+
+Naplánované vaření se ukládá i do soukromého Google kalendáře uživatele
+(`worker/src/gcal.js`). Zapíná se v nastavení, výchozí je vypnuto.
+
+**Bez tohohle to nepojede** — jednorázově v Google Cloud Console:
+
+1. K OAuth consent screen přidat rozsah
+   `https://www.googleapis.com/auth/calendar.events`
+2. Dokud je aplikace v režimu *Testing*, přidat každého uživatele do
+   **Test users** (limit 100). Jinak Google přihlášení odmítne.
+3. Uživatelé se musí **odhlásit a přihlásit znovu** — starým přihlášením
+   povolení ke kalendáři nikdo nedal. Appka na to má tlačítko
+   „Připojit Google kalendář" (`/auth/start?consent=1`).
+
+**Proč `consent=1`:** dlouhodobý přístup (`refresh_token`) posílá Google
+**jen** při souhlasné obrazovce. Při běžném přihlášení nepřijde — proto
+se uložený token nikdy nepřepisuje prázdnou hodnotou.
+
+**Nástrahy:**
+
+- **Konec celodenní události je den PO.** U celodenních je konec
+  vylučný; kdyby byl stejný jako začátek, událost v kalendáři vůbec
+  není vidět.
+- **Název události se bere z `recipes.json`, ne z prohlížeče.** Do cizího
+  kalendáře se nemá zapisovat text, který určil klient.
+- **Zápis běží na pozadí (`ctx.waitUntil`) a nikdy nevyhazuje.** Když
+  Google nejede, booking v appce musí zůstat — jinak by kvůli výpadku
+  Googlu vypadl plán vaření.
+- **Při zrušení se `gcal_event_id` musí přečíst PŘED smazáním řádku.**
+  Potom už ho nikde nevezmeš a v kalendáři zůstane viset vaření, které
+  se nekoná.
+- **Vlastní připomínka se v události nenastavuje** — od toho je oznámení
+  v appce (8.17). Dvě připomínky na tutéž věc jsou otravování.
+- **Vypnutí přepínače zahodí i `google_refresh`.** Držet dlouhodobý klíč
+  k cizímu kalendáři, když o něj člověk nestojí, není v pořádku.
+- **Maže se výhradně událost, jejíž id máme uložené.** Nic jiného
+  v cizím kalendáři appka nesmí smazat.
+
 ### 8.18 `BASE_URL` nemá lomítko na konci
 
 `import.meta.env.BASE_URL` je `/masterchef-vorlis`, ne

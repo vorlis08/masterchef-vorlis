@@ -29,7 +29,7 @@ používej **`npx.cmd`**.
 ## Jak spolu pracujeme
 
 - **Česky.** Honza dělá vibecoding — vysvětlovat lidsky, ne žargonem.
-- **Pushuje se bez ptaní**, když projde build a všech 13 sad testů.
+- **Pushuje se bez ptaní**, když projde build a všech 14 sad testů.
   (Tohle přebíjí sekci 9 v PROJEKT.md, která říká opak — ta je zastaralá.)
 - **Přístupové klíče nikdy nechodí chatem.** Vkládají se přes
   `npx.cmd wrangler secret put NAZEV` z Honzova terminálu.
@@ -44,8 +44,8 @@ používej **`npx.cmd`**.
 
 ### Refaktoring: „mozek" oddělený od „vzhledu" (sekce 6 a 7)
 
-Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **565 testů**
-ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
+Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **591 testů**
+ve 14 sadách, pouštějí se z kořene (`node test-*.mjs`).
 
 | Soubor | Co dělá |
 |---|---|
@@ -75,6 +75,8 @@ ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
   formulář je schovaný pod „Vybrat jiný den"
 - **Oznámení na telefon** (Web Push): připomínka před vařením, uvítací
   hned po zapnutí a připomenutí, když se uživatel týden neukáže
+- **Zápis do Google kalendáře** — naplánované vaření se uloží i tam,
+  zrušené se odtud zase smaže
 - Kalendář vaření + „Chybějící do nákupu" + **plánování rovnou z kalendáře**
   (klik na den → výběr receptu, nahoře to, na co máš doma).
   Propadlé vaření je v mřížce označené `!`
@@ -125,6 +127,10 @@ ve 13 sadách, pouštějí se z kořene (`node test-*.mjs`).
      `npx.cmd wrangler secret put VAPID_PRIVATE_KEY`
    - `cd worker && npx.cmd wrangler deploy` (spustí i migraci 0007)
    - na iPhonu appku **přidat na plochu**, jinak oznámení neexistují
+5. **Zprovoznit Google kalendář** (PROJEKT.md 8.21) — v Google Cloud
+   Console přidat rozsah `calendar.events` a sebe mezi *Test users*,
+   pak se v appce odhlásit a přihlásit znovu. Bez toho Google
+   přihlášení odmítne.
 
 ---
 

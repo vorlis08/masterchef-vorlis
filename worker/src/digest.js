@@ -18,9 +18,8 @@ import { chybejici } from '../../src/lib/match.js';
 import { zitra, popisBookingu, kPripomenuti } from '../../src/lib/booking.js';
 import { poslatPush } from './push.js';
 import { zpravaVareni, zpravaNeaktivita } from './push-zpravy.js';
+import { nactiRecepty } from './recepty.js';
 
-const RECIPES_URL =
-  'https://raw.githubusercontent.com/vorlis08/masterchef-vorlis/main/src/data/recipes.json';
 
 /** Nocni hodiny, kdy se neposila nic. Cas je v UTC, appka zije v CZ. */
 export function jeVhodnaDoba(datum) {
@@ -28,12 +27,6 @@ export function jeVhodnaDoba(datum) {
   return hodinaCz >= 7 && hodinaCz < 22;
 }
 
-async function nactiRecepty() {
-  const res = await fetch(RECIPES_URL, { headers: { 'User-Agent': 'masterchef-worker' } });
-  if (!res.ok) throw new Error('recipes.json ' + res.status);
-  const data = await res.json();
-  return Array.isArray(data) ? data : [];
-}
 
 /** Zapise si, ze uz zpravu poslal - aby neprisla dvakrat. */
 async function zapisOdeslani(env, userId, kind, note) {

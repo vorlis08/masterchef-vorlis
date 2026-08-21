@@ -13,6 +13,7 @@
 
 import { signSession, verifySession } from './session.js';
 import { sendWelcome, adminNewUser } from './mail.js';
+import { SCOPE_KALENDAR } from './gcal.js';
 
 const GOOGLE_AUTH  = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token';
@@ -48,9 +49,20 @@ export async function startLogin(request, env, allowed) {
   to.searchParams.set('client_id', env.GOOGLE_CLIENT_ID);
   to.searchParams.set('redirect_uri', redirectUri(request));
   to.searchParams.set('response_type', 'code');
-  to.searchParams.set('scope', 'openid email profile');
+  // Kalendar je navic k prihlaseni. Google si na nej rekne uzivateli
+  // zvlast - kdo souhlas nedá, prihlasi se dal, jen mu vareni do
+  // kalendare chodit nebude.
+  to.searchParams.set('scope', 'openid email profile ' + SCOPE_KALENDAR);
   to.searchParams.set('state', state);
-  to.searchParams.set('prompt', 'select_account');
+
+  // Bez `offline` dostaneme jen hodinovy pristup a do kalendare by
+  // neslo zapsat nic pozdeji. Obnovovaci token ale Google posle jen
+  // pri souhlasne obrazovce - proto `consent=1`, kterym appka posila
+  // uzivatele, kdyz kalendar pripojuje (nebo pripojuje znovu).
+  to.searchParams.set('access_type', 'offline');
+  to.searchParams.set('include_granted_scopes', 'true');
+  to.searchParams.set('prompt',
+    url.searchParams.get('consent') === '1' ? 'consent' : 'select_account');
 
   return Response.redirect(to.toString(), 302);
 }
@@ -105,6 +117,14 @@ export async function finishLogin(request, env, allowed, ctx) {
   if (claims.email_verified === false) return failPage('Tenhle e-mail není u Googlu ověřený.');
 
   const user = await upsertUser(env.DB, claims);
+
+  // Obnovovaci token prijde jen tehdy, kdyz uzivatel prave prosel
+  // souhlasnou obrazovkou. Pri beznem prihlaseni nechodi - proto se
+  // ten ulozeny NIKDY neprepisuje prazdnou hodnotou.
+  if (data.refresh_token) {
+    await env.DB.prepare('UPDATE users SET google_refresh = ? WHERE id = ?')
+      .bind(data.refresh_token, user.id).run();
+  }
 
   // Uvitaci e-mail az po prvnim prihlaseni. Posila se na pozadi - uzivatel
   // na nej neceka a kdyz posilatel selze, prihlaseni to nerozbije.

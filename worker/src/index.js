@@ -194,7 +194,7 @@ export default {
 
       if (path === '/api/bookings') {
         return request.method === 'POST'
-          ? saveBooking(request, env, session, origin, corsHeaders)
+          ? saveBooking(request, env, session, origin, corsHeaders, ctx)
           : listBookings(env, session, origin, corsHeaders);
       }
 

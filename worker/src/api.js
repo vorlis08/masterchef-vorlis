@@ -8,6 +8,10 @@
 
 import { poslatPush } from './push.js';
 import { zpravaUvitani } from './push-zpravy.js';
+import { udalostZBookingu, vytvorUdalost, smazUdalost } from './gcal.js';
+import { nactiRecepty } from './recepty.js';
+
+const APPKA = 'https://vorlis08.github.io/masterchef-vorlis/';
 
 const KINDS = ['exact', 'approx', 'count'];
 const STATUSES = ['mam', 'dochazi', 'doslo'];
@@ -142,7 +146,8 @@ const PREDSTIHY = [30, 60, 120];
 
 export async function getNotify(env, session, origin, cors) {
   const u = await env.DB.prepare(
-    'SELECT notify_recipes, notify_wishlist, notify_summary, notify_push, push_predstih FROM users WHERE id = ?'
+    `SELECT notify_recipes, notify_wishlist, notify_summary, notify_push,
+            push_predstih, gcal_on, google_refresh FROM users WHERE id = ?`
   ).bind(session.sub).first();
   const zarizeni = await env.DB.prepare(
     'SELECT COUNT(*) AS pocet FROM push_subs WHERE user_id = ?'
@@ -157,6 +162,10 @@ export async function getNotify(env, session, origin, cors) {
     // Verejny klic pro oznameni. Chodi ze serveru schvalne - kdyz se
     // klice jednou vymeni, nemusi se kvuli tomu prestavovat appka.
     vapid: env.VAPID_PUBLIC_KEY || '',
+    gcal: !!(u && u.gcal_on),
+    // Jen jestli pristup mame, ne samotny token - ten se do prohlizece
+    // nedostane nikdy.
+    gcalPripojeno: !!(u && u.google_refresh),
   }, origin, cors);
 }
 
@@ -170,6 +179,19 @@ export async function setNotify(request, env, session, origin, cors) {
     }
     await env.DB.prepare('UPDATE users SET push_predstih = ? WHERE id = ?')
       .bind(minut, session.sub).run();
+    return getNotify(env, session, origin, cors);
+  }
+
+  if (data.kind === 'gcal') {
+    // Pri vypnuti se zahazuje i pristup ke kalendari. Drzet dal
+    // dlouhodoby klic k cizimu kalendari, kdyz o nej clovek nestoji,
+    // by bylo na obtiz - a zapnout to jde kdykoliv znovu.
+    if (data.on) {
+      await env.DB.prepare('UPDATE users SET gcal_on = 1 WHERE id = ?').bind(session.sub).run();
+    } else {
+      await env.DB.prepare('UPDATE users SET gcal_on = 0, google_refresh = NULL WHERE id = ?')
+        .bind(session.sub).run();
+    }
     return getNotify(env, session, origin, cors);
   }
 
@@ -322,14 +344,26 @@ export async function listBookings(env, session, origin, cors) {
   return json({ items: results || [] }, origin, cors);
 }
 
-export async function saveBooking(request, env, session, origin, cors) {
+export async function saveBooking(request, env, session, origin, cors, ctx) {
   const data = await request.json().catch(() => ({}));
 
   if (data.action === 'cancel') {
     if (!(data.id > 0)) return json({ error: 'Chybí rezervace.' }, origin, cors, 400);
+
+    // Nejdriv se zeptame na id udalosti - po smazani radku uz ho
+    // nikde nevezmeme a v kalendari by vareni zustalo viset.
+    const zruseny = await env.DB.prepare(
+      'SELECT gcal_event_id FROM bookings WHERE id = ? AND user_id = ?'
+    ).bind(data.id, session.sub).first();
+
     // Zamky padaji s bookingem - o to se stara ON DELETE CASCADE.
     await env.DB.prepare('DELETE FROM bookings WHERE id = ? AND user_id = ?')
       .bind(data.id, session.sub).run();
+
+    if (zruseny && zruseny.gcal_event_id) {
+      const prace = smazZKalendare(env, session.sub, zruseny.gcal_event_id);
+      if (ctx && ctx.waitUntil) ctx.waitUntil(prace); else await prace;
+    }
     return listBookings(env, session, origin, cors);
   }
 
@@ -406,7 +440,56 @@ export async function saveBooking(request, env, session, origin, cors) {
       )));
   }
 
+  // Zapis do Google kalendare je DOPLNEK. Bezi na pozadi, aby na nej
+  // uzivatel necekal, a kdyz selze, booking v appce zustava - jinak by
+  // vypadl plan vareni kvuli tomu, ze Google zrovna nejel.
+  if (bookingId) {
+    const prace = zapisDoKalendare(env, session.sub, bookingId, {
+      cook_date: datum, cook_time: cas, servings: Number(data.servings) || null,
+      recipe_slug: slug,
+    });
+    if (ctx && ctx.waitUntil) ctx.waitUntil(prace); else await prace;
+  }
+
   return listBookings(env, session, origin, cors);
+}
+
+/** Zalozi vareni v Google kalendari uzivatele a zapamatuje si id udalosti. */
+async function zapisDoKalendare(env, userId, bookingId, booking) {
+  try {
+    const u = await env.DB.prepare(
+      'SELECT gcal_on, google_refresh FROM users WHERE id = ?'
+    ).bind(userId).first();
+    if (!u || !u.gcal_on || !u.google_refresh) return;
+
+    // Nazev bereme z receptu na GitHubu, ne z toho, co poslal prohlizec -
+    // do ciziho kalendare se nema zapisovat text, ktery si urcil klient.
+    let recept = null;
+    try {
+      const recepty = await nactiRecepty();
+      recept = recepty.find(r => r.slug === booking.recipe_slug) || null;
+    } catch { /* nazev bude obecny, udalost vznikne stejne */ }
+
+    const odkaz = recept ? APPKA + '#' + recept.slug : APPKA;
+    const id = await vytvorUdalost(env, u.google_refresh,
+      udalostZBookingu(booking, recept, odkaz));
+    if (!id) return;
+
+    await env.DB.prepare('UPDATE bookings SET gcal_event_id = ? WHERE id = ? AND user_id = ?')
+      .bind(id, bookingId, userId).run();
+  } catch (e) {
+    console.error('zapis do kalendare spadl: ' + String(e).slice(0, 200));
+  }
+}
+
+async function smazZKalendare(env, userId, eventId) {
+  try {
+    const u = await env.DB.prepare('SELECT google_refresh FROM users WHERE id = ?')
+      .bind(userId).first();
+    if (u && u.google_refresh) await smazUdalost(env, u.google_refresh, eventId);
+  } catch (e) {
+    console.error('mazani z kalendare spadlo: ' + String(e).slice(0, 200));
+  }
 }
 
 // -- Nakupni seznam -------------------------------------------------------
