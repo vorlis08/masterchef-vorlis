@@ -687,6 +687,14 @@ se uložený token nikdy nepřepisuje prázdnou hodnotou.
   k cizímu kalendáři, když o něj člověk nestojí, není v pořádku.
 - **Maže se výhradně událost, jejíž id máme uložené.** Nic jiného
   v cizím kalendáři appka nesmí smazat.
+- **Po návratu ze souhlasu se přepínač zapne sám.** Nese to podepsaný
+  stav (`gcal` v `oauth-state`), ne parametr v adrese — jinak by si
+  kdokoliv zapnul zápis do cizího kalendáře pouhým odkazem.
+  Bez tohohle se člověk zacyklí: souhlas dá, přístup se uloží, ale
+  přepínač zůstane vypnutý, takže ho appka pošle pro souhlas znovu.
+- **Zapíná se JEN když uživatel přišel kvůli kalendáři.** Při úplně
+  prvním přihlášení Google obnovovací token pošle taky — ale to není
+  souhlas s tím, aby mu appka psala do kalendáře.
 - **Uložení přístupu ke kalendáři je v `try`.** Přihlášení je kritická
   cesta a nesmí spadnout kvůli doplňku — draze zjištěno: bez toho
   padal celý `/auth/callback` na `Error 1101` a do appky se nedalo

@@ -43,7 +43,16 @@ export async function startLogin(request, env, allowed) {
 
   // Stav je taky podepsany - Google nam ho vrati a my poznáme, ze je nas.
   // Kratka platnost: prihlaseni se ma dokoncit hned.
-  const state = await signSession({ back: back, kind: 'oauth-state' }, env.SESSION_SECRET, 600);
+  // `gcal` si nese informaci, ze uzivatel prisel PRAVE kvuli kalendari.
+  // Podle nej se po navratu prepinac sam zapne. Bez toho se clovek
+  // zacykli: souhlas da, ale prepinac zustane vypnuty, takze ho appka
+  // posle pro souhlas znovu.
+  //
+  // Je to v PODEPSANEM stavu, ne v adrese - jinak by si kdokoliv mohl
+  // zapnout zapis do ciziho kalendare pouhym odkazem.
+  const chceKalendar = url.searchParams.get('consent') === '1';
+  const state = await signSession(
+    { back: back, kind: 'oauth-state', gcal: chceKalendar }, env.SESSION_SECRET, 600);
 
   const to = new URL(GOOGLE_AUTH);
   to.searchParams.set('client_id', env.GOOGLE_CLIENT_ID);
@@ -61,8 +70,7 @@ export async function startLogin(request, env, allowed) {
   // uzivatele, kdyz kalendar pripojuje (nebo pripojuje znovu).
   to.searchParams.set('access_type', 'offline');
   to.searchParams.set('include_granted_scopes', 'true');
-  to.searchParams.set('prompt',
-    url.searchParams.get('consent') === '1' ? 'consent' : 'select_account');
+  to.searchParams.set('prompt', chceKalendar ? 'consent' : 'select_account');
 
   return Response.redirect(to.toString(), 302);
 }
@@ -128,8 +136,15 @@ export async function finishLogin(request, env, allowed, ctx) {
   // Error 1101 a do appky se nedalo vubec dostat.
   if (data.refresh_token) {
     try {
-      await env.DB.prepare('UPDATE users SET google_refresh = ? WHERE id = ?')
-        .bind(data.refresh_token, user.id).run();
+      // Prepinac zapiname JEN kdyz uzivatel prisel kvuli kalendari
+      // (st.gcal). Pri uplne prvnim prihlaseni Google taky posle
+      // obnovovaci token - ale to neni souhlas s tim, aby mu appka
+      // psala do kalendare. O to si musi rict sam.
+      await env.DB.prepare(
+        st.gcal
+          ? 'UPDATE users SET google_refresh = ?, gcal_on = 1 WHERE id = ?'
+          : 'UPDATE users SET google_refresh = ? WHERE id = ?'
+      ).bind(data.refresh_token, user.id).run();
     } catch (e) {
       console.error('ulozeni pristupu ke kalendari selhalo: ' + String(e).slice(0, 200));
     }
