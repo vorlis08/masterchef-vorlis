@@ -160,17 +160,22 @@ console.log('\n--- Filtrovani je zapojene do appky ---');
   const total = count();
   t('nejaky recepty na zacatku', total > 0, 'pocet=' + total);
 
+  // Hledani prekresluje az po kratke odmlce (160 ms), aby se mrizka
+  // nestavela na kazde pismeno. Test tedy musi pockat dyl nez u filtru,
+  // ktere reaguji hned.
   const search = w.document.getElementById('search');
-  search.value = 'zzzznesmysl';
-  search.dispatchEvent(new w.Event('input', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 60));
+  const pisu = async (text) => {
+    search.value = text;
+    search.dispatchEvent(new w.Event('input', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 300));
+  };
+
+  await pisu('zzzznesmysl');
   t('hledani nesmyslu nic nenajde', count() === 0, 'pocet=' + count());
   const noRes = w.document.getElementById('no-results');
   t('hlaska o zadnych vysledcich se ukaze', noRes && !noRes.classList.contains('hidden'));
 
-  search.value = '';
-  search.dispatchEvent(new w.Event('input', { bubbles: true }));
-  await new Promise(r => setTimeout(r, 60));
+  await pisu('');
   t('vymazani hledani vrati vse', count() === total, 'pocet=' + count());
 
   const catBtn = w.document.querySelector('.filter-btn[data-category]:not([data-category="all"]):not([data-category="__fav"])');
@@ -182,6 +187,64 @@ console.log('\n--- Filtrovani je zapojene do appky ---');
     t('filtr kategorie zuzi vyber', n > 0 && n <= total, 'pocet=' + n + ' z ' + total);
     const gt = w.document.getElementById('grid-title');
     t('nadpis ukazuje kategorii', gt && gt.textContent === cat, gt && gt.textContent);
+  }
+}
+
+console.log('\n--- Prepinac Basic/Fancy prekresli CELY recept ---');
+// Drive tu bylo volani `paintWishBtn(slug)` s promennou, ktera na tom
+// miste neexistovala. Vyjimka utla zbytek vykreslovani, takze se prepsaly
+// ingredience, ale postup, nadpisy ani stav prepinace uz ne.
+{
+  const { w } = boot({ viewMode: 'grid' });
+  await ready(w);
+
+  const karta = w.document.querySelector('#recipe-grid [data-slug]');
+  karta.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 100));
+
+  const nadpisPostupu = () => w.document.getElementById('head-steps').textContent;
+  t('recept se otevrel v Basic', nadpisPostupu() === 'Postup', nadpisPostupu());
+
+  const fancy = w.document.querySelector('#mode-toggle .mode-opt[data-mode="fancy"]');
+  fancy.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 500));
+
+  t('prepinac Fancy se rozsvitil', fancy.classList.contains('is-on'));
+  t('postup se prekreslil do Fancy',
+    w.document.getElementById('modal-steps').classList.contains('f-step-list'),
+    w.document.getElementById('modal-steps').className);
+  t('ozdoba Fancy se ukazala',
+    !w.document.getElementById('modal-fleuron').classList.contains('hidden'));
+}
+
+console.log('\n--- Escape zavira i mensi okna (8.24) ---');
+// Okna "Nahradit" a "Nutricni hodnoty" v seznamu zavirani chybela, takze
+// je Escape ani tlacitko zpet neznaly a zustavala viset nad receptem.
+{
+  const { w } = boot({ viewMode: 'grid' });
+  await ready(w);
+
+  const karta = w.document.querySelector('#recipe-grid [data-slug]');
+  karta.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setTimeout(r, 100));
+
+  const escape = () => {
+    w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    return new Promise(r => setTimeout(r, 320));
+  };
+
+  for (const [tlacitko, okno, jmeno] of [
+    ['subst-btn', 'subst-overlay', 'Nahradit'],
+    ['nutrition-btn', 'nutrition-overlay', 'Nutricni hodnoty'],
+  ]) {
+    w.document.getElementById(tlacitko).dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 100));
+    const prvek = w.document.getElementById(okno);
+    t('okno ' + jmeno + ' se otevrelo', !prvek.classList.contains('hidden'));
+    await escape();
+    t('Escape zavre ' + jmeno, prvek.classList.contains('hidden'));
+    t('a recept pod nim zustal otevreny',
+      !w.document.getElementById('modal-overlay').classList.contains('hidden'));
   }
 }
 

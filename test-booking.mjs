@@ -163,5 +163,17 @@ t('zitrejsi den hodinu pred', kp('2026-08-21T15:00:00Z', 60), [4]);
 t('nesmyslny predstih spadne na hodinu', kp('2026-08-20T15:00:00Z', 0), [1]);
 t('prazdny seznam nespadne', kPripomenuti([], new Date(), 60), []);
 
+// V zime je posun 1 h, ne 2. Vareni v 18:00 ceskeho casu je tedy v 17:00
+// UTC - drive se s pevnym "+2" pripominalo o hodinu driv.
+const PZ = [{ id: 9, state: 'planned', cook_date: '2026-12-20', cook_time: '18:00' }];
+t('zima: hodinu pred varenim',
+  kPripomenuti(PZ, new Date('2026-12-20T16:00:00Z'), 60).map(b => b.id), [9]);
+t('zima: dve hodiny pred jeste ne',
+  kPripomenuti(PZ, new Date('2026-12-20T15:00:00Z'), 60).map(b => b.id), []);
+t('zima: v case vareni uz ne',
+  kPripomenuti(PZ, new Date('2026-12-20T17:00:00Z'), 60).map(b => b.id), []);
+t('vnuceny posun porad funguje',
+  kPripomenuti(PZ, new Date('2026-12-20T15:00:00Z'), 60, 2).map(b => b.id), [9]);
+
 console.log(fail === 0 ? '\n=== VSE PROSLO ===\n' : '\n=== ' + fail + ' CHYB ===\n');
 process.exit(fail === 0 ? 0 : 1);

@@ -2,6 +2,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,11 +22,26 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+
+      # Hlidac preklepu. Chytne pouzitou promennou, ktera nikde nevznikla -
+      # presne to, co dlouho lezelo v prepinaci Basic/Fancy a projevilo se
+      # az uzivateli v prohlizeci.
+      - name: Kontrola kodu
+        run: npm run lint
+
       - run: npm run build
+
+      # Testy az PO buildu: sada test-store.mjs pousti hotovou stranku
+      # z dist/ v jsdom, takze bez buildu nema co testovat.
+      - name: Testy
+        run: npm test
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
   deploy:
+    # Z pull requestu se nenasazuje - tam staci, ze projde kontrola a testy.
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:

@@ -58,6 +58,17 @@ t('ve 23 uz ne', jeVhodnaDoba(new Date('2026-08-20T21:00:00Z')), false);
 t('ve 3 rano ne', jeVhodnaDoba(new Date('2026-08-20T01:00:00Z')), false);
 t('v 6 rano jeste ne', jeVhodnaDoba(new Date('2026-08-20T04:00:00Z')), false);
 
+// Pres zimu je Praha o hodinu bliz UTC. Drive se tu pocitalo pevne "+2",
+// takze vecerni bookingy mezi 21:00 a 22:00 ceskeho casu propadaly.
+t('zima: 20:00 UTC je 21:00 v Praze, jeste se posila',
+  jeVhodnaDoba(new Date('2026-12-20T20:00:00Z')), true);
+t('zima: 21:00 UTC je uz 22:00 v Praze, konec',
+  jeVhodnaDoba(new Date('2026-12-20T21:00:00Z')), false);
+t('zima: 6:00 UTC je 7:00 v Praze, uz se posila',
+  jeVhodnaDoba(new Date('2026-12-20T06:00:00Z')), true);
+t('zima: 5:00 UTC je teprve 6:00 v Praze',
+  jeVhodnaDoba(new Date('2026-12-20T05:00:00Z')), false);
+
 console.log('\n--- Podoba zprav ---');
 const U = { id: 'u1', name: 'Honza Vorel', email: 'h@x.cz', unsub_token: 'tok' };
 

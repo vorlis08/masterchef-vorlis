@@ -17,8 +17,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         </h1>
       </div>
       <div class="flex items-center gap-3">
-        <!-- Unsaved indicator -->
-        
         <!-- Chef AI -->
         <button id="chef-btn" class="hidden sm:flex w-9 h-9 rounded-lg bg-surface border border-border items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Co dnes uvařit?">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -32,10 +30,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </svg>
           <span id="shopping-count" class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-accent text-white text-[10px] font-semibold flex items-center justify-center"></span>
         </button>
-        <!-- Import JSON -->
-        
-        <!-- Add recipe -->
-        
         <!-- Kalendar -->
         <button id="cal-btn" class="w-10 h-10 sm:w-9 sm:h-9 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors relative" title="Kalendář vaření">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,8 +120,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       <div id="modal-body" class="px-5 sm:px-8 py-6 sm:py-8">
         <div id="modal-header-row" class="flex items-start justify-between mb-2">
           <h2 id="modal-title" class="display text-[27px] sm:text-[32px] text-text"></h2>
-          <div id="modal-actions" class="flex gap-2 shrink-0 ml-4">
-                      </div>
         </div>
         <p id="modal-description" class="text-text-muted text-[15px] mb-6 leading-relaxed"></p>
         <div id="modal-meta" class="meta flex items-center gap-2.5 mb-7 text-text-muted"></div>
@@ -206,8 +198,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
-  <!-- Edit/Add modal -->
-  
   <!-- Chef AI modal -->
   <div id="chef-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden opacity-0 transition-opacity duration-200">
     <div id="chef-modal" class="fixed inset-y-0 right-0 w-full max-w-2xl bg-bg overflow-y-auto translate-x-full transition-transform duration-300 ease-out">
@@ -264,7 +254,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
-  <!-- Settings modal -->
   <!-- Dlouhy seznam k proklikani -->
   <div id="checklist-overlay" class="fixed inset-0 bg-black/70 z-[70] hidden opacity-0 transition-opacity duration-200">
     <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-6">
@@ -821,11 +810,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </div>
         </div>
 
-        <!-- GitHub Token only -->
-        <div>
-          <h3 class="text-[13px] font-semibold text-text-muted uppercase tracking-wider mb-4">API klíče</h3>
-
-        </div>
       </div>
     </div>
   </div>
@@ -919,7 +903,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
   <!-- Mobile bottom nav -->
   <nav class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-bg/95 backdrop-blur-lg border-t border-border pb-[env(safe-area-inset-bottom)]">
-    <div class="grid grid-cols-5 items-end">
+    <div class="grid grid-cols-4 items-end">
       <button id="nav-all" class="flex flex-col items-center gap-1 py-2.5 text-text-muted transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
         <span class="text-[10px] font-medium">Recepty</span>
@@ -946,9 +930,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
   <script>
     import {
-      QTY_UNITS, fold, normalizeWord, slugify, parseMinutes, esc, formatNum,
-      splitQty, scaleIngredient, roman, haystack, parseDurations, fmtClock,
-      parseIngredients, ingredientMatch, escAttr
+      fold, esc, escAttr, splitQty, scaleIngredient, roman,
+      parseDurations, fmtClock, parseIngredients, ingredientMatch,
     } from '../lib/recipe-logic.js';
     import { filterRecipes, headingFor, countLabel } from '../lib/filters.js';
     import { gridView } from '../lib/recipe-view.js';
@@ -959,7 +942,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       krokMnozstvi, posunMnozstvi,
     } from '../lib/pantry.js';
     import { buildChecklist, checklistProgress, spizPodleSekci } from '../lib/catalog.js';
-    import { pripravenost, sediSurovina } from '../lib/match.js';
+    import { pripravenost, sediSurovina, chybejici } from '../lib/match.js';
     import {
       dnes as dnesniDatum, jeDatum, jeCas, popisBookingu, popisDatumu,
       konflikty, popisKonfliktu, coZamknout, nadchazejici, rychleTerminy,
@@ -967,14 +950,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     import {
       DNY_ZKRATKY, mesicniMrizka, posunMesic, pocetVMesici, bookingyDne,
     } from '../lib/kalendar.js';
-    import { chybejici } from '../lib/match.js';
     import {
       krok as tourKrokData, omez as tourOmez, jePrvni as tourPrvni,
       jePosledni as tourPosledni, popisPostupu as tourPostup,
       popisekDopredu as tourDopredu, akceKroku as tourAkce,
     } from '../lib/tour.js';
     import {
-      createSession, stepCount, currentStep, stepNumber, isLast, goTo,
+      createSession, currentStep, stepNumber, isLast, goTo,
       progressPercent, stepLabel, progressLabel, ghostLabel, nextLabel,
       finishText, finishLabel
     } from '../lib/cook-session.js';
@@ -1121,12 +1103,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       // Zbyva jen uklid po starsich verzich.
       zapomenTokenGithubu() { this._remove('gh_token'); },
 
-      // "Vypisovat mnozstvi u vseho" - viz spiz. Ulozeno lokalne,
-      // je to preference vzhledu, ne data.
       // Prisel z e-mailu na uvod, ale jeste nebyl prihlaseny.
       getUvodPoPrihlaseni()  { return this._raw('uvodPotom', '') === '1'; },
       setUvodPoPrihlaseni(a) { if (a) this._write('uvodPotom', '1'); else this._remove('uvodPotom'); },
 
+      // "Vypisovat mnozstvi u vseho" - viz spiz. Ulozeno lokalne,
+      // je to preference vzhledu, ne data.
       getPantryDetail()   { return this._raw('pantryDetail', '') === '1'; },
       setPantryDetail(on) { if (on) this._write('pantryDetail', '1'); else this._remove('pantryDetail'); },
 
@@ -1155,8 +1137,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     document.addEventListener("DOMContentLoaded", function() {
 
-    let recipes = JSON.parse(JSON.stringify(recipesData));
-    let originalJson = JSON.stringify(recipesData);
+    // Recepty uz appka needituje (editace z prohlizece padla i s tokenem
+    // GitHubu), takze neni proc drzet kopii - cte se z nich jen.
+    const recipes = recipesData;
     let currentSlug = null;
 
     // --- DOM refs ---
@@ -1171,6 +1154,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     let wishlist = Store.getWishlist();
     let pantryItems = [];
     let bookings = [];
+
+    // Slugy, o kterych uz neco vi databaze. Drzime si je proto, aby slo
+    // poslat i ODEBRANI: kdyz u receptu bez hodnoceni zhasnes srdicko,
+    // vypadne ze seznamu "co posilat" a serveru se o nem nerekne nic -
+    // takze v databazi zustane favorite=1 a pri pristim nacteni se
+    // oblibeny recept sam vrati. Presne tohle se drive dělo.
+    let znameServeru = new Set();
 
     function toggleFavorite(slug) {
       const i = favorites.indexOf(slug);
@@ -1232,15 +1222,15 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <div class="card-media !aspect-[16/11] sm:!aspect-[4/3] order-1 sm:order-2">
             ${r.image
               ? photoTag(r, { eager: true })
-              : `<div class="w-full h-full flex items-center justify-center"><span class="display text-[64px] text-border">${(r.title || '?').charAt(0)}</span></div>`}
+              : `<div class="w-full h-full flex items-center justify-center"><span class="display text-[64px] text-border">${esc((r.title || '?').charAt(0))}</span></div>`}
           </div>
           <div class="order-2 sm:order-1">
             <div class="label text-accent mb-3">Dnešní volba</div>
-            <h2 class="display text-[30px] sm:text-[42px] text-text mb-3">${r.title}</h2>
-            <p class="text-text-muted text-[14.5px] sm:text-[15px] leading-relaxed mb-5 max-w-[46ch]">${r.description || 'Otevři recept a uvidíš.'}</p>
+            <h2 class="display text-[30px] sm:text-[42px] text-text mb-3">${esc(r.title)}</h2>
+            <p class="text-text-muted text-[14.5px] sm:text-[15px] leading-relaxed mb-5 max-w-[46ch]">${esc(r.description || 'Otevři recept a uvidíš.')}</p>
             <div class="meta text-text-muted flex items-center gap-2.5 mb-6">
               ${r.time ? `<span>${esc(r.time)}</span><span class="opacity-40">/</span>` : ''}
-              <span>${r.difficulty || 'Snadné'}</span><span class="opacity-40">/</span>
+              <span>${esc(r.difficulty || 'Snadné')}</span><span class="opacity-40">/</span>
               <span>${esc(r.servings || '?')} porcí</span>
             </div>
             <div class="flex gap-2.5">
@@ -1342,8 +1332,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           return p.stav === 'vse' || p.stav === 'skoro';
         }
         if (activeStav === 'wishlist') return jeVeWishlistu(r.slug);
-        if (activeStav === 'uvareno') return Store.getReview(r.slug).cooked > 0;
-        if (activeStav === 'neuvareno') return !(Store.getReview(r.slug).cooked > 0);
+        if (activeStav === 'uvareno') return getReview(r.slug).cooked > 0;
+        if (activeStav === 'neuvareno') return !(getReview(r.slug).cooked > 0);
         return true;
       });
 
@@ -1353,10 +1343,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         isFavorite: slug => favorites.includes(slug),
         ratingOf: getUserRating,
         pripravenostOf: r => (pantryItems.length ? pripravenost(r, pantryItems) : null),
-        stavOf: slug => (Store.getReview(slug).cooked > 0
+        stavOf: slug => (getReview(slug).cooked > 0
           ? 'uvareno'
           : (jeVeWishlistu(slug) ? 'wishlist' : 'neuvareno')),
-        uvarenoOf: slug => Store.getReview(slug).cooked || 0,
+        uvarenoOf: slug => getReview(slug).cooked || 0,
         // Kdyz filtruju podle stavu, at je videt, PROC tam ten recept je.
         zvyraznitStav: activeStav,
       });
@@ -1418,6 +1408,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         });
         row.addEventListener('mouseleave', () => {
           preview.classList.remove('on');
+          // Smycku zastavujeme. Drive bezel requestAnimationFrame do
+          // konce zivota stranky, i kdyz uz nebylo co posouvat.
+          if (previewRaf) { cancelAnimationFrame(previewRaf); previewRaf = null; }
         });
       });
     }
@@ -1544,7 +1537,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (navFav) navFav.classList.toggle('text-accent', activeCategory === '__fav');
     }
 
-    searchInput.addEventListener('input', renderGrid);
+    // Prekreslovat celou mrizku na kazde pismeno je zbytecne - pri psani
+    // stejne nikdo nestiha cist. Ctvrt vteriny ticha a jde se kreslit.
+    let hledaniTimer = null;
+    searchInput.addEventListener('input', () => {
+      clearTimeout(hledaniTimer);
+      hledaniTimer = setTimeout(renderGrid, 160);
+    });
 
     // --- Detail modal ---
     const overlay = document.getElementById('modal-overlay');
@@ -1596,11 +1595,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
 
-    // Splits "800 g kuřecích prsou" into a menu line: name left, quantity right.
-
-
-
-
     function renderIngredients(r) {
       const base = r.servings || 4;
       const factor = currentServings / base;
@@ -1631,7 +1625,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <span class="mt-[3px] w-[18px] h-[18px] shrink-0 rounded border border-border group-hover:border-accent flex items-center justify-center transition-colors checkbox">
             <svg class="w-3 h-3 text-accent opacity-0 check-icon transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
           </span>
-          <span class="text-[15px] text-text-muted group-hover:text-text transition-colors ing-text">${ing}</span>
+          <span class="text-[15px] text-text-muted group-hover:text-text transition-colors ing-text">${esc(ing)}</span>
         </li>`;
       }).join('');
       ingList.querySelectorAll('.ingredient-item').forEach(item => {
@@ -1698,7 +1692,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       document.getElementById('modal-meta').innerHTML =
         (v.time ? '<span>' + esc(v.time) + '</span><span class="opacity-40">/</span>' : '') +
         '<span>' + esc(r.difficulty || '') + '</span><span class="opacity-40">/</span>' +
-        '<span>' + (r.servings || '?') + ' porcí</span>';
+        '<span>' + esc(r.servings || '?') + ' porcí</span>';
 
       if (fancyMode) {
         headIng.className  = 'f-head';
@@ -1737,9 +1731,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       const paint = () => {
         renderIngredients(r);
-      paintWishBtn(slug);
         renderSteps(r);
         renderModeChrome(r);
+        // Tlacitko "chci vyzkouset" patri k receptu, ne k rezimu - ale
+        // prekresluje se s nim, at je stav videt i po prepnuti.
+        paintWishBtn(currentSlug);
         if (reduce) return;
         const body = document.getElementById('modal-body');
         body.classList.remove('mode-rise');
@@ -1770,8 +1766,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       document.getElementById('modal-title').textContent = r.title;
       document.getElementById('modal-description').textContent = r.description || '';
       document.getElementById('modal-meta').innerHTML =
-        `${r.time ? `<span>${r.time}</span><span class="opacity-40">/</span>` : ''}` +
-        `<span>${r.difficulty || ''}</span><span class="opacity-40">/</span><span>${r.servings || '?'} porcí</span>`;
+        `${r.time ? `<span>${esc(r.time)}</span><span class="opacity-40">/</span>` : ''}` +
+        `<span>${esc(r.difficulty || '')}</span><span class="opacity-40">/</span><span>${esc(r.servings || '?')} porcí</span>`;
 
       renderIngredients(r);
       renderSteps(r);
@@ -1856,9 +1852,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.getElementById('chef-close').addEventListener('click', closeChef);
     chefOverlay.addEventListener('click', e => { if (e.target === chefOverlay) closeChef(); });
 
-
-
-
     document.getElementById('chef-search').addEventListener('click', () => {
       const userIngs = parseIngredients(chefInput.value);
       if (userIngs.length === 0) return;
@@ -1874,12 +1867,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         chefMatches.innerHTML = '<p class="text-text-muted text-[14px]">Žádný recept neodpovídá tvým ingrediencím.</p>';
       } else {
         chefMatches.innerHTML = scored.map(s => `
-          <button class="chef-match w-full text-left p-4 rounded-xl bg-surface border border-border hover:border-accent transition-colors" data-slug="${s.recipe.slug}">
+          <button class="chef-match w-full text-left p-4 rounded-xl bg-surface border border-border hover:border-accent transition-colors" data-slug="${escAttr(s.recipe.slug)}">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[15px] font-medium text-text">${s.recipe.title}</span>
+              <span class="text-[15px] font-medium text-text">${esc(s.recipe.title)}</span>
               <span class="text-[13px] font-semibold ${s.pct >= 75 ? 'text-green-400' : s.pct >= 40 ? 'text-amber-400' : 'text-red-400'}">${s.pct}%</span>
             </div>
-            <div class="text-[13px] text-text-muted">${s.matched} z ${s.total} ingrediencí • ${s.recipe.time || '?'} • ${s.recipe.difficulty || 'Snadné'}</div>
+            <div class="text-[13px] text-text-muted">${s.matched} z ${s.total} ingrediencí • ${esc(s.recipe.time || '?')} • ${esc(s.recipe.difficulty || 'Snadné')}</div>
           </button>
         `).join('');
         chefMatches.querySelectorAll('.chef-match').forEach(btn => {
@@ -1990,8 +1983,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             setTimeout(() => openDetailModal(slug), 350);
           });
         });
-        // text již zobrazen průběžně streamem
-        // text již zobrazen průběžně streamem
       } catch (err) {
         chefAiText.textContent = 'Chyba: ' + err.message;
         chefAiResult.classList.remove('hidden');
@@ -2027,9 +2018,6 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && cookOverlay && !cookOverlay.classList.contains('hidden')) requestWakeLock();
     });
-
-    // -- Duration parsing (Czech) --
-
 
     // -- Parallel timers --
     // Casovace drzi mozek (cook-timers.js), hodiny tikaji tady ve vzhledu.
@@ -2071,7 +2059,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const res = addTimer(cookTimers, secs, label, stepNo);
       if (!res.added) return;   // duplicitu odmitl mozek
       cookTimers = res.state;
-      try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch {}
+      // O povoleni k oznamenim si tady ZAMERNE nerikame. Prohlizec zna
+      // jen jedno spolecne povoleni, a kdyz ho clovek udelil casovaci,
+      // nabidka push oznameni (`zvazNabidkuOznameni`) uz se neukazala -
+      // takze mu pripominka pred varenim nikdy nepipla. Ptame se na
+      // jednom miste, u te nabidky; casovac pouzije povoleni, kdyz uz je.
       try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) { audioCtx = audioCtx || new AC(); if (audioCtx.state === 'suspended') audioCtx.resume(); } } catch {}
       if (!timerTick) timerTick = setInterval(tickTimers, 1000);
       renderTimers(); renderStepTimerBtns();
@@ -2216,7 +2208,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       })();
     }
 
+    let uzDovareno = false;
     function finishCooking() {
+      // Tlacitko se po dokonceni prejmenuje na "Zavrit", ale porad vede
+      // do nextStep -> finishCooking. Bez pojistky by druhe tuknuti
+      // pustilo dalsi konfety a dalsi odpocet do zavreni.
+      if (uzDovareno) return closeCookMode();
+      uzDovareno = true;
       fireConfetti();
       try { if (navigator.vibrate) navigator.vibrate([60, 50, 60]); } catch {}
       cookStepText.textContent = finishText(fancyMode);
@@ -2239,7 +2237,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const factor = cookServings / base;
       cookIngValue.textContent = cookServings + ' ' + (cookServings < 5 ? 'porce' : 'porc\u00ed');
       cookIngList.innerHTML = (variantOf(cookRecipe).ingredients || []).map(raw =>
-        '<li class="cook-ing"><span class="cook-ing-box"></span><span class="cook-ing-txt">' + scaleIngredient(raw, factor) + '</span></li>'
+        '<li class="cook-ing"><span class="cook-ing-box"></span><span class="cook-ing-txt">' + esc(scaleIngredient(raw, factor)) + '</span></li>'
       ).join('');
       cookIngList.querySelectorAll('.cook-ing').forEach(li =>
         li.addEventListener('click', () => li.classList.toggle('is-done'))
@@ -2262,6 +2260,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const r = recipes.find(x => x.slug === currentSlug);
       if (!r || !variantOf(r).steps.length) return;
       cookRecipe = r;
+      uzDovareno = false;
       cookSession = createSession(variantOf(r).steps);
       cookServings = currentServings || r.servings || 4;
       cookTimers = clearTimers(cookTimers);
@@ -2490,6 +2489,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         [pantryOverlay, closePantry],
         [shoppingOverlay, closeShopping],
         [chefOverlay, closeChef],
+        [substOverlay, closeSubst],
+        [nutritionOverlay, closeNutrition],
         [settingsOverlay, closeSettings],
         [overlay, closeDetailModal],
       ];
@@ -2563,10 +2564,20 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
 
     // --- Rating & notes ---
+    //
+    // Hodnoceni se cte pri kazdem vykresleni mrizky nekolikrat na recept.
+    // Kdyz slo pokazde do localStorage, znamenalo to par stovek volani
+    // JSON.parse na KAZDE pismeno ve vyhledavani. Drzime si tedy kopii
+    // v pameti; zapisuje se porad do localStorage, aby to prezilo reload.
+    const reviewCache = new Map();
+
     function getReview(slug) {
-      return Store.getReview(slug);
+      let r = reviewCache.get(slug);
+      if (!r) { r = Store.getReview(slug); reviewCache.set(slug, r); }
+      return r;
     }
     function saveReview(slug, review) {
+      reviewCache.set(slug, review);
       Store.setReview(slug, review);
       posliStav();
     }
@@ -2799,12 +2810,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       const slug = v.slug || bookSlug;
       const recept = recipes.find(r => r.slug === slug);
+      // Porce bereme z posuvniku JEN kdyz planujeme prave otevreny recept.
+      // Z kalendare se da naplanovat cokoliv - a ulozit k nemu porce
+      // nejakeho jineho jidla je nesmysl, ktery pak vyjede i v Google
+      // kalendari ("Porcí: 12" u receptu pro dva).
+      const porce = slug === currentSlug
+        ? (currentServings || null)
+        : ((recept && recept.servings) || null);
       try {
         const data = await api('/api/bookings', {
           slug: slug,
           date: datum,
           time: cas,
-          servings: currentServings || null,
+          servings: porce,
           force: !!force,
           locks: coZamknout(recept, pantryItems, sediSurovina),
         });
@@ -2906,8 +2924,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       const kolik = pocetVMesici(mrizka);
       document.getElementById('cal-souhrn').textContent =
-        kolik === 0 ? 'nic naplánováno'
-          : (kolik === 1 ? '1 vaření' : (kolik < 5 ? kolik + ' vaření' : kolik + ' vaření'));
+        kolik === 0 ? 'nic naplánováno' : kolik + ' vaření';
 
       document.getElementById('cal-dny').innerHTML =
         DNY_ZKRATKY.map(d => '<div class="kal-den-zkratka">' + esc(d) + '</div>').join('');
@@ -3839,15 +3856,15 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       btn.classList.toggle('border-accent', je);
     }
 
-    /** Slozi stav vsech receptu, o kterych appka neco vi. */
+    /** Slozi stav vsech receptu, o kterych appka nebo databaze neco vi. */
     function sberStavu() {
-      const slugy = new Set([...favorites, ...wishlist]);
+      const slugy = new Set([...favorites, ...wishlist, ...znameServeru]);
       recipes.forEach(r => {
-        const rev = Store.getReview(r.slug);
+        const rev = getReview(r.slug);
         if (rev.stars || rev.note || rev.cooked) slugy.add(r.slug);
       });
       return [...slugy].map(slug => {
-        const rev = Store.getReview(slug);
+        const rev = getReview(slug);
         return {
           slug: slug,
           favorite: favorites.indexOf(slug) >= 0,
@@ -3876,16 +3893,23 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       try {
         const data = await api('/api/state', { items: sberStavu() });
         (data.items || []).forEach(it => {
+          znameServeru.add(it.slug);
           if (it.favorite && favorites.indexOf(it.slug) < 0) favorites.push(it.slug);
           if (it.status === 'wishlist' && wishlist.indexOf(it.slug) < 0) wishlist.push(it.slug);
-          const rev = Store.getReview(it.slug);
-          if ((it.cooked || 0) > (rev.cooked || 0) || (it.stars || 0) > (rev.stars || 0)) {
-            Store.setReview(it.slug, {
-              stars: Math.max(it.stars || 0, rev.stars || 0),
-              note: rev.note || it.note || '',
-              cooked: Math.max(it.cooked || 0, rev.cooked || 0),
-              lastCooked: it.lastCooked || rev.lastCooked || null,
-            });
+
+          // Slucuje se po polozkach a vzdycky - drive se cely radek
+          // prepsal jen tehdy, kdyz mel server vic uvareni nebo hvezdicek,
+          // takze poznamka z jineho telefonu se sem nikdy nedostala.
+          const rev = getReview(it.slug);
+          const slouceny = {
+            stars: Math.max(it.stars || 0, rev.stars || 0),
+            note: rev.note || it.note || '',
+            cooked: Math.max(it.cooked || 0, rev.cooked || 0),
+            lastCooked: it.lastCooked || rev.lastCooked || null,
+          };
+          if (JSON.stringify(slouceny) !== JSON.stringify(rev)) {
+            reviewCache.set(it.slug, slouceny);
+            Store.setReview(it.slug, slouceny);
           }
         });
         Store.setFavorites(favorites);
@@ -3976,11 +4000,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (!pruh) return;
 
       if (!currentUser || !jdePush() || !pushVapid) return;
-      if (Notification.permission !== 'default') return;      // uz rozhodnuto
-      if (Store.getPushOdmitnuto()) return;                   // rekl ne
+      if (Notification.permission === 'denied') return;       // rekl ne prohlizeci
+      if (Store.getPushOdmitnuto()) return;                   // rekl ne nam
 
       const reg = await navigator.serviceWorker.ready.catch(() => null);
-      if (reg && await reg.pushManager.getSubscription()) return;
+      if (reg && await reg.pushManager.getSubscription()) return;   // uz odebira
+
+      // Povoleni uz udelene, ale odber zadny: nema smysl se ptat znovu -
+      // prohlizec by se stejne uz nezeptal a pruh by nesel odklepnout.
+      // Prihlasime k odberu rovnou a tise.
+      if (Notification.permission === 'granted') {
+        prihlasPush().catch(() => {});
+        return;
+      }
 
       pruh.classList.remove('hidden');
       requestAnimationFrame(() => pruh.classList.remove('translate-y-32', 'opacity-0'));
@@ -4056,7 +4088,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     /** Kolikrat uzivatel vubec varil - z hodnoceni vsech receptu. */
     function mojeStatistiky() {
-      const hodnoceni = recipes.map(r => Store.getReview(r.slug));
+      const hodnoceni = recipes.map(r => getReview(r.slug));
       return {
         uvareno: celkemUvareno(hodnoceni),
         receptu: hodnoceni.filter(h => (h.cooked || 0) > 0).length,
@@ -4275,7 +4307,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       if (!r) return;
       const ings = variantOf(r).ingredients;
       substSelect.innerHTML = '<option value="">— vyber ingredienci —</option>' +
-        ings.map(i => `<option value="${i.replace(/"/g, '&quot;')}">${i}</option>`).join('');
+        ings.map(i => `<option value="${escAttr(i)}">${esc(i)}</option>`).join('');
       substResult.classList.add('hidden');
       substResult.innerHTML = '';
       substLoading.classList.add('hidden');

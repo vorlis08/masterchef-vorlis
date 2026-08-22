@@ -20,7 +20,6 @@ import {
   listShopping, saveShopping, savePush,
 } from './api.js';
 import { spustCron } from './digest.js';
-import { adminError } from './mail.js';
 
 const ALLOWED_ORIGINS = [
   'https://vorlis08.github.io',   // ostra appka
@@ -124,7 +123,15 @@ export default {
     // chrani je misto toho podepsany stav a seznam povolenych navratu.
     // Odhlaseni ze zprav. Uzivatel sem klika z e-mailu, takze bez
     // prihlaseni - misto nej chrani odkaz tajny token.
-    if (path === '/unsub') return odhlasit(request, env);
+    if (path === '/unsub') {
+      // I tahle routa sahá do databaze, takze i ji chranime stropem.
+      // Bez nej by na ni sel tlouct kdokoliv - Origin tu neni, protoze
+      // uzivatel prichazi kliknutim z e-mailu.
+      if (!(await podLimitem(request, env.RATE_LIMITER))) {
+        return new Response('Moc pokusu za sebou.', { status: 429 });
+      }
+      return odhlasit(request, env);
+    }
 
     if (path === '/auth/start')    return startLogin(request, env, ALLOWED_ORIGINS);
     if (path === '/auth/callback') return finishLogin(request, env, ALLOWED_ORIGINS, ctx);
@@ -142,10 +149,15 @@ export default {
     if (request.method !== 'POST' && !path.startsWith('/api/')) return deny(405, 'Jen POST.', origin);
 
     // -- Strop na pocet dotazu z jedne IP --
-    if (env.RATE_LIMITER) {
-      const ip = request.headers.get('CF-Connecting-IP') || 'neznama';
-      const { success } = await env.RATE_LIMITER.limit({ key: ip });
-      if (!success) return deny(429, 'Moc dotazů za sebou. Dej si chvilku pauzu. 🍳', origin);
+    //
+    // Dva ruzne stropy schvalne. AI stoji penize, takze na ni staci
+    // 20 dotazu za minutu. Bezne API je neco jineho: jedno otevreni
+    // appky je pet dotazu a kazde tuknuti do mnozstvi ve spizi dalsi -
+    // pri spolecnem stropu se do nej clovek dostal beznym pouzivanim
+    // a dostal "Moc dotazů za sebou" u ukladani gramaze.
+    const limiter = path.startsWith('/api/') ? (env.API_LIMITER || env.RATE_LIMITER) : env.RATE_LIMITER;
+    if (!(await podLimitem(request, limiter))) {
+      return deny(429, 'Moc dotazů za sebou. Dej si chvilku pauzu. 🍳', origin);
     }
 
     // -- Vse pod /api/ vyzaduje prihlaseni --------------------------------
@@ -265,6 +277,27 @@ export default {
   },
 };
 
+/** Vejde se dotaz do stropu? Bez nastaveneho limiteru se pousti vse. */
+async function podLimitem(request, limiter) {
+  if (!limiter) return true;
+  const ip = request.headers.get('CF-Connecting-IP') || 'neznama';
+  const { success } = await limiter.limit({ key: ip });
+  return success;
+}
+
+/**
+ * Porovnani dvou tajemstvi v konstantnim case. Stejne jako u podpisu
+ * listku (session.js) - aby se token nedal uhodnout po znacich.
+ */
+function stejnyToken(a, b) {
+  const x = String(a == null ? '' : a);
+  const y = String(b == null ? '' : b);
+  if (x.length !== y.length) return false;
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x.charCodeAt(i) ^ y.charCodeAt(i);
+  return diff === 0;
+}
+
 /** Vypne jeden druh zprav. Odkaz z e-mailu, chrani ho token. */
 async function odhlasit(request, env) {
   const url = new URL(request.url);
@@ -284,7 +317,7 @@ async function odhlasit(request, env) {
   if (!id || !token || !sloupce[kind]) return stranka('Neplatný odkaz', 'Chybí údaje.');
 
   const user = await env.DB.prepare('SELECT id, unsub_token FROM users WHERE id = ?').bind(id).first();
-  if (!user || !user.unsub_token || user.unsub_token !== token) {
+  if (!user || !user.unsub_token || !stejnyToken(user.unsub_token, token)) {
     return stranka('Neplatný odkaz', 'Odkaz už neplatí. Vypnout si zprávy můžeš i v nastavení aplikace.');
   }
 

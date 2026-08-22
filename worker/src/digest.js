@@ -8,22 +8,28 @@
 // Kdyby je mel ve svoji kopii, rozesly by se s appkou do tydne.
 // ==========================================================================
 
-import { sediSurovina } from '../../src/lib/match.js';
+import { sediSurovina, chybejici } from '../../src/lib/match.js';
 import { cleanName } from '../../src/lib/pantry.js';
 import {
   sendMail, newRecipesMail, wishlistMail, summaryMail, reminderMail,
   adminError, unsubUrl,
 } from './mail.js';
-import { chybejici } from '../../src/lib/match.js';
 import { zitra, popisBookingu, kPripomenuti } from '../../src/lib/booking.js';
 import { poslatPush } from './push.js';
 import { zpravaVareni, zpravaNeaktivita } from './push-zpravy.js';
 import { nactiRecepty } from './recepty.js';
+import { hodinaVPraze } from '../../src/lib/cas.js';
 
 
-/** Nocni hodiny, kdy se neposila nic. Cas je v UTC, appka zije v CZ. */
+/**
+ * Nocni hodiny, kdy se neposila nic. Cas je v UTC, appka zije v CZ.
+ *
+ * Prepocet dela `cas.js` pres Intl, ne pevnym "+2" - to plati jen v lete.
+ * Pres zimu se s nim hodinovy beh mezi 21:00 a 22:00 povazoval za noc
+ * a na pozdni vecerni vareni nikomu nepipnul.
+ */
 export function jeVhodnaDoba(datum) {
-  const hodinaCz = (datum.getUTCHours() + 2) % 24;   // hrube CEST
+  const hodinaCz = hodinaVPraze(datum);
   return hodinaCz >= 7 && hodinaCz < 22;
 }
 
@@ -126,7 +132,8 @@ export async function wishlistHotove(env, user, recepty) {
 
   const spiz = await env.DB.prepare(
     `SELECT i.name, i.kind, i.quantity, i.status, i.staple,
-            COALESCE((SELECT SUM(r.amount) FROM reservations r WHERE r.inventory_id = i.id), 0) AS reserved
+            COALESCE((SELECT SUM(r.amount) FROM reservations r
+                       WHERE r.inventory_id = i.id AND r.user_id = i.user_id), 0) AS reserved
        FROM inventory i WHERE i.user_id = ?`
   ).bind(user.id).all();
 
@@ -204,12 +211,18 @@ export async function denniBeh(env, origin) {
   let posláno = 0;
 
   for (const [userId, jehoBookingy] of podleUzivatele) {
+    // Zamky ZITREJSICH bookingu se odectou vsechny najednou - ptame se
+    // prece, co uzivateli chybi PRAVE NA NE. Kdyby se vyloucil jen prvni
+    // (a tak to tu drive bylo), druhe vareni toho dne by vlastni zamky
+    // videlo jako cizi rezervaci a poslalo suroviny do nakupu zbytecne.
+    const otazniky = jehoBookingy.map(() => '?').join(', ');
     const { results: spiz } = await env.DB.prepare(
       `SELECT i.id, i.name, i.kind, i.quantity, i.status, i.staple,
               COALESCE((SELECT SUM(r.amount) FROM reservations r
-                         WHERE r.inventory_id = i.id AND r.booking_id != ?), 0) AS reserved
+                         WHERE r.inventory_id = i.id AND r.user_id = i.user_id
+                           AND r.booking_id NOT IN (${otazniky})), 0) AS reserved
          FROM inventory i WHERE i.user_id = ?`
-    ).bind(jehoBookingy[0].id, userId).all();
+    ).bind(...jehoBookingy.map(b => b.id), userId).all();
 
     const plan = [];
     const doNakupu = [];
@@ -446,10 +459,24 @@ export async function mesicniBeh(env, origin) {
   return { posláno: posláno };
 }
 
+/**
+ * Uklid stareho zaznamu o odeslanych zpravach.
+ *
+ * `email_log` se jinak nemaze vubec a `poslednich()` nad ni chodi pri
+ * kazdem behu. Rok zpatky staci: nejdelsi okno, na ktere se ptame, je
+ * 25 dni (mesicni souhrn).
+ */
+async function uklidLog(env) {
+  await env.DB.prepare("DELETE FROM email_log WHERE sent_at < datetime('now', '-1 year')")
+    .run().catch(() => {});
+}
+
 /** Vstupni bod pro Cron. */
 export async function spustCron(event, env, origin) {
   try {
     if (!jeVhodnaDoba(new Date())) return;
+    // Uklid patri k mesicnimu behu - jednou za mesic je az az.
+    if (event.cron === '0 5 1 * *') await uklidLog(env);
     // Hodinovy beh musi mit svoji vetev PRED vychozi - jinak by kazdou
     // hodinu probehl denni beh a nakupni seznam by se plnil dokola.
     if (event.cron === '0 * * * *') return void (await pushBeh(env));

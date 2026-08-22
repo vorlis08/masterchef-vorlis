@@ -3,6 +3,9 @@ dist/
 # generated types
 .astro/
 
+# docasny vytazeny <script> pro ESLint (scripts/lint-astro.mjs)
+lint-tmp/
+
 # dependencies
 node_modules/
 

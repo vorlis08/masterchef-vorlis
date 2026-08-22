@@ -24,10 +24,16 @@ export function nazevMesice(rok, mesic) {
   return MESICE[mesic - 1] + ' ' + rok;
 }
 
-/** Posun o mesic. Prelom roku resi sam. */
+/**
+ * Posun o mesic. Prelom roku resi sam.
+ *
+ * Zbytek po deleni se srovnava do kladnych cisel: `%` v JavaScriptu
+ * u zapornych cisel vraci zaporny zbytek, takze bez toho by mesic
+ * pred rokem 0 vysel jako nula nebo minus.
+ */
 export function posunMesic(rok, mesic, o) {
   const celkem = (rok * 12) + (mesic - 1) + o;
-  return { rok: Math.floor(celkem / 12), mesic: (celkem % 12) + 1 };
+  return { rok: Math.floor(celkem / 12), mesic: ((celkem % 12) + 12) % 12 + 1 };
 }
 
 /** Kolik dni ma mesic. */

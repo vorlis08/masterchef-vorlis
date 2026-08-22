@@ -71,7 +71,8 @@ export async function updateProfile(request, env, session, origin, cors) {
 export async function listInventory(env, session, origin, cors) {
   const { results } = await env.DB.prepare(
     `SELECT i.id, i.name, i.kind, i.quantity, i.unit, i.status, i.staple, i.sort_order,
-            COALESCE((SELECT SUM(r.amount) FROM reservations r WHERE r.inventory_id = i.id), 0) AS reserved
+            COALESCE((SELECT SUM(r.amount) FROM reservations r
+                       WHERE r.inventory_id = i.id AND r.user_id = i.user_id), 0) AS reserved
        FROM inventory i
       WHERE i.user_id = ?
       ORDER BY i.sort_order, i.name`
@@ -442,6 +443,13 @@ export async function saveBooking(request, env, session, origin, cors, ctx) {
   // uzivatel kolizi objevil, az kdyz uz je pozde nakoupit.
   const zamky = Array.isArray(data.locks) ? data.locks.slice(0, 60) : [];
   if (bookingId && zamky.length) {
+    // Id polozek spize posila prohlizec. Overujeme, ze kazde z nich
+    // opravdu patri prihlasenemu - bez toho by slo zamknout surovinu
+    // v CIZI spizi a jejimu majiteli by se tvarila jako nedostupna.
+    const { results: moje } = await env.DB
+      .prepare('SELECT id FROM inventory WHERE user_id = ?').bind(session.sub).all();
+    const mojeId = new Set((moje || []).map(x => Number(x.id)));
+
     const stmt = env.DB.prepare(
       `INSERT INTO reservations (booking_id, user_id, inventory_id, ingredient, amount, unit)
             VALUES (?, ?, ?, ?, ?, ?)`
@@ -450,7 +458,7 @@ export async function saveBooking(request, env, session, origin, cors, ctx) {
       .filter(z => z && z.ingredient)
       .map(z => stmt.bind(
         bookingId, session.sub,
-        Number(z.inventory_id) || null,
+        mojeId.has(Number(z.inventory_id)) ? Number(z.inventory_id) : null,
         text(z.ingredient, 80),
         Number(z.amount) || 1,
         z.unit ? text(z.unit, 20) : null

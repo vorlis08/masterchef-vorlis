@@ -24,11 +24,20 @@ VAPID_PUBLIC_KEY = ""
 #   npx.cmd wrangler secret put SESSION_SECRET
 #   npx.cmd wrangler secret put VAPID_PRIVATE_KEY
 
-# Strop na pocet dotazu: 20 za minutu z jedne IP.
+# Strop na dotazy k AI: 20 za minutu z jedne IP. AI stoji penize, takze
+# je tenhle strop schvalne prisny.
 [[ratelimits]]
 name = "RATE_LIMITER"
 namespace_id = "1001"
 simple = { limit = 20, period = 60 }
+
+# Strop na bezne API. Musi byt VOLNEJSI nez ten na AI: jedno otevreni
+# appky je pet dotazu a kazde tuknuti do mnozstvi ve spizi dalsi. Pri
+# spolecnem stropu 20/min do nej clovek spadl beznym pouzivanim.
+[[ratelimits]]
+name = "API_LIMITER"
+namespace_id = "1002"
+simple = { limit = 300, period = 60 }
 
 # Databaze (D1). Schema je ve slozce migrations/.
 [[d1_databases]]

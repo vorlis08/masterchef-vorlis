@@ -120,12 +120,16 @@ export const KROKY_JEDNOTEK = {
   hrst: 1,
 };
 
+// Tataz tabulka bez diakritiky. Stavi se JEDNOU - `krokMnozstvi` se vola
+// pro kazdy radek spize pri kazdem prekresleni a stavet ji pokazde znovu
+// bylo zbytecnych par tisic operaci na jedno tuknuti.
+const KROKY_BEZ_DIAKRITIKY = Object.keys(KROKY_JEDNOTEK)
+  .reduce((t, k) => { t[fold(k)] = KROKY_JEDNOTEK[k]; return t; }, {});
+
 /** Krok pro danou polozku. Neznama jednotka se hybe po jedne. */
 export function krokMnozstvi(item) {
   const jednotka = fold(defaultUnit(item) || '').trim();
-  const tabulka = {};
-  Object.keys(KROKY_JEDNOTEK).forEach(k => { tabulka[fold(k)] = KROKY_JEDNOTEK[k]; });
-  return tabulka[jednotka] || 1;
+  return KROKY_BEZ_DIAKRITIKY[jednotka] || 1;
 }
 
 /**

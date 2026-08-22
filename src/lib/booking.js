@@ -14,6 +14,8 @@
 //    jen je slibena ctvrtecnimu jidlu.
 // ==========================================================================
 
+import { posunPrahy } from './cas.js';
+
 const DNY = ['neděle', 'pondělí', 'úterý', 'středa', 'čtvrtek', 'pátek', 'sobota'];
 const MESICE = ['ledna', 'února', 'března', 'dubna', 'května', 'června',
   'července', 'srpna', 'září', 'října', 'listopadu', 'prosince'];
@@ -234,18 +236,18 @@ export function rychleTerminy(ted) {
  * odeslane (`push_sent`) se preskakuji, jinak by pripominka chodila
  * kazdou hodinu znovu.
  *
- * Casy bookingu jsou v ceskem case, `ted` je v UTC. Prepocet je hruby
- * (+2 h, letni cas), stejne jako jinde ve Workeru - u pripominky
- * s hodinovym predstihem hodina sem nebo tam nevadi, ale posun o cely
- * den by vadil, takze se pocita pres Date.UTC a ne pres lokalni Date.
+ * Casy bookingu jsou v ceskem case, `ted` je v UTC. Posun si necháváme
+ * spocitat (`cas.js`), aby pres zimu nepipalo o hodinu driv - pevne "+2"
+ * plati jen od dubna do rijna. Pocita se pres Date.UTC a ne pres lokalni
+ * Date, aby se den neposunul podle toho, kde zrovna bezi prohlizec.
  *
  * @param {Array} bookingy
  * @param {Date} ted        aktualni cas v UTC
  * @param {number} predstih kolik minut pred varenim pipnout
- * @param {number} [posunHodin]
+ * @param {number} [posunHodin]  vnuceny posun; jinak podle ceskeho pasma
  */
 export function kPripomenuti(bookingy, ted, predstih, posunHodin) {
-  const posun = posunHodin == null ? 2 : posunHodin;
+  const posun = posunHodin == null ? posunPrahy(ted) : posunHodin;
   const limit = Number(predstih) > 0 ? Number(predstih) : 60;
 
   return (bookingy || []).filter(b => {

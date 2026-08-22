@@ -18,8 +18,11 @@
 | Databáze | Cloudflare D1 `masterchef` (region EEUR) |
 | Pošta | Brevo (HTTP API, Worker neumí SMTP) |
 
-**Nasazení:** push do `main` spustí GitHub Actions → Pages. Worker se nasazuje
-zvlášť: `cd worker && npx.cmd wrangler deploy`.
+**Nasazení:** push do `main` spustí GitHub Actions → Pages. Actions teď
+před nasazením pouští **kontrolu kódu a testy** — když neprojdou, nenasadí se
+nic. Worker se nasazuje zvlášť: `cd worker && npx.cmd wrangler deploy`.
+
+**Před pushem:** `npm run kontrola` (lint + testy + build). Totéž, co pustí CI.
 
 **Migrace databáze se nasazením NEPOUŠTĚJÍ** — vždycky ještě
 `npx.cmd wrangler d1 migrations apply masterchef --remote`. Bez toho
@@ -48,8 +51,13 @@ používej **`npx.cmd`**.
 
 ### Refaktoring: „mozek" oddělený od „vzhledu" (sekce 6 a 7)
 
-Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **621 testů**
-v 15 sadách, pouštějí se z kořene (`node test-*.mjs`).
+Veškerá logika je v `src/lib/`, testovatelná bez prohlížeče. **639 testů**
+v 15 sadách, pouštějí se `npm test` z kořene.
+
+Navíc `npm run lint`: ESLint nad `src/lib/`, `worker/src/` i nad kódem
+uvnitř `index.astro` (ten se pro kontrolu vytáhne — viz
+`scripts/lint-astro.mjs`). Hledá jen dvě věci — použitou proměnnou, která
+nikde nevznikla, a zbytky po smazaných funkcích. Není to nástroj na styl.
 
 | Soubor | Co dělá |
 |---|---|
@@ -65,6 +73,7 @@ v 15 sadách, pouštějí se z kořene (`node test-*.mjs`).
 | `kalendar.js` | měsíční mřížka |
 | `tour.js` | 24 kroků prohlídky aplikace |
 | `hodnosti.js` | hodnost podle počtu uvařených jídel |
+| `cas.js` | převod mezi UTC a českým časem (letní i zimní) |
 | `booking.js` → `rychleTerminy`, `kPripomenuti` | rychlé termíny a výběr, komu pípnout |
 
 ### Aplikace
@@ -163,6 +172,44 @@ v 15 sadách, pouštějí se z kořene (`node test-*.mjs`).
   Honza to zatím odložil.
 - **Sign in with Apple** — čeká na placený účet (99 USD/rok).
 - **Ruční oprava spíže dvěma tapy** (4.4) přímo z receptu.
+
+---
+
+## Opraveno 22. 8. 2026 (větev `oprava-chyb`)
+
+Po projití celého kódu. Podrobnosti jsou v commitech.
+
+- **Přepínač Basic/Fancy byl rozbitý** — volání `paintWishBtn(slug)`
+  s neexistující proměnnou utlo zbytek vykreslování, takže se přepsaly
+  ingredience, ale postup a nadpisy zůstaly v Basic. Proti opakování
+  je teď lint (`npm run lint`) i test v `test-store.mjs`.
+- **Odebrání z oblíbených se po načtení vracelo** — slug bez hodnocení
+  vypadl z toho, co se posílá na server, takže se odebrání nikam
+  nezapsalo.
+- **Oznámení na telefon mohla propadnout** — časovač v režimu vaření si
+  sám říkal o povolení a tím umlčel nabídku push oznámení. O povolení
+  se teď žádá jen na jednom místě.
+- **Okna „Nahradit" a „Nutriční hodnoty"** chyběla v `oknaOdVrchu()`,
+  takže je Escape ani tlačítko zpět neuměly zavřít (8.24).
+- **Plánování z kalendáře** ukládalo počet porcí posledního otevřeného
+  receptu.
+- **Zimní čas** — pevné „+2 h" v `digest.js` a `booking.js` znamenalo
+  přes zimu e-mail o hodinu dřív a žádnou připomínku na večerní vaření
+  mezi 21:00 a 22:00. Nově přes `cas.js`.
+- **Rezervace nebyly vázané na majitele spíže** — přihlášený uživatel
+  mohl zamknout surovinu v cizí spíži. Doplněn filtr `user_id` a
+  kontrola, že položka patří jemu.
+- **Denní běh** počítal rezervace špatně, když bylo na jeden den víc
+  vaření — druhé vaření vidělo vlastní zámky jako cizí.
+- **Odhlašovací odkaz** má konstantní porovnání tokenu a strop na počet
+  pokusů.
+- **Limit 20 dotazů/min** platil i pro běžné API, takže se do něj dalo
+  spadnout normálním klikáním ve spíži. AI a API mají teď stropy zvlášť
+  (`API_LIMITER` ve `wrangler.toml` — **při nasazení Workeru je potřeba
+  ho vytvořit**).
+- Escapování v `index.astro` na osmi místech, úklid mrtvého kódu,
+  cache hodnocení místo čtení z localStorage při každém překreslení,
+  odmlka u hledání, `email_log` se jednou za měsíc uklidí.
 
 ---
 
