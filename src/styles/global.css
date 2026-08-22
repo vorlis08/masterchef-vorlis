@@ -38,15 +38,39 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   overscroll-behavior-y: none;
 }
 
 ::selection { background: var(--color-accent); color: #fff; }
 
+/* Firefox + moderni Chrome/Edge/Safari (2024+) ctou tohle primo. Starsi
+   webkit motory (a mensi jistota u Safari pred 18.2) ho ignoruji, proto
+   je nize jeste rucni ::-webkit-scrollbar - jinak by appka mela na kazdem
+   prohlizeci jiny (a jinde tlusty) posuvnik. */
 * { scrollbar-width: thin; scrollbar-color: var(--color-surface-hover) transparent; }
+
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--color-surface-hover);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--color-border); background-clip: padding-box; }
 
 .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* iOS Safari zvetsi (zoomne) cely viewport, kdyz ma fokusovane pole
+   font-size pod 16px - appka pak na iPhonu pri kazdem psani "skoci",
+   zatimco na Androidu/desktopu ne. Radeji sjednotime velikost pod 640px,
+   nez aby se to na kazdem telefonu chovalo jinak. */
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px !important; }
+}
 
 /* ---- Type roles ------------------------------------------------------- */
 
@@ -1010,7 +1034,11 @@ body {
     grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
     gap: clamp(3rem, 6vw, 5.5rem);
     align-items: center;
+    /* 100vh na mobilu Safari pocita bez zasouvajici se listy prohlizece,
+       Chrome s ni - stranka pak "skace" pri scrollu. dvh to resi vsude,
+       vh zustava jen jako fallback pro prohlizece bez podpory dvh. */
     min-height: 100vh;
+    min-height: 100dvh;
   }
 }
 
@@ -1251,6 +1279,7 @@ body {
    nedosahl na tlacitko "Dál" a prohlidka by pro nej skoncila. */
 #tour-bublina {
   max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
   overflow-y: auto;
 }
 

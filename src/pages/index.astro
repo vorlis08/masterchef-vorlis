@@ -8,7 +8,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 <Layout title="MasterChef Vorlis">
 
   <!-- Header -->
-  <header class="px-4 sm:px-6 pt-6 sm:pt-9 pb-4 sm:pb-6 max-w-6xl mx-auto">
+  <header class="px-4 sm:px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] sm:pt-9 pb-4 sm:pb-6 max-w-6xl mx-auto">
     <div class="flex items-center justify-between gap-3 mb-9 sm:mb-12">
       <!-- Nazev se smi zuzit, tlacitka ne. Na uzkem telefonu je jich
            v rade pet a bez tohohle by posledni (nastaveni) vytlacily
