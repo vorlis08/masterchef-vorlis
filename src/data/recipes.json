@@ -740,5 +740,65 @@
       "vitamin_c": 45
     },
     "blur": "data:image/webp;base64,UklGRggBAABXRUJQVlA4IPwAAACQBgCdASoUABsAPu1osFAppaSiqAqpMB2JagCdMzRA/2Hh/l2CLyDF6K8/Y3jKs8gvVdSiceLdmFB3/fHAAP5Y+HXgZOpqkbMUHFfLay5VA8DYpEwpPUGw6Yf5y7UZXsHkuiFnxZIXy6fOytbPgLKK8y59zj6t+OJ2xu7Wss3zd2xP7Bcs3L3lPENU59KNS/V72EHHWM/V59AujQ1S6/EajyaxqGXM4LaJEfsEhYQug2O+o31Az7CTq2eL7wylBaxTXIjV+FGCkr6yvImh9lIZxmvM1y3b85LAVVBpGxukKsw+ChMmZjo6NlbVF5t4c6y5pkmTNmXzAD0AAAA="
+  },
+  {
+    "slug": "carbonara-s-testovinami",
+    "title": "Carbonara s těstovinami",
+    "description": "Krémová carbonara s křupavou slaninou a kuřecím masem navrch. Vaječná směs se vmíchává až po odstavení z plotny — jinak se srazí a vznikne omeleta, ne omáčka.",
+    "image": "",
+    "time": "45 min",
+    "servings": 3,
+    "difficulty": "Střední",
+    "category": "Hlavní jídla",
+    "tags": [
+      "kuře",
+      "těstoviny",
+      "carbonara"
+    ],
+    "meal_type": [
+      "oběd",
+      "večeře"
+    ],
+    "ingredients": [
+      "1 kuřecí prso (asi 250 g)",
+      "0,5 lžičky soli (na kuře)",
+      "0,5 lžičky česnekového prášku (na kuře)",
+      "1 lžička jedlé sody (na kuře)",
+      "270 g těstovin",
+      "150 g slaniny, nakrájené na kostičky",
+      "3 stroužky česneku, prolisované",
+      "2 lžíce rajčatového protlaku",
+      "220 ml smetany 12 %",
+      "3 vejce",
+      "60 g nastrouhaného parmazánu",
+      "pepř",
+      "jarní cibulka na ozdobu"
+    ],
+    "steps": [
+      "Kuřecí maso nakrájej na menší kousky a marinuj se solí, česnekovým práškem a jedlou sodou 15–20 minut. Sodu odměř přesně, ne od oka — sotva půl lžičky přebytku a marináda zhořkne.",
+      "Kuře osmaž na pánvi dokřupava a dej stranou.",
+      "Uvař těstoviny al dente, kousek vody z vaření schovej.",
+      "Ve misce vidličkou rozšlehej vejce, parmazán a pepř — tohle je vaječná směs, co jde do hotové omáčky až na konci.",
+      "Na pánvi osmaž slaninu dokřupava.",
+      "Přidej česnek, krátce restuj — dýl než minutu zhořkne.",
+      "Vmíchej rajčatový protlak a chvíli orestuj.",
+      "Zalij smetanou a promíchej s uvařenými těstovinami, ať se prohřejí v omáčce.",
+      "Stáhni pánev z plotny úplně a nech 1–2 minuty vychladnout. Teprve pak vmíchej vaječnou směs — jinak se vejce srazí a dostaneš míchaná vejce s těstovinami místo carbonary.",
+      "Servíruj s osmaženým kuřetem navrch a jarní cibulkou."
+    ],
+    "tip": "Jedlou sodu na marinádu odměř přesně po lžičkách, ne od oka — i mírný přebytek zkazí chuť do mýdlové, hořké pachuti.",
+    "nutrition": {
+      "serving_g": 420,
+      "calories": 780,
+      "protein": 48,
+      "carbs": 55,
+      "fat": 40,
+      "fiber": 2,
+      "sugar": 4,
+      "sodium": 980,
+      "calcium": 190,
+      "iron": 2.6,
+      "vitamin_c": 3
+    }
   }
 ]

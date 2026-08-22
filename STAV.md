@@ -258,6 +258,71 @@ Copywriterská prohlídka všech e-mailů, oznámení a textů v appce.
 
 ---
 
+## Značka appky (22. 8. 2026)
+
+Favicon dřív byl syrové emoji 🍳 v `<text>`, ikony na plochu telefonu
+kreslily pánev — dvě různé věci vedle sebe, a navíc ta pánev byla skoro
+identická s jedním z 8 avatarů (`public/avatary/panev.svg`), takže by
+si appku splet s vlastním profilem kdokoli, kdo si zvolí zrovna tenhle
+avatar.
+
+Nová značka: velké **„V"** (Vorlis) ze dvou tahů se zaoblenými konci —
+stejný jazyk jako displejové písmo Fraunces, jen nakreslený tvary, ne
+textem (text/emoji ve favikoně záviselo na fontu, který v téhle
+vrstvě nemusí být k dispozici). Zlatá jiskra nahoře je **stejný
+odstín** (`--f-gold`), jaký má ozdobný fleuron (✧) u Fancy receptů —
+značka a „sváteční" režim appky teď nesou stejnou barvu.
+
+`scripts/ikony.mjs` vyrábí favicon i všechny velikosti pro telefon
+jedním spuštěním (`node scripts/ikony.mjs`). Ověřeno na 16/32/64/192/512 px
+i jako maskovaná (Android) a Apple touch ikona — čitelné na všech.
+
+---
+
+## UI/UX audit (22. 8. 2026)
+
+Prošlo se rozložení tlačítek napříč appkou (rozměry, mezery, kontrast)
+změřením v prohlížeči, ne od oka. Čtyři reálné nálezy opravené:
+
+- **Nápověda „Ťukni vlevo zpět · vpravo dál" v režimu vaření** (jediná
+  nápověda na mobilu, že se krokuje tuknutím) měla kontrast **2,63:1**
+  kvůli zdvojenému ztlumení (`text-text-muted` + `opacity-55` navrch).
+  WCAG AA vyžaduje 4,5:1. Opacity pryč, `text-text-muted` sám o sobě
+  má 5,96:1.
+- **„Režim vaření" a „TO UVAŘÍM!" se na 375px telefonu lámaly na dva
+  řádky** — tři `flex-1` tlačítka se natěsnávala do jednoho úzkého
+  řádku. „Režim vaření" (nejdůležitější akce v celé appce) má teď
+  celý řádek pro sebe, „TO UVAŘÍM!" a „Do nákupu" se dělí o řádek pod
+  ním rovným dílem. Vedlejší efekt: výška tlačítek v ovládání receptu
+  se sjednotila (dřív 28/32/41/59-60 px, teď většinou 39-41 px).
+- **Srdíčko na kartě receptu** bylo 36×36 px, pod doporučeným
+  minimem 44 px pro dotyk — a sedělo na mnohem větší klikatelné
+  ploše celé karty, takže nepřesný dotek otevřel recept místo
+  přidání do oblíbených. Zvětšeno na 40×40.
+- **Šipka na přepnutí kuchyně** byla 26 px široká — jediná cesta na
+  přepnutí mezi kuchyněmi, a byla užší než palec. Zvětšeno na 34 px.
+
+**Nástraha při ladění:** dev server (Astro/Vite) občas drží zastaralou
+verzi `<style is:global>@import '...'</style>` z `Layout.astro` i po
+uložení souboru — přímý dotaz na `src/styles/global.css` ukazuje novou
+verzi, ale appka běží nad starou. Pomůže jen `preview_stop` +
+`preview_start` (restart dev serveru), ne pouhý reload stránky.
+
+**Nalezeno, ale neopraveno bez domluvy** (větší zásah, stojí za
+rozhodnutí, ne tichou změnu):
+- Appka má **dva různé jazyky animace** pro otevírání oken: postranní
+  panel zajíždějící zprava (detail receptu, Chef AI) vs. vystředěné
+  okno se zvětšením (všech ostatních devět). Rozdíl nejde vysvětlit
+  váhou obsahu — dlouhý seznam surovin je vystředěné okno, kratší
+  výsledky od AI jedou jako panel.
+- **Zavírací křížek v detailu receptu je vlevo nahoře** (plovoucí
+  kolečko přes fotku), zatímco ve všech deseti ostatních oknech je
+  vpravo v hlavičce. Dá se to obhájit prostorově (panel jede zprava,
+  křížek vlevo připomíná gesto zpět), ale je to jediná výjimka a
+  vizuálně se od ostatních křížků ničím neliší.
+
+---
+
 ## Smazání účtu (22. 8. 2026)
 
 V profilu dole malým, ztlumeným písmem tlačítko „Smazat účet" — schválně

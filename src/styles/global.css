@@ -1611,7 +1611,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
+  /* 34px, ne puvodnich 26 - tenhle prouzek vedle tlacitka Kuchyne je
+     jedina cesta na prepnuti a byl uz na hranici pouzitelnosti prstem. */
+  width: 34px;
   border-radius: 0 8px 8px 0;
   background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
   border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
