@@ -579,7 +579,7 @@ Postaveno 20. 8. 2026. Skládá se ze čtyř kusů, které musí sedět všechny
 1. `node scripts/vapid-keys.mjs`
 2. veřejný klíč do `worker/wrangler.toml` (`VAPID_PUBLIC_KEY`), soukromý
    přes `npx.cmd wrangler secret put VAPID_PRIVATE_KEY`
-3. `cd worker && npx.cmd wrangler deploy`
+3. `cd worker` a pak `npx.cmd wrangler deploy` (PowerShell nezná `&&`)
 
 Dokud klíče nejsou, `pushBeh` se rovnou vrátí a appka v nastavení napíše,
 že oznámení nejsou nastavená. **Nic nespadne — jen nic nechodí.**
@@ -746,8 +746,15 @@ Naplánované vaření se ukládá i do soukromého Google kalendáře uživatel
 Schéma se mění zvlášť:
 
 ```
-cd worker && npx.cmd wrangler d1 migrations apply masterchef --remote
+cd worker
+npx.cmd wrangler d1 migrations apply masterchef --remote
 ```
+
+Pozor: **PowerShell 5.1 nezná `&&`** — příkazy patří na samostatné řádky.
+
+A ještě jedno pořadí: **migrace patří PŘED `wrangler deploy`**, ne za
+něj. Nový kód sahá na nové sloupce; když se nasadí dřív než schéma, padá
+na `Error 1101` do doby, než migrace doběhne.
 
 Když se na to zapomene, Worker sahá na sloupce, které neexistují, a padá
 na `Error 1101`. Nasadit kód a migraci je proto vždycky dvojice.

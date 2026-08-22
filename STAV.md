@@ -20,7 +20,16 @@
 
 **Nasazení:** push do `main` spustí GitHub Actions → Pages. Actions teď
 před nasazením pouští **kontrolu kódu a testy** — když neprojdou, nenasadí se
-nic. Worker se nasazuje zvlášť: `cd worker && npx.cmd wrangler deploy`.
+nic. Worker se nasazuje zvlášť, dvěma příkazy za sebou:
+
+```
+cd worker
+npx.cmd wrangler deploy
+```
+
+**`&&` v PowerShellu 5.1 nefunguje** — spadne na „The token '&&' is not
+a valid statement separator in this version". Příkazy se píšou na dva
+řádky, nebo se oddělí středníkem. Platí to všude v téhle dokumentaci.
 
 **Před pushem:** `npm run kontrola` (lint + testy + build). Totéž, co pustí CI.
 
@@ -153,7 +162,7 @@ nikde nevznikla, a zbytky po smazaných funkcích. Není to nástroj na styl.
    - `node scripts/vapid-keys.mjs`
    - veřejný klíč do `worker/wrangler.toml`, soukromý přes
      `npx.cmd wrangler secret put VAPID_PRIVATE_KEY`
-   - `cd worker && npx.cmd wrangler deploy`
+   - `cd worker` a pak `npx.cmd wrangler deploy`
    - `npx.cmd wrangler d1 migrations apply masterchef --remote`
    - na iPhonu appku **přidat na plochu**, jinak oznámení neexistují
 5. **Zprovoznit Google kalendář** (PROJEKT.md 8.21) — v Google Cloud
