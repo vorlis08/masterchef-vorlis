@@ -11,11 +11,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
   <header class="px-4 sm:px-6 pt-[calc(1.5rem+env(safe-area-inset-top))] sm:pt-9 pb-4 sm:pb-6 max-w-6xl mx-auto">
     <div class="flex items-center justify-between gap-3 mb-9 sm:mb-12">
       <!-- Nazev se smi zuzit, tlacitka ne. Na uzkem telefonu je jich
-           v rade pet a bez tohohle by posledni (nastaveni) vytlacily
-           za okraj obrazovky. -->
+           v rade ctyri a bez tohohle by posledni (nastaveni) vytlacily
+           za okraj obrazovky. Drive se misto zuzeni titulek orizl uprostred
+           slova ("MasterC..."), coz na displayovem patkovem fontu vypadalo
+           rozbite - misto toho se ted preleje na druhy radek. -->
       <div class="min-w-0">
         <div class="label text-accent mb-1.5">Kuchařka</div>
-        <h1 class="display text-[26px] sm:text-[34px] text-text truncate">
+        <h1 class="display text-[26px] sm:text-[34px] leading-tight text-text">
           MasterChef <span class="text-accent">Vorlis</span>
         </h1>
       </div>
@@ -1639,8 +1641,24 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     function setPhoto(el, r) {
       if (!el) return;
-      el.src = r.image || '';
-      el.style.backgroundImage = r.blur ? 'url(' + r.blur + ')' : '';
+      // Prazdny src by prohlizec pochopil jako "nacti aktualni stranku" a
+      // misto fotky by v modalu zustala cerna prazdna plocha ve vysce
+      // aspect-ratio boxu (a zbytecny sitovy pozadavek navic). Recept bez
+      // fotky proto radeji cely obrazek schova, at modal zacina rovnou
+      // nadpisem - stejne jako to uz umi karticka (photoTag vyse).
+      const has = !!r.image;
+      el.style.display = has ? '' : 'none';
+      if (has) {
+        el.src = r.image;
+        el.style.backgroundImage = r.blur ? 'url(' + r.blur + ')' : '';
+      } else {
+        el.removeAttribute('src');
+        el.style.backgroundImage = '';
+      }
+      const fade = document.getElementById('modal-image-fade');
+      if (fade) fade.style.display = has ? '' : 'none';
+      const fig = document.getElementById('modal-figure');
+      if (fig) fig.classList.toggle('-mt-14', has);
     }
 
     // ---- Basic / Fancy -------------------------------------------------
