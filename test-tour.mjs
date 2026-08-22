@@ -23,7 +23,7 @@ const nadpisy = KROKY.map(k => k.nadpis);
   'Hledání', 'Filtry', 'Dva pohledy', 'Detail receptu', 'Porce',
   'Basic a Fancy', 'Režim vaření', 'Nutriční hodnoty', 'Náhrada suroviny',
   'Do nákupního seznamu', 'Chci vyzkoušet', 'Hodnocení', 'Poznámky',
-  'Oblíbené', 'Nákupní seznam', 'Spíž', 'Dlouhý seznam',
+  'Oblíbené', 'Nákupní seznam', 'Kuchyň', 'Dlouhý seznam',
   'Kuchařský kámoš', 'Barevné palety', 'Tvůj účet',
 ].forEach(n => t('prochazi: ' + n, nadpisy.includes(n), true));
 

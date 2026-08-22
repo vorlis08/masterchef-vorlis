@@ -108,7 +108,7 @@ export const KROKY = [
   },
   {
     cil: '#pantry-btn',
-    nadpis: 'Spíž',
+    nadpis: 'Kuchyň',
     text: 'Srdce celé appky. Zaškrtáš, co máš doma — a od té chvíle ví, co ti chybí a co zvládneš uvařit hned.',
   },
   {

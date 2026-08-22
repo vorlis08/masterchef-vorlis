@@ -14,6 +14,7 @@
 import { signSession, verifySession } from './session.js';
 import { sendWelcome, adminNewUser } from './mail.js';
 import { SCOPE_KALENDAR } from './gcal.js';
+import { VYCHOZI_NAZEV } from '../../src/lib/kuchyne.js';
 
 const GOOGLE_AUTH  = 'https://accounts.google.com/o/oauth2/v2/auth';
 const GOOGLE_TOKEN = 'https://oauth2.googleapis.com/token';
@@ -208,6 +209,20 @@ async function upsertUser(db, claims) {
   await db.prepare(
     'INSERT INTO users (id, email, name, role, unsub_token, gcal_on) VALUES (?, ?, ?, ?, ?, 1)'
   ).bind(id, email, name, 'user', token).run();
+
+  // Kazdy dostane jednu kuchyn rovnou. Suroviny patri kuchyni, takze
+  // bez ni by nemel prvni surovinu kam ulozit - a resit to az pri
+  // prvnim zapisu znamena resit to v pulce mist v api.js.
+  // V try schvalne: zalozeni uctu nesmi spadnout na doplnku.
+  try {
+    const k = await db.prepare('INSERT INTO kitchens (user_id, name) VALUES (?, ?)')
+      .bind(id, VYCHOZI_NAZEV).run();
+    const kid = k.meta && k.meta.last_row_id;
+    if (kid) await db.prepare('UPDATE users SET active_kitchen_id = ? WHERE id = ?').bind(kid, id).run();
+  } catch (e) {
+    console.error('zalozeni kuchyne selhalo: ' + String(e).slice(0, 200));
+  }
+
   return {
     id: id, email: email, name: name, role: 'user',
     welcome_sent_at: null, unsub_token: token, jeNovy: true,

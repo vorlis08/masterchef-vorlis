@@ -72,7 +72,7 @@ export function zpravaNeaktivita(dni, recept) {
 
   return {
     titul: 'Týden bez vaření',
-    text: kolik + ' dní ses tu neukázal. Co dneska? Spíž pořád víš, co v ní je.',
+    text: kolik + ' dní ses tu neukázal. Co dneska? V kuchyni pořád víš, co v ní je.',
     slug: null,
   };
 }

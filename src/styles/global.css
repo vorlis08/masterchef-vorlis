@@ -1595,6 +1595,117 @@ body {
   border-color: var(--color-accent);
 }
 
+/* -- Prepinac kuchyni --------------------------------------------------
+   Sipka sedi natesno u tlacitka kuchyne a tvari se s nim jako jeden
+   prvek: zaobleni ma jen zprava a delici cara mezi nimi je jen naznak.
+   Duvod: jsou to dve ruzne veci (otevrit / prepnout), ale patri k sobe. */
+.kuchyn-blok .spiz-tlacitko {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+/* `:not(.hidden)` schvalne: appka schovava vsechno tridou `hidden`
+   (display:none). Ta ma stejnou specificitu jako tahle trida, ale nase
+   pravidlo stoji v souboru niz - takze by vyhralo a sipka by svitila
+   i odhlasenemu. Stejny duvod ma `.kuchyn-formular` nize. */
+.kuchyn-sipka:not(.hidden) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
+  border-left-color: color-mix(in srgb, var(--color-accent) 25%, transparent);
+  color: var(--color-accent);
+  transition: background-color 0.15s, color 0.15s;
+}
+.kuchyn-sipka:hover,
+.kuchyn-sipka[aria-expanded="true"] {
+  background: var(--color-accent);
+  color: #fff;
+}
+/* Kdyz sipka neni videt (odhlaseny), tlacitko kuchyne se zaobli zpatky
+   ze vsech stran - jinak by mu vpravo zustal usek useknuty pro souseda,
+   ktery tam neni. */
+.kuchyn-blok:has(.kuchyn-sipka.hidden) .spiz-tlacitko {
+  border-radius: 8px;
+}
+
+.kuchyn-nabidka {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 70;
+  min-width: 226px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.35);
+}
+.kuchyn-seznam { display: flex; flex-direction: column; gap: 1px; }
+.kuchyn-polozka {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  text-align: left;
+  transition: background-color 0.12s;
+}
+.kuchyn-polozka:hover { background: var(--color-surface-hover, var(--color-surface)); }
+.kuchyn-polozka.je-otevrena { color: var(--color-accent); font-weight: 600; }
+/* Fajfka drzi sirku i u neaktivnich, aby nazvy neposkakovaly. */
+.kuchyn-fajfka { width: 14px; flex-shrink: 0; text-align: center; }
+.kuchyn-pocet {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.kuchyn-cara { height: 1px; margin: 6px 4px; background: var(--color-border); }
+.kuchyn-akce:not(.hidden) {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  text-align: left;
+  transition: background-color 0.12s, color 0.12s;
+}
+.kuchyn-akce:hover { background: var(--color-surface); color: var(--color-text); }
+.kuchyn-akce.je-nebezpecna:hover { color: #f87171; }
+
+.kuchyn-formular:not(.hidden) { display: flex; gap: 6px; margin-top: 6px; }
+.kuchyn-pole {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 13px;
+}
+.kuchyn-pole:focus { outline: none; border-color: var(--color-accent); }
+.kuchyn-potvrdit {
+  padding: 7px 12px;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.kuchyn-chyba {
+  margin: 6px 4px 2px;
+  font-size: 11.5px;
+  color: #f87171;
+}
+
 .spiz-dlazdice {
   display: flex;
   flex-direction: column;

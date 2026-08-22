@@ -27,6 +27,8 @@ nic. Worker se nasazuje zvlášť: `cd worker && npx.cmd wrangler deploy`.
 **Migrace databáze se nasazením NEPOUŠTĚJÍ** — vždycky ještě
 `npx.cmd wrangler d1 migrations apply masterchef --remote`. Bez toho
 Worker sahá na neexistující sloupce a padá na `Error 1101`.
+**Migraci pouštěj PŘED `wrangler deploy`**, ne po něm — nový kód sahá
+na `kitchens`, která bez migrace neexistuje.
 
 **Pozor na Windows:** `npx` bez přípony spadne na zákazu skriptů —
 používej **`npx.cmd`**.
@@ -66,7 +68,8 @@ nikde nevznikla, a zbytky po smazaných funkcích. Není to nástroj na styl.
 | `recipe-view.js` | podklad k vykreslení — **kontrakt pro skiny** |
 | `cook-session.js` | krokování receptem |
 | `cook-timers.js` | paralelní časovače (engine si sám nespouští hodiny) |
-| `pantry.js` | spíž: přesné / přibližné / počítané, kroky množství |
+| `pantry.js` | kuchyň: přesné / přibližné / počítané, kroky množství |
+| `kuchyne.js` | názvy kuchyní, která je otevřená, kolik jich smí být |
 | `catalog.js` | katalog ~95 surovin řazený podle kuchyně |
 | `match.js` | porovnávání surovin, „co mi chybí" — **sdílí appka i Worker** |
 | `booking.js` | termíny, konflikty, zámky surovin |
@@ -84,9 +87,15 @@ nikde nevznikla, a zbytky po smazaných funkcích. Není to nástroj na styl.
 - **V nastavení se nic nezapíná** — e-maily, oznámení i kalendář chodí
   od začátku; vypíná se to v e-mailu, v telefonu a v účtu Google (8.22)
 - Úvodní okno po registraci + průvodce aplikací (24 kroků)
-- Spíž: přehled „mám doma / dochází / došlo", sekce podle kuchyně,
+- **Kuchyň** (dřív „spíž" — je to totéž, jen se to tak jmenuje):
+  přehled „mám doma / dochází / došlo", sekce podle místa v kuchyni,
   hledání, stav barevným proužkem, „mám doma standardně" jako pilulka.
-  Tlačítko v hlavičce nese barvu značky a odznak, kolik věcí dochází.
+  Tlačítko v hlavičce nese jméno otevřené kuchyně a odznak, kolik věcí
+  dochází.
+- **Víc kuchyní** (byt, chata). Šipka vedle tlačítka přepíná, zakládá,
+  přejmenovává a maže. Která je otevřená, ví server — počítá podle ní
+  i Cron, který do prohlížeče nevidí. Kdo vaří na jednom místě, o nic
+  nezakopne: má jednu kuchyň a nikdy se o ni nemusí starat.
 - Bookingy „TO UVAŘÍM!" se zámky surovin — tlačítko je nahoře u „Režim
   vaření", tedy **před postupem**, ne až pod ním. Rychlé termíny
   („Dnes večer / Zítra večer / V sobotu") jedním tapem; podrobný
@@ -108,8 +117,9 @@ nikde nevznikla, a zbytky po smazaných funkcích. Není to nástroj na styl.
 - `worker/src/`: `index.js` (routy), `google.js` (OAuth), `session.js`
   (podepsané lístky), `api.js` (profil, spíž, bookingy, nákup, stav receptů),
   `mail.js` (6 druhů zpráv), `digest.js` (Cron)
-- 6 migrací, tabulky: `users`, `inventory`, `bookings`, `reservations`,
-  `shopping_list`, `recipe_state`, `email_log`, `known_recipes`
+- 11 migrací, tabulky: `users`, `kitchens`, `inventory`, `bookings`,
+  `reservations`, `shopping_list`, `recipe_state`, `email_log`,
+  `known_recipes`, `push_subs`
 - Cron: **každou hodinu (oznámení na telefon)**, denně 7:00 (nákupní
   seznam + připomínka), pondělí (nové recepty + wishlist), 1. v měsíci
   (souhrn)
@@ -210,6 +220,35 @@ Po projití celého kódu. Podrobnosti jsou v commitech.
 - Escapování v `index.astro` na osmi místech, úklid mrtvého kódu,
   cache hodnocení místo čtení z localStorage při každém překreslení,
   odmlka u hledání, `email_log` se jednou za měsíc uklidí.
+
+---
+
+## Kuchyně (22. 8. 2026)
+
+Spíž se jmenuje **kuchyň** a může jich mít člověk víc. Není to nová
+vrstva uvnitř spíže — je to tatáž věc pod jiným jménem, jen se dá
+založit další.
+
+- Suroviny patří kuchyni (`inventory.kitchen_id`), ne rovnou uživateli.
+  Tentýž název smí být v každé kuchyni jednou — proto migrace `0011`
+  přestavuje `inventory` a posouvá unikátnost z `(user_id, name)`
+  na `(kitchen_id, name)`.
+- Otevřená kuchyň se drží u **uživatele** (`users.active_kitchen_id`),
+  ne v prohlížeči. Důvod: podle ní počítá i Cron, co komu chybí do
+  nákupu, a ten do prohlížeče nevidí. Vedlejší efekt: přepnutí se
+  přenese i na druhé zařízení.
+- Stávající účty dostaly migrací jednu kuchyň „Moje kuchyň" a všechno
+  se do ní přesunulo. Id surovin se nemění, takže zámky drží dál.
+- Sekce **uvnitř** kuchyně se pořád jmenují „Spíž — základ", „Lednice",
+  „Mrazák". To je správně: spíž je police v kuchyni, ne celá kuchyně.
+- Testy: `test-kuchyne.mjs` (pravidla názvů), `test-kuchyne-api.mjs`
+  (**skutečné SQL Workeru proti skutečné SQLite** — pozná chybu v dotazu
+  dřív, než ji Worker po nasazení vrátí jako `Error 1101`),
+  `test-kuchyne-ui.mjs` (přepínač v prohlížeči s podvrženým serverem).
+
+**Nástraha:** `hidden` z Tailwindu je jen jedna třída. Když vlastní
+pravidlo v `global.css` nastaví `display`, přebije ji (stojí v souboru
+níž) a prvek nejde schovat. Proto `.kuchyn-sipka:not(.hidden)`.
 
 ---
 

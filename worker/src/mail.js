@@ -178,7 +178,7 @@ export function welcomeMail(user) {
       '<div style="font-family:' + SANS + ';font-size:11px;letter-spacing:2px;text-transform:uppercase;' +
         'color:' + AKCENT + ';font-weight:700;padding-bottom:8px;">Ingredience</div>' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' +
-        ingredience('1 ks', 'spíž, která ví, co máš doma — a u soli se neptá na gramy') +
+        ingredience('1 ks', 'kuchyň, která ví, co máš doma — a u soli se neptá na gramy') +
         ingredience('1 ks', 'režim vaření, co tě vede krok za krokem a nenechá zhasnout displej') +
         ingredience('1 ks', 'kuchařský kámoš na chvíle, kdy ti něco dojde uprostřed vaření') +
         ingredience('dle chuti', 'recepty, které někdo doopravdy uvařil') +
@@ -281,11 +281,11 @@ export function wishlistMail(user, polozky, odhlasit) {
   ).join('');
 
   const telo =
-    '<p>Ahoj ' + esc(jmeno(user)) + ', koukal jsem ti do spíže a tohle z tvého ' +
+    '<p>Ahoj ' + esc(jmeno(user)) + ', koukal jsem ti do kuchyně a tohle z tvého ' +
     '„chci vyzkoušet" jde uvařit hned:</p>' +
     '<ul>' + seznam + '</ul>' +
-    '<p style="color:#888;font-size:13px">Počítám podle toho, co máš zapsané ve spíži. ' +
-    'Jestli to nesedí, spíž bude potřebovat doladit.</p>';
+    '<p style="color:#888;font-size:13px">Počítám podle toho, co máš zapsané v kuchyni. ' +
+    'Jestli to nesedí, kuchyň bude potřebovat doladit.</p>';
 
   return {
     subject: 'Tohle můžeš uvařit hned 🥘',
@@ -336,7 +336,7 @@ export function summaryMail(user, s, odhlasit) {
     ['Různých receptů', s.ruznych],
     ['Nejčastěji', s.nejcastejsi || '—'],
     ['Nejlíp hodnocené', s.nejlepsi || '—'],
-    ['Ve spíži', s.spiz + ' surovin'],
+    ['V kuchyni', s.spiz + ' surovin'],
   ].map(([k, v]) =>
     '<tr><td style="padding:6px 12px 6px 0;color:#888">' + esc(k) + '</td>' +
     '<td style="padding:6px 0"><strong>' + esc(v) + '</strong></td></tr>'
@@ -357,7 +357,7 @@ export function summaryMail(user, s, odhlasit) {
       '  Různých receptů: ' + s.ruznych + '\n' +
       '  Nejčastěji: ' + (s.nejcastejsi || '—') + '\n' +
       '  Nejlíp hodnocené: ' + (s.nejlepsi || '—') + '\n' +
-      '  Ve spíži: ' + s.spiz + ' surovin\n\n' + APP_URL + '\n',
+      '  V kuchyni: ' + s.spiz + ' surovin\n\n' + APP_URL + '\n',
     html: layout('Tvůj měsíc v kuchyni 📊', telo, odhlasit),
   };
 }

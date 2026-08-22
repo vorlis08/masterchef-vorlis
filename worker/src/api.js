@@ -10,6 +10,9 @@ import { poslatPush } from './push.js';
 import { zpravaUvitani } from './push-zpravy.js';
 import { udalostZBookingu, vytvorUdalost, smazUdalost } from './gcal.js';
 import { nactiRecepty } from './recepty.js';
+import {
+  VYCHOZI_NAZEV, MAX_POCET, zkontrolujNazev,
+} from '../../src/lib/kuchyne.js';
 
 const APPKA = 'https://vorlis08.github.io/masterchef-vorlis/';
 
@@ -66,28 +69,152 @@ export async function updateProfile(request, env, session, origin, cors) {
   return json(user, origin, cors);
 }
 
-// -- Spiz -----------------------------------------------------------------
+// -- Kuchyne --------------------------------------------------------------
+//
+// Kuchyn JE spiz - jen jich clovek muze mit vic (byt, chata) a kazda ma
+// jmeno. Suroviny patri kuchyni, ne rovnou uzivateli.
+//
+// Ktera kuchyn je otevrena, se drzi u UZIVATELE, ne v prohlizeci: podle
+// ni pocita i Cron, co komu chybi do nakupu, a ten do prohlizece nevidi.
 
-export async function listInventory(env, session, origin, cors) {
+/** Kuchyne uzivatele i s poctem surovin v kazde. */
+async function kuchyneUzivatele(env, userId) {
+  const { results } = await env.DB.prepare(
+    `SELECT k.id, k.name, k.sort_order,
+            (SELECT COUNT(*) FROM inventory i WHERE i.kitchen_id = k.id) AS pocet
+       FROM kitchens k
+      WHERE k.user_id = ?
+      ORDER BY k.sort_order, k.id`
+  ).bind(userId).all();
+  return results || [];
+}
+
+/**
+ * Vrati id kuchyne, se kterou se ma pracovat.
+ *
+ * Poradi: co si rekl prohlizec (kdyz to je opravdu jeho kuchyn) ->
+ * ulozena aktivni -> prvni. Kdyz uzivatel nema zadnou (stary ucet,
+ * ktery migraci nezastihla), zalozi se mu - lepsi nez ho poslat pryc
+ * s chybou, kterou stejne nemuze nijak spravit.
+ */
+export async function vyberKuchyn(env, userId, chtena) {
+  let list = await kuchyneUzivatele(env, userId);
+
+  if (!list.length) {
+    await env.DB.prepare('INSERT INTO kitchens (user_id, name) VALUES (?, ?)')
+      .bind(userId, VYCHOZI_NAZEV).run();
+    list = await kuchyneUzivatele(env, userId);
+  }
+
+  const chce = list.find(k => String(k.id) === String(chtena));
+  if (chce) return chce.id;
+
+  const u = await env.DB.prepare('SELECT active_kitchen_id FROM users WHERE id = ?')
+    .bind(userId).first();
+  const ulozena = list.find(k => String(k.id) === String(u && u.active_kitchen_id));
+  return (ulozena || list[0]).id;
+}
+
+export async function listKitchens(env, session, origin, cors) {
+  // Poradi je dulezite: `vyberKuchyn` uzivateli bez kuchyne jednu zalozi,
+  // takze seznam se musi cist AZ po nem. Obracene vratil prazdno.
+  const aktivni = await vyberKuchyn(env, session.sub);
+  const items = await kuchyneUzivatele(env, session.sub);
+  return json({ items: items, aktivni: aktivni }, origin, cors);
+}
+
+export async function saveKitchen(request, env, session, origin, cors) {
+  const data = await request.json().catch(() => ({}));
+  const list = await kuchyneUzivatele(env, session.sub);
+  const moje = (id) => list.find(k => String(k.id) === String(id));
+
+  if (data.action === 'aktivni') {
+    if (!moje(data.id)) return json({ error: 'Takovou kuchyň nemáš.' }, origin, cors, 400);
+    await env.DB.prepare('UPDATE users SET active_kitchen_id = ? WHERE id = ?')
+      .bind(Number(data.id), session.sub).run();
+    return listKitchens(env, session, origin, cors);
+  }
+
+  if (data.action === 'create') {
+    if (list.length >= MAX_POCET) {
+      return json({ error: 'Víc kuchyní už si založit nejde.' }, origin, cors, 400);
+    }
+    const kontrola = zkontrolujNazev(data.name, list);
+    if (!kontrola.ok) return json({ error: kontrola.chyba }, origin, cors, 400);
+
+    const v = await env.DB.prepare(
+      'INSERT INTO kitchens (user_id, name, sort_order) VALUES (?, ?, ?)'
+    ).bind(session.sub, kontrola.nazev, list.length).run();
+
+    // Nova kuchyn se rovnou otevre. Kdo si ji prave zalozil, chce do ni
+    // psat - nechat ho prepnout rucne by byl krok navic pro nic.
+    const nove = v.meta && v.meta.last_row_id;
+    if (nove) {
+      await env.DB.prepare('UPDATE users SET active_kitchen_id = ? WHERE id = ?')
+        .bind(nove, session.sub).run();
+    }
+    return listKitchens(env, session, origin, cors);
+  }
+
+  if (data.action === 'rename') {
+    if (!moje(data.id)) return json({ error: 'Takovou kuchyň nemáš.' }, origin, cors, 400);
+    const kontrola = zkontrolujNazev(data.name, list, data.id);
+    if (!kontrola.ok) return json({ error: kontrola.chyba }, origin, cors, 400);
+
+    await env.DB.prepare('UPDATE kitchens SET name = ? WHERE id = ? AND user_id = ?')
+      .bind(kontrola.nazev, Number(data.id), session.sub).run();
+    return listKitchens(env, session, origin, cors);
+  }
+
+  if (data.action === 'delete') {
+    if (!moje(data.id)) return json({ error: 'Takovou kuchyň nemáš.' }, origin, cors, 400);
+    // Posledni ne: bez jedine kuchyne nema appka kam ukladat suroviny.
+    if (list.length <= 1) {
+      return json({ error: 'Poslední kuchyň smazat nejde.' }, origin, cors, 400);
+    }
+
+    // Suroviny padaji s kuchyni (ON DELETE CASCADE) a s nimi i zamky.
+    await env.DB.prepare('DELETE FROM kitchens WHERE id = ? AND user_id = ?')
+      .bind(Number(data.id), session.sub).run();
+
+    // Kdyz jsme prave smazali otevrenou kuchyn, prepneme na jinou -
+    // jinak by uzivatel koukal do prazdna.
+    const zbytek = await kuchyneUzivatele(env, session.sub);
+    await env.DB.prepare('UPDATE users SET active_kitchen_id = ? WHERE id = ?')
+      .bind(zbytek.length ? zbytek[0].id : null, session.sub).run();
+
+    return listKitchens(env, session, origin, cors);
+  }
+
+  return json({ error: 'Neznámá akce.' }, origin, cors, 400);
+}
+
+// -- Spiz (obsah kuchyne) -------------------------------------------------
+
+export async function listInventory(env, session, origin, cors, kuchyn) {
+  const kitchenId = await vyberKuchyn(env, session.sub, kuchyn);
   const { results } = await env.DB.prepare(
     `SELECT i.id, i.name, i.kind, i.quantity, i.unit, i.status, i.staple, i.sort_order,
             COALESCE((SELECT SUM(r.amount) FROM reservations r
                        WHERE r.inventory_id = i.id AND r.user_id = i.user_id), 0) AS reserved
        FROM inventory i
-      WHERE i.user_id = ?
+      WHERE i.user_id = ? AND i.kitchen_id = ?
       ORDER BY i.sort_order, i.name`
-  ).bind(session.sub).all();
-  return json({ items: results || [] }, origin, cors);
+  ).bind(session.sub, kitchenId).all();
+  return json({ items: results || [], kuchyn: kitchenId }, origin, cors);
 }
 
 export async function saveInventory(request, env, session, origin, cors) {
   const data = await request.json().catch(() => ({}));
+  // Do ktere kuchyne se pise. Prohlizec posle tu otevrenou; kdyz posle
+  // cizi nebo zadnou, `vyberKuchyn` spadne zpatky na tu jeho.
+  const kitchenId = await vyberKuchyn(env, session.sub, data.kuchyn);
 
   if (data.action === 'delete') {
     if (!(data.id > 0)) return json({ error: 'Chybí položka.' }, origin, cors, 400);
     await env.DB.prepare('DELETE FROM inventory WHERE id = ? AND user_id = ?')
       .bind(data.id, session.sub).run();
-    return listInventory(env, session, origin, cors);
+    return listInventory(env, session, origin, cors, kitchenId);
   }
 
   // Zalozeni startovniho seznamu z receptu (4.9). Uz existujici polozky
@@ -95,16 +222,16 @@ export async function saveInventory(request, env, session, origin, cors) {
   if (data.action === 'seed') {
     const items = Array.isArray(data.items) ? data.items.slice(0, 300) : [];
     const stmt = env.DB.prepare(
-      `INSERT INTO inventory (user_id, name, kind, status, sort_order)
-            VALUES (?, ?, ?, ?, ?)
-       ON CONFLICT (user_id, name) DO NOTHING`
+      `INSERT INTO inventory (user_id, kitchen_id, name, kind, status, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT (kitchen_id, name) DO NOTHING`
     );
     const batch = items
       .map(it => ({ name: text(it.name, 80), kind: KINDS.includes(it.kind) ? it.kind : 'exact', order: Number(it.sort_order) || 0 }))
       .filter(it => it.name)
-      .map(it => stmt.bind(session.sub, it.name, it.kind, it.kind === 'approx' ? 'doslo' : null, it.order));
+      .map(it => stmt.bind(session.sub, kitchenId, it.name, it.kind, it.kind === 'approx' ? 'doslo' : null, it.order));
     if (batch.length) await env.DB.batch(batch);
-    return listInventory(env, session, origin, cors);
+    return listInventory(env, session, origin, cors, kitchenId);
   }
 
   // Ulozeni jedne polozky
@@ -137,16 +264,16 @@ export async function saveInventory(request, env, session, origin, cors) {
     ).bind(name, kind, quantity, unit, status, staple, order, item.id, session.sub).run();
   } else {
     await env.DB.prepare(
-      `INSERT INTO inventory (user_id, name, kind, quantity, unit, status, staple, sort_order)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-       ON CONFLICT (user_id, name) DO UPDATE SET
+      `INSERT INTO inventory (user_id, kitchen_id, name, kind, quantity, unit, status, staple, sort_order)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (kitchen_id, name) DO UPDATE SET
             kind = excluded.kind, quantity = excluded.quantity, unit = excluded.unit,
             status = excluded.status, staple = excluded.staple,
             updated_at = datetime('now')`
-    ).bind(session.sub, name, kind, quantity, unit, status, staple, order).run();
+    ).bind(session.sub, kitchenId, name, kind, quantity, unit, status, staple, order).run();
   }
 
-  return listInventory(env, session, origin, cors);
+  return listInventory(env, session, origin, cors, kitchenId);
 }
 
 // -- Nastaveni upozorneni -------------------------------------------------

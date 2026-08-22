@@ -9,14 +9,17 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
   <!-- Header -->
   <header class="px-4 sm:px-6 pt-6 sm:pt-9 pb-4 sm:pb-6 max-w-6xl mx-auto">
-    <div class="flex items-center justify-between mb-9 sm:mb-12">
-      <div>
+    <div class="flex items-center justify-between gap-3 mb-9 sm:mb-12">
+      <!-- Nazev se smi zuzit, tlacitka ne. Na uzkem telefonu je jich
+           v rade pet a bez tohohle by posledni (nastaveni) vytlacily
+           za okraj obrazovky. -->
+      <div class="min-w-0">
         <div class="label text-accent mb-1.5">Kuchařka</div>
-        <h1 class="display text-[26px] sm:text-[34px] text-text">
+        <h1 class="display text-[26px] sm:text-[34px] text-text truncate">
           MasterChef <span class="text-accent">Vorlis</span>
         </h1>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
         <!-- Chef AI -->
         <button id="chef-btn" class="hidden sm:flex w-9 h-9 rounded-lg bg-surface border border-border items-center justify-center text-text-muted hover:text-accent hover:border-accent transition-colors" title="Co dnes uvařit?">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,14 +40,39 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </svg>
           <span id="cal-badge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-semibold flex items-center justify-center"></span>
         </button>
-        <!-- Spiz -->
-        <button id="pantry-btn" class="spiz-tlacitko h-10 sm:h-9 px-2.5 sm:px-3 rounded-lg flex items-center gap-2 transition-colors relative" title="Moje spíž">
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 3h16.5M3.75 3H2.25M20.25 3h1.5M9 7.5h6M9 11.25h6M8.25 16.5v3.75M15.75 16.5v3.75" />
-          </svg>
-          <span class="hidden sm:inline text-[13px] font-medium">Spíž</span>
-          <span id="pantry-badge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-semibold flex items-center justify-center"></span>
-        </button>
+        <!-- Kuchyn. Tlacitko otevre tu otevrenou, sipka vedle prepina
+             mezi nimi. Kdo ma kuchyn jednu, sipku nikdy nepotrebuje -
+             proto se pri jedine kuchyni vubec neukazuje. -->
+        <div class="kuchyn-blok relative flex items-stretch">
+          <button id="pantry-btn" class="spiz-tlacitko h-10 sm:h-9 px-2.5 sm:px-3 rounded-lg flex items-center gap-2 transition-colors relative" title="Moje kuchyň">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 3h16.5M3.75 3H2.25M20.25 3h1.5M9 7.5h6M9 11.25h6M8.25 16.5v3.75M15.75 16.5v3.75" />
+            </svg>
+            <span id="kuchyn-nazev" class="hidden sm:inline text-[13px] font-medium max-w-[130px] truncate">Kuchyň</span>
+            <span id="pantry-badge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-semibold flex items-center justify-center"></span>
+          </button>
+          <button id="kuchyn-prepnout" class="kuchyn-sipka hidden" aria-haspopup="true" aria-expanded="false" title="Přepnout kuchyň">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+          </button>
+
+          <!-- Nabidka kuchyni. Neni to okno pres celou obrazovku:
+               prepnuti je jedno tuknuti a modal by z nej udelal obrad. -->
+          <div id="kuchyn-nabidka" class="kuchyn-nabidka hidden" role="menu">
+            <ul id="kuchyn-seznam" class="kuchyn-seznam"></ul>
+            <div class="kuchyn-cara"></div>
+            <button id="kuchyn-prejmenovat" class="kuchyn-akce" type="button">Přejmenovat</button>
+            <button id="kuchyn-nova" class="kuchyn-akce" type="button">Nová kuchyň…</button>
+            <button id="kuchyn-smazat" class="kuchyn-akce je-nebezpecna" type="button">Smazat tuhle kuchyň</button>
+
+            <!-- Zakladani i prejmenovani pouzivaji tenhle jeden radek.
+                 Dve skoro stejna policka vedle sebe by jen matla. -->
+            <form id="kuchyn-formular" class="kuchyn-formular hidden">
+              <input id="kuchyn-pole" type="text" maxlength="30" class="kuchyn-pole" placeholder="Jméno kuchyně" />
+              <button type="submit" class="kuchyn-potvrdit">OK</button>
+            </form>
+            <p id="kuchyn-chyba" class="kuchyn-chyba hidden"></p>
+          </div>
+        </div>
         <!-- Prihlaseni -->
         <button id="auth-btn" class="h-10 sm:h-9 px-3 rounded-lg bg-surface border border-border flex items-center gap-2 text-text-muted text-[13px] hover:text-accent hover:border-accent transition-colors" title="Přihlásit se">
           <svg id="auth-ikona" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -374,7 +402,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <div id="book-form">
           <div id="book-zamky" class="hidden mb-4 p-3 rounded-lg bg-surface border border-border">
             <p class="text-[12px] text-text-muted leading-relaxed">
-              <span class="text-accent font-medium">Ve spíži se zamkne:</span>
+              <span class="text-accent font-medium">V kuchyni se zamkne:</span>
               <span id="book-zamky-seznam" class="text-text"></span><br>
               Zůstane ti tam — jen bude slíbená tomuhle vaření.
             </p>
@@ -438,7 +466,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
         <p class="brana-lead brana-nabeh" style="--d:.42s">
           Suroviny doma máš. Horší je to s&nbsp;nápadem.
-          Řekni téhle kuchařce, co máš ve spíži, a&nbsp;zbytek je její starost.
+          Řekni téhle kuchařce, co máš v&nbsp;kuchyni, a&nbsp;zbytek je její starost.
         </p>
 
         <div class="brana-cta brana-nabeh" style="--d:.55s">
@@ -450,7 +478,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </button>
           <p class="brana-mikro">
             Nic vyplňovat nebudeš. Účet je tu kvůli tomu,
-            aby si appka pamatovala tvoji spíž.<br>
+            aby si appka pamatovala tvoji kuchyň.<br>
             Newsletter ti chodit nebude, protože žádný nemáme.
           </p>
         </div>
@@ -480,7 +508,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <li>
             <b>I</b>
             <div>
-              <strong>Spíž</strong>
+              <strong>Kuchyň</strong>
               <span>Zaškrtáš, co máš doma. Od té chvíle appka ví, co ti chybí. U&nbsp;soli se tě na gramy nikdo ptát nebude.</span>
             </div>
           </li>
@@ -523,7 +551,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </p>
           <p class="text-text-muted text-[15px] leading-relaxed mb-4">
             Appka tě provede vařením krok za krokem, pohlídá časovače a pamatuje si,
-            co ti chutnalo. A když jí řekneš, co máš ve spíži, poradí ti, co dneska
+            co ti chutnalo. A když jí řekneš, co máš v kuchyni, poradí ti, co dneska
             zvládneš uvařit, aniž bys musel do obchodu.
           </p>
           <p class="text-text text-[15px] leading-relaxed mb-7">
@@ -560,13 +588,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
-  <!-- Spiz -->
+  <!-- Kuchyn (drive "spiz" - je to totez, jen jich muze byt vic) -->
   <div id="pantry-overlay" class="fixed inset-0 bg-black/70 z-[60] hidden opacity-0 transition-opacity duration-200">
     <div class="fixed inset-0 flex items-center justify-center p-4 sm:p-6">
       <div id="pantry-modal" class="bg-bg border border-border rounded-2xl w-full max-w-lg p-6 sm:p-8 scale-95 opacity-0 transition-all duration-200 max-h-[90vh] flex flex-col">
         <div class="flex items-center justify-between mb-5 shrink-0">
           <div>
-            <h2 class="text-[20px] font-semibold text-text">Moje spíž</h2>
+            <h2 id="pantry-nadpis" class="text-[20px] font-semibold text-text">Moje kuchyň</h2>
             <p id="pantry-count" class="meta text-text-muted"></p>
           </div>
           <button id="pantry-close" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors shrink-0">
@@ -575,7 +603,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         </div>
 
         <div id="pantry-signedout" class="hidden py-10 text-center">
-          <p class="text-text text-[15px] mb-2">Spíž je tvoje osobní</p>
+          <p class="text-text text-[15px] mb-2">Kuchyň je tvoje osobní</p>
           <p class="text-text-muted text-[13px] mb-5">Přihlas se, ať víme, komu ji uložit.</p>
           <button id="pantry-login" class="px-5 py-2.5 rounded-lg bg-accent text-white font-medium text-[14px] hover:bg-accent-hover transition-colors">Přihlásit přes Google</button>
         </div>
@@ -604,7 +632,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             </div>
           </div>
 
-          <input id="pantry-hledat" type="search" maxlength="40" placeholder="Najít ve spíži…" class="w-full bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-3 shrink-0" />
+          <input id="pantry-hledat" type="search" maxlength="40" placeholder="Najít v kuchyni…" class="w-full bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-3 shrink-0" />
 
           <label class="flex items-center gap-2 mb-3 cursor-pointer shrink-0">
             <input type="checkbox" id="pantry-detail" />
@@ -616,7 +644,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </button>
 
           <div id="pantry-empty" class="hidden py-8 text-center">
-            <p class="text-text-muted text-[13px] mb-4 max-w-[300px] mx-auto leading-relaxed">Spíž je prázdná. Můžu ti ji předvyplnit ze surovin, které se objevují v receptech — nejčastější napřed.</p>
+            <p class="text-text-muted text-[13px] mb-4 max-w-[300px] mx-auto leading-relaxed">Kuchyň je prázdná. Můžu ti ji předvyplnit ze surovin, které se objevují v receptech — nejčastější napřed.</p>
             <button id="pantry-seed" class="px-4 py-2 rounded-lg bg-surface border border-border text-text text-[13px] hover:border-accent hover:text-accent transition-colors">Předvyplnit z receptů</button>
           </div>
 
@@ -704,7 +732,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <button id="profil-spiz" class="flex items-center gap-3 w-full p-3 rounded-xl bg-surface border border-border hover:border-accent transition-colors text-left">
             <svg class="w-5 h-5 text-accent shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 3h16.5M9 7.5h6M9 11.25h6M8.25 16.5v3.75M15.75 16.5v3.75"/></svg>
             <span class="flex-1 min-w-0">
-              <span class="block text-[14px] text-text">Moje spíž</span>
+              <span class="block text-[14px] text-text">Moje kuchyň</span>
               <span id="profil-spiz-popis" class="block text-[11px] text-text-muted"></span>
             </span>
             <span class="text-text-muted text-[18px]">&rsaquo;</span>
@@ -942,6 +970,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       krokMnozstvi, posunMnozstvi,
     } from '../lib/pantry.js';
     import { buildChecklist, checklistProgress, spizPodleSekci } from '../lib/catalog.js';
+    import {
+      aktivniKuchyn, jdeSmazat, jdePridat, navrhniNazev, zkontrolujNazev,
+    } from '../lib/kuchyne.js';
     import { pripravenost, sediSurovina, chybejici } from '../lib/match.js';
     import {
       dnes as dnesniDatum, jeDatum, jeCas, popisBookingu, popisDatumu,
@@ -1161,6 +1192,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // takze v databazi zustane favorite=1 a pri pristim nacteni se
     // oblibeny recept sam vrati. Presne tohle se drive dělo.
     let znameServeru = new Set();
+
+    // Kuchyne uzivatele a ta prave otevrena. Kuchyn JE spiz - `pantryItems`
+    // drzi obsah te otevrene, takze "co muzu uvarit" i zamky pocitaji
+    // z ni. Ktera to je, vi server: podle toho sama pocita i pripominky
+    // z Cronu, ktery do prohlizece nevidi.
+    let kuchyne = [];
+    let kuchynId = null;
 
     function toggleFavorite(slug) {
       const i = favorites.indexOf(slug);
@@ -2864,7 +2902,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     }
 
     async function bookingAkce(akce, id) {
-      if (akce === 'done' && !confirm('Uvařeno? Suroviny se teď odečtou ze spíže.')) return;
+      if (akce === 'done' && !confirm('Uvařeno? Suroviny se teď odečtou z kuchyně.')) return;
       try {
         const data = await api('/api/bookings', { action: akce, id: Number(id) });
         bookings = data.items || [];
@@ -3103,7 +3141,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     })();
 
     async function calBookingAkce(akce, id) {
-      if (akce === 'done' && !confirm('Uvařeno? Suroviny se teď odečtou ze spíže.')) return;
+      if (akce === 'done' && !confirm('Uvařeno? Suroviny se teď odečtou z kuchyně.')) return;
       try {
         const data = await api('/api/bookings', { action: akce, id: Number(id) });
         bookings = data.items || [];
@@ -3374,9 +3412,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       paintProfile();
       nactiUpozorneni();
       nactiStav();
-      // Spiz potrebujeme i mimo okno spize - pocita se z ni pripravenost
-      // receptu a co booking zamkne.
-      loadPantry().then(renderGrid);
+      // Kuchyne musi byt driv nez spiz - podle otevrene kuchyne se vi,
+      // ktery obsah se ma vubec nacist.
+      nactiKuchyne().then(() => loadPantry()).then(renderGrid);
       nactiBookingy().then(paintCalBadge);
       nactiNakup();
       zvazUvod();
@@ -3423,6 +3461,209 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     const pantryModal   = document.getElementById('pantry-modal');
     const pantryList    = document.getElementById('pantry-list');
 
+    // --- Kuchyne -----------------------------------------------------------
+    //
+    // Kuchyn JE spiz. Neni to nic uvnitr ni - jen jich clovek muze mit vic
+    // (byt, chata) a kazda ma jmeno. Kdo vari na jednom miste, o zadnou
+    // zmenu nezakopne: ma jednu kuchyn a nabidka na prepinani mu nabizi
+    // jen zalozeni dalsi.
+
+    const kuchynNazev   = document.getElementById('kuchyn-nazev');
+    const kuchynSipka   = document.getElementById('kuchyn-prepnout');
+    const kuchynNabidka = document.getElementById('kuchyn-nabidka');
+    const kuchynForm    = document.getElementById('kuchyn-formular');
+    const kuchynPole    = document.getElementById('kuchyn-pole');
+    const kuchynChyba   = document.getElementById('kuchyn-chyba');
+
+    // Co formular prave dela: '' (nic), 'nova' nebo 'prejmenovat'.
+    let kuchynRezim = '';
+
+    /** Prave otevrena kuchyn, nebo null kdyz zadnou nemame. */
+    function tatoKuchyn() {
+      return aktivniKuchyn(kuchyne, kuchynId);
+    }
+
+    function ukazChybuKuchyne(text) {
+      kuchynChyba.textContent = text;
+      kuchynChyba.classList.toggle('hidden', !text);
+    }
+
+    /** Nazev v hlavicce, v okne kuchyne a viditelnost sipky. */
+    function paintKuchyn() {
+      const tato = tatoKuchyn();
+      const btn = document.getElementById('pantry-btn');
+
+      if (kuchynNazev) kuchynNazev.textContent = tato ? tato.name : 'Kuchyň';
+      if (btn) btn.title = tato ? tato.name : 'Moje kuchyň';
+
+      const nadpis = document.getElementById('pantry-nadpis');
+      if (nadpis) nadpis.textContent = tato ? tato.name : 'Moje kuchyň';
+
+      // Neprihlaseny nema co prepinat - zadnou kuchyn jeste nema.
+      if (kuchynSipka) {
+        kuchynSipka.classList.toggle('hidden', !currentUser || !kuchyne.length);
+      }
+    }
+
+    function vykresliNabidkuKuchyni() {
+      const seznam = document.getElementById('kuchyn-seznam');
+      const tato = tatoKuchyn();
+
+      seznam.innerHTML = kuchyne.map(k => {
+        const otevrena = tato && String(k.id) === String(tato.id);
+        return '<li><button type="button" class="kuchyn-polozka' +
+          (otevrena ? ' je-otevrena' : '') + '" data-id="' + escAttr(k.id) + '">' +
+          '<span class="kuchyn-fajfka">' + (otevrena ? '&#10003;' : '') + '</span>' +
+          '<span class="truncate">' + esc(k.name) + '</span>' +
+          '<span class="kuchyn-pocet">' + esc(k.pocet || 0) + '</span>' +
+          '</button></li>';
+      }).join('');
+
+      seznam.querySelectorAll('.kuchyn-polozka').forEach(b =>
+        b.addEventListener('click', () => prepniKuchyn(b.dataset.id)));
+
+      document.getElementById('kuchyn-nova').classList.toggle('hidden', !jdePridat(kuchyne));
+      document.getElementById('kuchyn-smazat').classList.toggle('hidden', !jdeSmazat(kuchyne));
+      document.getElementById('kuchyn-prejmenovat').classList.toggle('hidden', !tato);
+    }
+
+    function otevriNabidkuKuchyni(otevrit) {
+      const otevreno = otevrit === undefined
+        ? kuchynNabidka.classList.contains('hidden')
+        : otevrit;
+
+      kuchynNabidka.classList.toggle('hidden', !otevreno);
+      kuchynSipka.setAttribute('aria-expanded', otevreno ? 'true' : 'false');
+
+      if (otevreno) vykresliNabidkuKuchyni();
+      // Rozdelany formular se pri zavreni zahodi, at pri pristim otevreni
+      // nevisi napul vyplneny.
+      kuchynRezim = '';
+      kuchynForm.classList.add('hidden');
+      ukazChybuKuchyne('');
+    }
+
+    /** Nacte kuchyne ze serveru. Bez prihlaseni nedela nic. */
+    async function nactiKuchyne() {
+      if (!currentUser) { kuchyne = []; kuchynId = null; paintKuchyn(); return; }
+      try {
+        const data = await api('/api/kitchens');
+        kuchyne = data.items || [];
+        kuchynId = data.aktivni || (kuchyne[0] && kuchyne[0].id) || null;
+      } catch { kuchyne = []; kuchynId = null; }
+      paintKuchyn();
+    }
+
+    /**
+     * Prepnuti kuchyne. Meni to obsah spize, a s nim i odznaky "co muzu
+     * uvarit" u receptu - proto se hned prekresluje i mrizka.
+     */
+    async function prepniKuchyn(id) {
+      if (!id || String(id) === String(kuchynId)) return otevriNabidkuKuchyni(false);
+      try {
+        const data = await api('/api/kitchens', { action: 'aktivni', id: Number(id) });
+        kuchyne = data.items || [];
+        kuchynId = data.aktivni;
+      } catch (e) { return ukazChybuKuchyne(e.message); }
+
+      otevriNabidkuKuchyni(false);
+      paintKuchyn();
+      await loadPantry();
+      renderGrid();
+    }
+
+    /** Zaloz / prejmenuj. Obojí posila tentyz formular, lisi se `kuchynRezim`. */
+    async function ulozNazevKuchyne(nazev) {
+      const tato = tatoKuchyn();
+      const kontrola = zkontrolujNazev(
+        nazev, kuchyne, kuchynRezim === 'prejmenovat' && tato ? tato.id : null);
+      if (!kontrola.ok) return ukazChybuKuchyne(kontrola.chyba);
+
+      try {
+        const data = kuchynRezim === 'prejmenovat'
+          ? await api('/api/kitchens', { action: 'rename', id: tato.id, name: kontrola.nazev })
+          : await api('/api/kitchens', { action: 'create', name: kontrola.nazev });
+        const drive = kuchynId;
+        kuchyne = data.items || [];
+        kuchynId = data.aktivni;
+
+        kuchynRezim = '';
+        kuchynForm.classList.add('hidden');
+        ukazChybuKuchyne('');
+        paintKuchyn();
+        vykresliNabidkuKuchyni();
+
+        // Nova kuchyn se otevre rovnou (rozhoduje o tom server), takze se
+        // musi prekreslit i obsah. U prejmenovani se nemeni nic.
+        if (String(drive) !== String(kuchynId)) { await loadPantry(); renderGrid(); }
+      } catch (e) { ukazChybuKuchyne(e.message); }
+    }
+
+    async function smazKuchyn() {
+      const tato = tatoKuchyn();
+      if (!tato) return;
+      const kolik = tato.pocet || 0;
+      const varovani = kolik
+        ? 'Smazat kuchyň „' + tato.name + '“? Přijdeš i o ' + kolik + ' surovin, které v ní máš.'
+        : 'Smazat kuchyň „' + tato.name + '“?';
+      if (!confirm(varovani)) return;
+
+      try {
+        const data = await api('/api/kitchens', { action: 'delete', id: tato.id });
+        kuchyne = data.items || [];
+        kuchynId = data.aktivni;
+      } catch (e) { return ukazChybuKuchyne(e.message); }
+
+      otevriNabidkuKuchyni(false);
+      paintKuchyn();
+      await loadPantry();
+      renderGrid();
+    }
+
+    if (kuchynSipka) {
+      kuchynSipka.addEventListener('click', e => { e.stopPropagation(); otevriNabidkuKuchyni(); });
+
+      document.getElementById('kuchyn-nova').addEventListener('click', () => {
+        kuchynRezim = 'nova';
+        kuchynForm.classList.remove('hidden');
+        kuchynPole.value = navrhniNazev(kuchyne, 'Nová kuchyň');
+        kuchynPole.select();
+        ukazChybuKuchyne('');
+      });
+
+      document.getElementById('kuchyn-prejmenovat').addEventListener('click', () => {
+        const tato = tatoKuchyn();
+        if (!tato) return;
+        kuchynRezim = 'prejmenovat';
+        kuchynForm.classList.remove('hidden');
+        kuchynPole.value = tato.name;
+        kuchynPole.select();
+        ukazChybuKuchyne('');
+      });
+
+      document.getElementById('kuchyn-smazat').addEventListener('click', smazKuchyn);
+
+      kuchynForm.addEventListener('submit', e => {
+        e.preventDefault();
+        ulozNazevKuchyne(kuchynPole.value);
+      });
+
+      // Nabidka neni okno pres celou obrazovku, takze si zavirani hlida
+      // sama: kliknuti vedle ni a Escape. Escape chytame v zachytne fazi
+      // a zastavujeme - jinak by tentyz stisk zavrel i okno pod ni.
+      document.addEventListener('click', e => {
+        if (kuchynNabidka.classList.contains('hidden')) return;
+        if (kuchynNabidka.contains(e.target) || kuchynSipka.contains(e.target)) return;
+        otevriNabidkuKuchyni(false);
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !kuchynNabidka.classList.contains('hidden')) {
+          e.stopPropagation();
+          otevriNabidkuKuchyni(false);
+        }
+      }, true);
+    }
+
     function openPantry() {
       pantryOverlay.classList.remove('hidden');
       requestAnimationFrame(() => {
@@ -3444,8 +3685,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     async function loadPantry() {
       if (!currentUser) return;
       try {
-        const data = await api('/api/inventory');
+        const data = await api('/api/inventory' + (kuchynId ? '?kuchyn=' + encodeURIComponent(kuchynId) : ''));
         pantryItems = data.items || [];
+        // Server ma posledni slovo v tom, ktera kuchyn je otevrena -
+        // ulozena volba muze ukazovat na kuchyn smazanou jinde.
+        if (data.kuchyn) kuchynId = data.kuchyn;
         renderPantry();
       } catch (e) {
         if (pantryList) pantryList.innerHTML = '<li class="py-4 text-[13px] text-red-400">' + esc(e.message) + '</li>';
@@ -3502,7 +3746,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const nenalezeno = document.getElementById('pantry-nenalezeno');
       nenalezeno.classList.toggle('hidden', sekce.length > 0 || views.length === 0);
       if (pantryHledane && !sekce.length) {
-        nenalezeno.textContent = 'Ve spíži nic jako „' + pantryHledane + '“ nemáš.';
+        nenalezeno.textContent = 'V kuchyni nic jako „' + pantryHledane + '“ nemáš.';
       }
 
       const radek = v => {
@@ -3557,7 +3801,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     async function savePantryItem(item) {
       try {
-        const data = await api('/api/inventory', { item: item });
+        const data = await api('/api/inventory', { item: item, kuchyn: kuchynId });
         pantryItems = data.items || [];
         renderPantry();
       } catch (e) { alert(e.message); }
@@ -3607,9 +3851,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       pantryList.querySelectorAll('.pantry-del').forEach(b =>
         b.addEventListener('click', async () => {
           const it = itemById(b.dataset.id);
-          if (!it || !confirm('Odebrat ' + it.name + ' ze spíže?')) return;
+          if (!it || !confirm('Odebrat ' + it.name + ' z kuchyně?')) return;
           try {
-            const data = await api('/api/inventory', { action: 'delete', id: it.id });
+            const data = await api('/api/inventory', { action: 'delete', id: it.id, kuchyn: kuchynId });
             pantryItems = data.items || [];
             renderPantry();
           } catch (e) { alert(e.message); }
@@ -3640,7 +3884,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const items = starterList(recipes).slice(0, 120);
       if (!items.length) return;
       try {
-        const data = await api('/api/inventory', { action: 'seed', items: items });
+        const data = await api('/api/inventory', { action: 'seed', items: items, kuchyn: kuchynId });
         pantryItems = data.items || [];
         renderPantry();
       } catch (e) { alert(e.message); }
@@ -3689,7 +3933,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       });
 
       checklistBody.innerHTML = html ||
-        '<p class="py-8 text-center text-[13px] text-text-muted">Nic takového v seznamu není. Přidat vlastní jde ve spíži.</p>';
+        '<p class="py-8 text-center text-[13px] text-text-muted">Nic takového v seznamu není. Přidat vlastní jde v kuchyni.</p>';
       bindChecklistRows();
     }
 
@@ -3761,6 +4005,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       }
       try {
         const data = await api('/api/inventory', {
+          kuchyn: kuchynId,
           item: {
             id: it.id || undefined,
             name: it.name,
@@ -4266,6 +4511,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         Store.setSession('');
         currentUser = null;
         pantryItems = [];
+        kuchyne = [];
+        kuchynId = null;
+        paintKuchyn();
         paintAuth();
         paintProfile();
         zavriProfil();

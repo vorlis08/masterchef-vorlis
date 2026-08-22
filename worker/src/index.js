@@ -17,7 +17,7 @@ import { verifySession, bearerToken } from './session.js';
 import {
   updateProfile, listInventory, saveInventory, getNotify, setNotify,
   syncState, markIntroDone, listBookings, saveBooking,
-  listShopping, saveShopping, savePush,
+  listShopping, saveShopping, savePush, listKitchens, saveKitchen,
 } from './api.js';
 import { spustCron } from './digest.js';
 
@@ -115,7 +115,8 @@ const ACTIONS = {
 
 export default {
   async fetch(request, env, ctx) {
-    const path = new URL(request.url).pathname;
+    const adresa = new URL(request.url);
+    const path = adresa.pathname;
 
     // -- Prihlaseni ------------------------------------------------------
     // Sem uzivatel prijde presmerovanim, ne z kodu appky, takze hlavicku
@@ -216,10 +217,17 @@ export default {
           : listShopping(env, session, origin, corsHeaders);
       }
 
+      if (path === '/api/kitchens') {
+        return request.method === 'POST'
+          ? saveKitchen(request, env, session, origin, corsHeaders)
+          : listKitchens(env, session, origin, corsHeaders);
+      }
+
       if (path === '/api/inventory') {
+        // Kterou kuchyn chce prohlizec videt. Pri POSTu je v tele.
         return request.method === 'POST'
           ? saveInventory(request, env, session, origin, corsHeaders)
-          : listInventory(env, session, origin, corsHeaders);
+          : listInventory(env, session, origin, corsHeaders, adresa.searchParams.get('kuchyn'));
       }
 
       return deny(404, 'Neznámý požadavek.', origin);

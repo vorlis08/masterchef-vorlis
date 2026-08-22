@@ -19,6 +19,7 @@ import { poslatPush } from './push.js';
 import { zpravaVareni, zpravaNeaktivita } from './push-zpravy.js';
 import { nactiRecepty } from './recepty.js';
 import { hodinaVPraze } from '../../src/lib/cas.js';
+import { vyberKuchyn } from './api.js';
 
 
 /**
@@ -130,12 +131,16 @@ export async function wishlistHotove(env, user, recepty) {
   const chci = new Set((results || []).map(r => r.recipe_slug));
   if (!chci.size) return [];
 
+  // Pocita se z OTEVRENE kuchyne, ne ze vsech dohromady. Kdo ma byt
+  // a chatu, ma v kazde jinou vybavu - secist je znamena tvrdit, ze
+  // ma doma smetanu, ktera lezi o sto kilometru dal.
+  const kuchyn = await vyberKuchyn(env, user.id);
   const spiz = await env.DB.prepare(
     `SELECT i.name, i.kind, i.quantity, i.status, i.staple,
             COALESCE((SELECT SUM(r.amount) FROM reservations r
                        WHERE r.inventory_id = i.id AND r.user_id = i.user_id), 0) AS reserved
-       FROM inventory i WHERE i.user_id = ?`
-  ).bind(user.id).all();
+       FROM inventory i WHERE i.user_id = ? AND i.kitchen_id = ?`
+  ).bind(user.id, kuchyn).all();
 
   return recepty
     .filter(r => chci.has(r.slug))
@@ -164,9 +169,10 @@ export async function mesicniSouhrn(env, user) {
       WHERE user_id = ? AND stars > 0 ORDER BY stars DESC, cooked DESC LIMIT 1`
   ).bind(user.id).first();
 
+  const kuchyn = await vyberKuchyn(env, user.id);
   const spiz = await env.DB.prepare(
-    'SELECT COUNT(*) AS pocet FROM inventory WHERE user_id = ?'
-  ).bind(user.id).first();
+    'SELECT COUNT(*) AS pocet FROM inventory WHERE user_id = ? AND kitchen_id = ?'
+  ).bind(user.id, kuchyn).first();
 
   return {
     uvareno: (stat && stat.uvareno) || 0,
@@ -216,13 +222,14 @@ export async function denniBeh(env, origin) {
     // (a tak to tu drive bylo), druhe vareni toho dne by vlastni zamky
     // videlo jako cizi rezervaci a poslalo suroviny do nakupu zbytecne.
     const otazniky = jehoBookingy.map(() => '?').join(', ');
+    const kuchyn = await vyberKuchyn(env, userId);
     const { results: spiz } = await env.DB.prepare(
       `SELECT i.id, i.name, i.kind, i.quantity, i.status, i.staple,
               COALESCE((SELECT SUM(r.amount) FROM reservations r
                          WHERE r.inventory_id = i.id AND r.user_id = i.user_id
                            AND r.booking_id NOT IN (${otazniky})), 0) AS reserved
-         FROM inventory i WHERE i.user_id = ?`
-    ).bind(...jehoBookingy.map(b => b.id), userId).all();
+         FROM inventory i WHERE i.user_id = ? AND i.kitchen_id = ?`
+    ).bind(...jehoBookingy.map(b => b.id), userId, kuchyn).all();
 
     const plan = [];
     const doNakupu = [];
