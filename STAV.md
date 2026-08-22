@@ -259,6 +259,20 @@ založit další.
 pravidlo v `global.css` nastaví `display`, přebije ji (stojí v souboru
 níž) a prvek nejde schovat. Proto `.kuchyn-sipka:not(.hidden)`.
 
+**Nástraha, na kterou jsme doplatili:** `PRAGMA foreign_keys = OFF`
+**v migraci nic nedělá**. D1 pouští migraci v transakci a uvnitř ní je
+ta PRAGMA tichý no-op — nic nespadne, nic nevaruje. Když migrace
+přestavuje tabulku, na kterou někdo ukazuje cizím klíčem, klíč se
+uplatní: `0011` tak při `DROP TABLE inventory` vynulovala
+`reservations.inventory_id` a zámky ve spíži přestaly na cokoli
+ukazovat. Opravila to `0012`.
+
+Testy to nechytly, protože `node:sqlite` PRAGMA naopak poslouchá.
+`test-kuchyne-api.mjs` proto teď řádky s `PRAGMA foreign_keys`
+z migrace **zahazuje**, aby byl aspoň tak přísný jako ostrá databáze.
+Kdo bude příště přestavovat tabulku, musí počítat s tím, že cizí klíče
+běží.
+
 ---
 
 ## Nástrahy, na které se snadno narazí

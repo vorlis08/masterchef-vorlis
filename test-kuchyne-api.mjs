@@ -27,11 +27,29 @@ const t = (name, got, want) => {
 
 // -- Napodobenina D1 -------------------------------------------------------
 
+/**
+ * Nacte migraci tak, jak ji uvidi D1.
+ *
+ * D1 pousti migraci v TRANSAKCI, a `PRAGMA foreign_keys` je uvnitr
+ * transakce tichy no-op. Kdyz tedy migrace prestavuje tabulku, na kterou
+ * nekdo ukazuje cizim klicem, D1 ten klic uplatni - a `ON DELETE SET NULL`
+ * odkaz vynuluje. Draze zjisteno migraci 0011: zamky ve spizi prisly
+ * o surovinu a nikde to necvaklo.
+ *
+ * `node:sqlite` PRAGMA naopak posloucha, takze by tady vsechno proslo a
+ * test by tvrdil, ze je vsechno v poradku. Radky s PRAGMA proto
+ * zahazujeme - at je test aspon tak prisny jako ostra databaze.
+ */
+function nactiMigraci(soubor) {
+  return readFileSync('worker/migrations/' + soubor, 'utf8')
+    .replace(/^[ 	]*PRAGMA[ 	]+foreign_keys[^;]*;[ 	]*$/gim, '');
+}
+
 function udelejDb() {
   const db = new DatabaseSync(':memory:');
   db.exec('PRAGMA foreign_keys = ON');
   for (const f of readdirSync('worker/migrations').filter(x => x.endsWith('.sql')).sort()) {
-    db.exec(readFileSync('worker/migrations/' + f, 'utf8'));
+    db.exec(nactiMigraci(f));
   }
 
   const prepare = (sql) => {
@@ -201,8 +219,8 @@ console.log('\n--- Migrace stavajiciho uctu ---');
   const migrace = readdirSync('worker/migrations').filter(x => x.endsWith('.sql')).sort();
 
   // stav PRED kuchynemi
-  for (const f of migrace.filter(f => !f.startsWith('0011'))) {
-    db.exec(readFileSync('worker/migrations/' + f, 'utf8'));
+  for (const f of migrace.filter(f => !/^(0011|0012)/.test(f))) {
+    db.exec(nactiMigraci(f));
   }
   db.exec("INSERT INTO users (id, email, name) VALUES ('stary','s@x.cz','Stary')");
   db.exec("INSERT INTO inventory (user_id, name, kind, quantity, unit) VALUES ('stary','máslo','exact',250,'g'), ('stary','sůl','approx',NULL,NULL)");
@@ -210,8 +228,9 @@ console.log('\n--- Migrace stavajiciho uctu ---');
   db.exec("INSERT INTO reservations (booking_id, user_id, inventory_id, ingredient, amount) SELECT 1,'stary',id,'máslo',1 FROM inventory WHERE name='máslo'");
   const pred = db.prepare('SELECT id, name FROM inventory ORDER BY id').all();
 
-  // a ted migrace
-  db.exec(readFileSync('worker/migrations/0011_kuchyne.sql', 'utf8'));
+  // a ted migrace na kuchyne + oprava zamku po ni
+  db.exec(nactiMigraci('0011_kuchyne.sql'));
+  db.exec(nactiMigraci('0012_zamky_zpet.sql'));
 
   const kuchyne = db.prepare('SELECT id, name FROM kitchens WHERE user_id = ?').all('stary');
   t('dostal prave jednu kuchyn', kuchyne.length, 1);
