@@ -18,12 +18,13 @@ export const KROKY = [
   {
     cil: '#search',
     nadpis: 'Hledání',
-    text: 'Piš název jídla nebo surovinu. Zvládne i skloňování — „slanina" najde i recept, kde je „se slaninou".',
+    text: 'Piš název jídla nebo surovinu. Zvládne i skloňování — „slanina“ najde i recept, kde je „se slaninou“.',
   },
   {
     cil: '#filter-area',
     nadpis: 'Filtry',
-    text: 'Kategorie, typ jídla a čas. Když máš čtvrt hodiny, klikni na „do 20 min" a zbytek zmizí.',
+    text: 'Chod, čas a stav. Když máš čtvrt hodiny, klikni na „do 20 min“ a zbytek zmizí. ' +
+      'A „Můžu uvařit“ nechá jen to, na co máš doma suroviny.',
   },
   {
     cil: '#view-toggle',
@@ -91,7 +92,7 @@ export const KROKY = [
   {
     cil: '#personal-note',
     nadpis: 'Poznámky',
-    text: '„Příště míň soli." „Dát tam dvakrát tolik česneku." Přesně tyhle věci se jinak ztratí.',
+    text: '„Příště míň soli.“ „Dát tam dvakrát tolik česneku.“ Přesně tyhle věci se jinak ztratí.',
   },
 
   // -- Kolem receptu --
@@ -109,7 +110,8 @@ export const KROKY = [
   {
     cil: '#pantry-btn',
     nadpis: 'Kuchyň',
-    text: 'Srdce celé appky. Zaškrtáš, co máš doma — a od té chvíle ví, co ti chybí a co zvládneš uvařit hned.',
+    text: 'Srdce celé appky. Zaškrtáš, co máš doma — a od té chvíle ví, co ti chybí a co zvládneš uvařit hned. ' +
+      'Šipkou vedle si přidáš druhou kuchyň, třeba na chatu.',
   },
   {
     akce: 'otevriSpiz',
@@ -128,18 +130,13 @@ export const KROKY = [
   {
     cil: '#settings-btn',
     nadpis: 'Nastavení',
-    text: 'Profil, barvy a to, co ti má chodit e-mailem.',
+    text: 'Profil a barvy. Nic víc se tu nezapíná — e-maily, oznámení i kalendář chodí od začátku.',
   },
   {
     akce: 'otevriNastaveni',
     cil: '#theme-grid',
     nadpis: 'Barevné palety',
-    text: 'Čtyři barevná témata. Vyber si, co ti sedne — appka si to bude pamatovat.',
-  },
-  {
-    cil: '#notify-section',
-    nadpis: 'Co ti má chodit',
-    text: 'Tady si řekneš, o čem chceš vědět e-mailem. Nejvýš jedna zpráva denně a v noci nic nechodí.',
+    text: 'Sedm barevných témat včetně světlého. Vyber si, co ti sedne — appka si to bude pamatovat.',
   },
   {
     akce: 'zavriNastaveni',

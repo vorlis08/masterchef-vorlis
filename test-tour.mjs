@@ -2,6 +2,7 @@ import {
   KROKY, pocetKroku, krok, omez, jePrvni, jePosledni,
   popisPostupu, popisekDopredu, akceKroku,
 } from './src/lib/tour.js';
+import { readFileSync } from 'node:fs';
 
 let fail = 0;
 const t = (name, got, want) => {
@@ -64,6 +65,20 @@ console.log('\n--- Jednotlive kroky ---');
 t('krok mimo rozsah je null', krok(999), null);
 t('prvni krok je hledani', krok(0).cil, '#search');
 t('posledni krok konci ucтem', krok(pocetKroku() - 1).cil, '#auth-btn');
+
+console.log('\n--- Kazdy krok ma na co ukazat ---');
+// Krok, jehoz cil na strance neni, prohlidka TISE preskoci - takze
+// pocitadlo skoci z "22 / 24" na "24 / 24" a nikdo nepozna proc.
+// Presne to se stalo kroku o prepinacich zprav, kdyz ty prepinace
+// z nastaveni zmizely: zustal v seznamu jeste dlouho po nich.
+{
+  const stranka = readFileSync('./dist/index.html', 'utf-8');
+  KROKY.forEach((k) => {
+    const id = k.cil.replace('#', '');
+    t('cil kroku \u201e' + k.nadpis + '\u201c existuje (' + k.cil + ')',
+      stranka.includes('id="' + id + '"'), true);
+  });
+}
 
 console.log(fail === 0 ? '\n=== VSE PROSLO ===\n' : '\n=== ' + fail + ' CHYB ===\n');
 process.exit(fail === 0 ? 0 : 1);

@@ -326,9 +326,11 @@ async function odhlasit(request, env) {
 
   const user = await env.DB.prepare('SELECT id, unsub_token FROM users WHERE id = ?').bind(id).first();
   if (!user || !user.unsub_token || !stejnyToken(user.unsub_token, token)) {
-    return stranka('Neplatný odkaz', 'Odkaz už neplatí. Vypnout si zprávy můžeš i v nastavení aplikace.');
+    return stranka('Neplatný odkaz',
+      'Odkaz je nejspíš starý nebo neúplný. Zkus kliknout na ten v poslední zprávě, kterou jsi dostal.');
   }
 
   await env.DB.prepare('UPDATE users SET ' + sloupce[kind] + ' = 0 WHERE id = ?').bind(id).run();
-  return stranka('Hotovo', 'Tenhle druh zpráv už ti chodit nebude. Zpátky si ho zapneš v nastavení aplikace.');
+  return stranka('Hotovo', 'Tenhle druh zpráv už ti chodit nebude. ' +
+    'Kdyby sis to rozmyslel, napiš mi na ' + (env.MAIL_FROM || 'honzavorel0@gmail.com') + '.');
 }

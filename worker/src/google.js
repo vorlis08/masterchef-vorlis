@@ -155,7 +155,7 @@ export async function finishLogin(request, env, allowed, ctx) {
   // na nej neceka a kdyz posilatel selze, prihlaseni to nerozbije.
   if (!user.welcome_sent_at) {
     const odeslani = (async () => {
-      await sendWelcome(env, user);
+      await sendWelcome(env, user, new URL(request.url).origin);
       // 9. Zprava spravci o novem uzivateli. Jde jen tobe, takze bez
       //    ohledu na nastaveni upozorneni.
       if (user.jeNovy) {

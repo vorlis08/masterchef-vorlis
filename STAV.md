@@ -232,6 +232,32 @@ Po projití celého kódu. Podrobnosti jsou v commitech.
 
 ---
 
+## Texty (22. 8. 2026)
+
+Copywriterská prohlídka všech e-mailů, oznámení a textů v appce.
+
+- **Pátý pád.** Google vrací jméno v prvním („Honza"), appka ho lepila
+  do oslovení → „Ahoj Honza,". Sklonuje `src/lib/osloveni.js`; **co si
+  není jisté, nechá být** — „Ahoj Dagmare" urazí víc než „Ahoj Dagmar".
+  Ženská jména na souhlásku jsou v seznamu výjimek, protože rod ze
+  jména poznat nejde.
+- **Texty, které lhaly**, jsou pryč: odhlašovací stránka slibovala
+  přepínač v nastavení (ten neexistuje), prohlídka mluvila o čtyřech
+  barevných tématech (je jich sedm) a o filtru kategorií (zmizel),
+  uvítací oznámení slibovalo „víc už toho posílat nebudu" (a pak přišla
+  připomínka po týdnu).
+- **Prohlídka má 23 kroků, ne 24.** Krok o přepínačích zpráv ukazoval na
+  `#notify-section`, který v appce není — prohlídka ho tiše přeskakovala
+  a počítadlo skákalo z „22 / 24" na „24 / 24". `test-tour.mjs` teď
+  kontroluje, že **každý krok má na stránce na co ukázat**.
+- **Uvozovky.** Česky se zavírá `"`, ne `"`. Osm míst to mělo špatně.
+- **Předměty e-mailů** už nemají emoji každý — bylo jich pět z pěti, což
+  je vzorec, ne vtip.
+- Uvítací e-mail: textová verze je přepsaná (držela nadpis „SPÍŽ" i po
+  přejmenování na kuchyň) a přibyl do ní i do patičky odhlašovací odkaz.
+
+---
+
 ## Kuchyně (22. 8. 2026)
 
 Spíž se jmenuje **kuchyň** a může jich mít člověk víc. Není to nová

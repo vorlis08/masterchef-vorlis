@@ -73,8 +73,10 @@ console.log('\n--- Podoba zprav ---');
 const U = { id: 'u1', name: 'Honza Vorel', email: 'h@x.cz', unsub_token: 'tok' };
 
 const uvitani = welcomeMail(U);
-t('uvitani oslovuje krestnim jmenem', /Ahoj <strong[^>]*>Honza<\/strong>/.test(uvitani.html), true);
-t('uvitani ma predmet jako otazku', uvitani.subject, 'Tak co dneska? 👨‍🍳');
+// Patym padem: "Ahoj Honzo", ne "Ahoj Honza". Cely pozdrav je uvnitr
+// <strong>, aby se dal bez jmena zkratit na same "Ahoj".
+t('uvitani oslovuje 5. padem', /<strong[^>]*>Ahoj Honzo<\/strong>/.test(uvitani.html), true);
+t('uvitani ma predmet jako otazku', uvitani.subject, 'Tak co dneska?');
 t('uvitani vede na uvod v appce', uvitani.html.includes('?uvod=1'), true);
 t('uvitani ma i textovou verzi', uvitani.text.includes('A pak si stejně dáš toast'), true);
 t('jmeno se v uvitani osetri',
@@ -107,7 +109,7 @@ t('a u druheho rekne, ze mas vse', pripominka.html.includes('Máš všechno.'), 
 t('zmini nakupni seznam', pripominka.html.includes('nákupního seznamu'), true);
 
 const vseHotovo = reminderMail(U, [{ title: 'Guláš', kdy: 'zítra', chybi: [] }], 'x');
-t('kdyz nic nechybi, predmet je jiny', vseHotovo.subject, 'Zítra vaříš 🍳');
+t('kdyz nic nechybi, predmet je jiny', vseHotovo.subject, 'Zítra vaříš');
 t('a o nakupu nemluvi', vseHotovo.html.includes('nákupního seznamu'), false);
 t('pripominka ma odhlasovaci odkaz', pripominka.html.includes('https://w/unsub'), true);
 

@@ -12,6 +12,8 @@
 //     obrazovce se casto ukaze jen jeden z nich.
 // ==========================================================================
 
+import { vokativ } from '../../src/lib/osloveni.js';
+
 /** Ustrizne text tak, aby nekoncil pulkou slova. */
 function zkrat(text, max) {
   const t = String(text || '').trim();
@@ -41,11 +43,12 @@ export function zpravaVareni(nazev, cas, slug) {
  * cesta k tomu, ze si to zase vypne.
  */
 export function zpravaUvitani(jmeno) {
-  const kdo = zkrat(String(jmeno || '').split(' ')[0], 20);
+  // Pátý pád: "Honzo", ne "Honza". Viz osloveni.js.
+  const kdo = zkrat(vokativ(String(jmeno || '').split(' ')[0]), 20);
   return {
     titul: 'Oznámení fungují',
     text: (kdo ? kdo + ', takhle' : 'Takhle') +
-      ' ti dám vědět, než začneš vařit. Víc už toho posílat nebudu.',
+      ' ti dám vědět, než začneš vařit. Jinak budu zticha.',
     slug: null,
   };
 }
@@ -72,7 +75,7 @@ export function zpravaNeaktivita(dni, recept) {
 
   return {
     titul: 'Týden bez vaření',
-    text: kolik + ' dní ses tu neukázal. Co dneska? V kuchyni pořád víš, co v ní je.',
+    text: kolik + ' dní ses tu neukázal. Kuchyň si pořád pamatuje, co v ní máš.',
     slug: null,
   };
 }

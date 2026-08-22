@@ -9,6 +9,8 @@
 // vyvolalo.** Kazda funkce chybu zaloguje a vrati false.
 // ==========================================================================
 
+import { vokativ } from '../../src/lib/osloveni.js';
+
 const BREVO_URL = 'https://api.brevo.com/v3/smtp/email';
 export const APP_URL = 'https://vorlis08.github.io/masterchef-vorlis/';
 
@@ -76,8 +78,25 @@ export function unsubUrl(workerOrigin, user, kind) {
     '&t=' + encodeURIComponent(user.unsub_token || '') + '&k=' + encodeURIComponent(kind);
 }
 
+/**
+ * Krestni jmeno v PATEM pade - tak, jak se cesky oslovuje.
+ *
+ * Google vraci prvni pad ("Honza"), takze e-maily drive zacinaly
+ * "Ahoj Honza," - coz je nejrychleji rozpoznatelna znamka strojoveho
+ * textu v cestine. Sklonuje `osloveni.js`; co si nim neni jisty,
+ * necha byt.
+ *
+ * Kdyz jmeno nemame, vraci prazdno a oslovi se bez nej ("Ahoj,").
+ * Drive tu stalo 'ahoj', takze z toho vyslo "Ahoj ahoj,".
+ */
 function jmeno(user) {
-  return (user.name || '').split(' ')[0] || 'ahoj';
+  return vokativ((user && user.name) || '');
+}
+
+/** "Ahoj Honzo" nebo "Ahoj" - podle toho, jestli jmeno vubec mame. */
+function osloveni(user) {
+  const kdo = jmeno(user);
+  return kdo ? 'Ahoj ' + kdo : 'Ahoj';
 }
 
 // -- 1. Uvitani -----------------------------------------------------------
@@ -130,12 +149,19 @@ function krokPostupu(cislo, text) {
     '</tr>';
 }
 
-export function welcomeMail(user) {
-  const kdo = esc(jmeno(user));
+/**
+ * Uvitaci e-mail. Vypada jako RECEPTOVA KARTA - viz komentar vyse.
+ *
+ * @param {Object} user
+ * @param {string} [odhlasit]  odkaz na vypnuti zprav do paticky
+ */
+export function welcomeMail(user, odhlasit) {
+  // "Ahoj Honzo" jako celek - bez jmena zbyde jen "Ahoj".
+  const kdo = esc(osloveni(user));
 
   const html =
     '<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;height:0;width:0">' +
-      'Recept na dnešní večer. Doba přípravy: deset vteřin.</div>' +
+      'Recept na dnešní večer. Příprava 10 vteřin.</div>' +
 
     '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#efe7d8" style="background:#efe7d8;">' +
     '<tr><td align="center" style="padding:32px 12px 44px;">' +
@@ -167,7 +193,7 @@ export function welcomeMail(user) {
 
       // Uvod
       '<p style="margin:22px 0 14px;font-family:' + SANS + ';font-size:16px;line-height:1.7;color:' + INKOUST + ';">' +
-        'Ahoj <strong>' + kdo + '</strong>, znáš to. Je šest, máš hlad, otevřeš lednici — ' +
+        '<strong>' + kdo + '</strong>, znáš to. Je šest, máš hlad, otevřeš lednici — ' +
         'a koukáš na kuřecí prsa, půlku smetany a jednu cibuli.</p>' +
       '<p style="margin:0 0 26px;font-family:' + SANS + ';font-size:16px;line-height:1.7;color:' + INKOUST + ';">' +
         'A pak si stejně dáš toast.</p>' +
@@ -191,7 +217,7 @@ export function welcomeMail(user) {
         'color:' + AKCENT + ';font-weight:700;padding-bottom:6px;">Postup</div>' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">' +
         krokPostupu('1', 'Klikni na tlačítko níž. Čeká tě krátký úvod a nabídka průvodce — kdo nechce, proklikne.') +
-        krokPostupu('2', 'Zaškrtej, co máš doma. Zabere to chvíli, ale od té chvíle appka počítá za tebe.') +
+        krokPostupu('2', 'Zaškrtej, co máš doma. Zabere to pár minut a od té chvíle appka počítá za tebe.') +
         krokPostupu('3', 'Vař. O zbytek se postará ona.') +
       '</table>' +
     '</td></tr>' +
@@ -220,32 +246,43 @@ export function welcomeMail(user) {
     '<tr><td style="padding:26px 46px 30px;">' +
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
       '<td style="border-top:1px solid ' + LINKA + ';padding-top:16px;font-family:' + SANS + ';' +
-        'font-size:12px;color:' + TLUMENY + ';">Dobrou chuť!</td>' +
+        'font-size:12px;color:' + TLUMENY + ';">Dobrou chuť!' +
+        (odhlasit
+          ? '<br><span style="font-size:11px;">Nechceš e-maily o nových receptech? ' +
+            '<a href="' + odhlasit + '" style="color:' + TLUMENY + ';">Vypni si je</a>.</span>'
+          : '') +
+      '</td>' +
       '</tr></table>' +
     '</td></tr>' +
 
     '</table></td></tr></table>';
 
+  // Textova verze. Nesmi to byt jiny kus psani nez karta - vypravi
+  // totez, jen bez obrazku. (Drive tu byl vycet funkci s nadpisem
+  // "SPIZ", ktery po prejmenovani na kuchyn uz nesedel s nicim.)
   const text =
     'Tak co dneska?\n\n' +
-    'Ahoj ' + jmeno(user) + ',\n\n' +
+    osloveni(user) + ',\n\n' +
     'znáš to. Je šest, máš hlad, otevřeš lednici — a koukáš na kuřecí prsa,\n' +
-    'půlku smetany a cibuli. A pak si stejně dáš toast.\n\n' +
-    'MasterChef Vorlis existuje přesně kvůli téhle chvíli.\n\n' +
-    'SPÍŽ — ví, co máš doma\n' +
-    '  Jednou proklikáš, co máš v kuchyni, a appka od té chvíle ví, co ti chybí\n' +
-    '  a co zvládneš uvařit, aniž bys někam běžel. U masa se ptá na gramy,\n' +
-    '  u soli jen na mám / dochází / nemám. Protože sůl nikdo neváží.\n\n' +
-    'REŽIM VAŘENÍ — vede tě krok za krokem\n' +
-    '  Jeden krok přes celou obrazovku, časovače běží samy a displej nezhasne\n' +
-    '  ve chvíli, kdy máš ruce od mouky.\n\n' +
-    'KUCHAŘSKÝ KÁMOŠ — poradí, když ti něco dojde\n' +
-    '  Napíšeš, co máš, on vybere. A když v půlce receptu zjistíš, že smetana\n' +
-    '  došla, vymyslí náhradu — bez povyšování.\n\n' +
-    'Pojď si vybrat večeři: ' + APP_URL + '?uvod=1\n\n' +
-    'Ať to dneska dopadne jakkoliv, snad líp než ten toast.\nDobrou chuť!\n';
+    'půlku smetany a jednu cibuli. A pak si stejně dáš toast.\n\n' +
+    'Na tuhle chvíli je tahle kuchařka.\n\n' +
+    'INGREDIENCE\n' +
+    '  1 ks       kuchyň, která ví, co máš doma — a u soli se neptá na gramy\n' +
+    '  1 ks       režim vaření, co tě vede krok za krokem a nenechá zhasnout displej\n' +
+    '  1 ks       kuchařský kámoš na chvíle, kdy ti něco dojde uprostřed vaření\n' +
+    '  dle chuti  recepty, které někdo doopravdy uvařil\n\n' +
+    'POSTUP\n' +
+    '  1. Otevři kuchařku. Čeká tě krátký úvod a nabídka průvodce —\n' +
+    '     kdo nechce, proklikne.\n' +
+    '  2. Zaškrtej, co máš doma. Zabere to pár minut a od té chvíle\n' +
+    '     appka počítá za tebe.\n' +
+    '  3. Vař. O zbytek se postará ona.\n\n' +
+    '  ' + APP_URL + '?uvod=1\n\n' +
+    'TIP — Ať to dneska dopadne jakkoliv, snad líp než ten toast.\n\n' +
+    'Dobrou chuť!\n' +
+    (odhlasit ? '\nNechceš e-maily o nových receptech? Vypni si je:\n' + odhlasit + '\n' : '');
 
-  return { subject: 'Tak co dneska? 👨‍🍳', text: text, html: html };
+  return { subject: 'Tak co dneska?', text: text, html: html };
 }
 
 // -- 5. Nove recepty ------------------------------------------------------
@@ -258,13 +295,13 @@ export function newRecipesMail(user, recepty, odhlasit) {
 
   const kolik = recepty.length === 1 ? 'Přibyl nový recept' : 'Přibyly nové recepty';
   const telo =
-    '<p>Ahoj ' + esc(jmeno(user)) + ', v kuchařce ' +
+    '<p>' + esc(osloveni(user)) + ', v kuchařce ' +
     (recepty.length === 1 ? 'je něco nového:' : 'jich je ' + recepty.length + ':') + '</p>' +
     '<ul>' + seznam + '</ul>';
 
   return {
-    subject: kolik + ' 🍳',
-    text: 'Ahoj ' + jmeno(user) + ',\n\n' + kolik + ':\n' +
+    subject: kolik,
+    text: osloveni(user) + ',\n\n' + kolik + ':\n' +
       recepty.map(r => '  • ' + r.title).join('\n') + '\n\n' + APP_URL + '\n',
     html: layout(kolik + ' 🍳', telo, odhlasit),
   };
@@ -281,15 +318,15 @@ export function wishlistMail(user, polozky, odhlasit) {
   ).join('');
 
   const telo =
-    '<p>Ahoj ' + esc(jmeno(user)) + ', koukal jsem ti do kuchyně a tohle z tvého ' +
-    '„chci vyzkoušet" jde uvařit hned:</p>' +
+    '<p>' + esc(osloveni(user)) + ', koukal jsem ti do kuchyně a tohle z tvého ' +
+    '\u201echci vyzkoušet\u201c jde uvařit hned:</p>' +
     '<ul>' + seznam + '</ul>' +
     '<p style="color:#888;font-size:13px">Počítám podle toho, co máš zapsané v kuchyni. ' +
     'Jestli to nesedí, kuchyň bude potřebovat doladit.</p>';
 
   return {
-    subject: 'Tohle můžeš uvařit hned 🥘',
-    text: 'Ahoj ' + jmeno(user) + ',\n\nz tvého "chci vyzkoušet" jde uvařit hned:\n' +
+    subject: 'Tohle můžeš uvařit hned',
+    text: osloveni(user) + ',\n\nz tvého \u201echci vyzkoušet\u201c jde uvařit hned:\n' +
       polozky.map(p => '  • ' + p.title + (p.chybi ? ' (chybí ' + p.chybi + ')' : ' (máš všechno)')).join('\n') +
       '\n\n' + APP_URL + '\n',
     html: layout('Tohle můžeš uvařit hned 🥘', telo, odhlasit),
@@ -309,10 +346,10 @@ export function reminderMail(user, plan, odhlasit) {
   }).join('');
 
   const neco = plan.some(p => p.chybi.length);
-  const nadpis = neco ? 'Zítra vaříš — něco ti chybí 🛒' : 'Zítra vaříš 🍳';
+  const nadpis = neco ? 'Zítra vaříš a něco ti chybí' : 'Zítra vaříš';
 
   const telo =
-    '<p>Ahoj ' + esc(jmeno(user)) + ', zítra podle plánu vaříš:</p>' +
+    '<p>' + esc(osloveni(user)) + ', zítra podle plánu vaříš:</p>' +
     '<ul style="padding-left:18px">' + radky + '</ul>' +
     (neco
       ? '<p>Chybějící suroviny jsem ti hodil do nákupního seznamu v aplikaci.</p>'
@@ -320,7 +357,7 @@ export function reminderMail(user, plan, odhlasit) {
 
   return {
     subject: nadpis,
-    text: 'Ahoj ' + jmeno(user) + ',\n\nzítra podle plánu vaříš:\n' +
+    text: osloveni(user) + ',\n\nzítra podle plánu vaříš:\n' +
       plan.map(p => '  • ' + p.title + ' (' + p.kdy + ')' +
         (p.chybi.length ? '\n    chybí: ' + p.chybi.join(', ') : '\n    máš všechno')).join('\n') +
       '\n\n' + APP_URL + '\n',
@@ -343,16 +380,16 @@ export function summaryMail(user, s, odhlasit) {
   ).join('');
 
   const telo =
-    '<p>Ahoj ' + esc(jmeno(user)) + ', takhle vypadal tvůj měsíc v kuchyni:</p>' +
+    '<p>' + esc(osloveni(user)) + ', takhle vypadal tvůj měsíc v kuchyni:</p>' +
     '<table style="border-collapse:collapse;margin:12px 0">' + radky + '</table>' +
     (s.uvareno === 0
-      ? '<p style="color:#888">Zatím nic — buď jsi nevařil, nebo jsi zapomněl mačkat „uvařeno". ' +
-        'To druhé se stává častěji. 😉</p>'
+      ? '<p style="color:#888">Zatím nic — buď jsi nevařil, nebo jsi zapomněl mačkat ' +
+        '\u201eUvařil jsem to\u201c. To druhé se stává častěji.</p>'
       : '');
 
   return {
-    subject: 'Tvůj měsíc v kuchyni 📊',
-    text: 'Ahoj ' + jmeno(user) + ',\n\nTvůj měsíc v kuchyni:\n' +
+    subject: 'Tvůj měsíc v kuchyni',
+    text: osloveni(user) + ',\n\nTvůj měsíc v kuchyni:\n' +
       '  Uvařeno jídel: ' + s.uvareno + '\n' +
       '  Různých receptů: ' + s.ruznych + '\n' +
       '  Nejčastěji: ' + (s.nejcastejsi || '—') + '\n' +
@@ -398,8 +435,10 @@ export async function adminError(env, kde, podrobnosti) {
  * Posle uvitaci e-mail a teprve po uspechu si to poznamena.
  * Kdyz posilani selze, priste se zkusi znovu.
  */
-export async function sendWelcome(env, user) {
-  const mail = welcomeMail(user);
+export async function sendWelcome(env, user, workerOrigin) {
+  // Odkaz na vypnuti zprav. Kdyz neznáme adresu Workeru, paticka se
+  // proste neukaze - uvitaci e-mail je transakcni, takze to nevadi.
+  const mail = welcomeMail(user, workerOrigin ? unsubUrl(workerOrigin, user, 'recipes') : null);
   const ok = await sendMail(env, { to: user.email, name: user.name, ...mail });
   if (ok) {
     await env.DB.prepare("UPDATE users SET welcome_sent_at = datetime('now') WHERE id = ?")

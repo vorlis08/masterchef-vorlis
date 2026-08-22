@@ -155,16 +155,27 @@ t('dlouhy nazev se ustrihne v mezere',
 t('ustrizeny nazev nekonci pulkou slova',
   /[ ]…/.test(zpravaVareni('Pečený bůček s bramborovou kaší a zelím podle babičky z Vysočiny', '17:00').text), false);
 
-t('uvitani oslovi krestnim jmenem',
-  zpravaUvitani('Honza Vorel').text.startsWith('Honza, takhle'), true);
+// Patym padem, ne prvnim: "Honzo", ne "Honza".
+t('uvitani oslovi krestnim jmenem v 5. pade',
+  zpravaUvitani('Honza Vorel').text.startsWith('Honzo, takhle'), true);
+t('a sklonuje i jina jmena',
+  zpravaUvitani('Tomáš').text.startsWith('Tomáši, takhle'), true);
 t('uvitani bez jmena nespadne',
   zpravaUvitani('').text.startsWith('Takhle'), true);
-t('uvitani slibuje, ze nebude otravovat',
-  zpravaUvitani('Honza').text.includes('Víc už toho posílat nebudu'), true);
+// Drive tu stalo "Víc už toho posílat nebudu" - a pritom po tydnu
+// neaktivity prijde dalsi oznameni. Slib, ktery appka sama porusi.
+t('uvitani neslibuje, ze uz nic neprijde',
+  zpravaUvitani('Honza').text.includes('Víc už toho posílat nebudu'), false);
+t('ale rekne, ze otravovat nebude',
+  zpravaUvitani('Honza').text.includes('Jinak budu zticha'), true);
 t('titulek uvitani je kratky', zpravaUvitani('Honza').titul.length <= 30, true);
 
 t('neaktivita bez wishlistu zmini pocet dni',
   zpravaNeaktivita(9).text.startsWith('9 dní'), true);
+// Po prejmenovani spize na kuchyn tu chvili stala veta, ktera nedavala
+// smysl ("V kuchyni pořád víš, co v ní je").
+t('neaktivita mluvi o kuchyni srozumitelne',
+  zpravaNeaktivita(9).text.includes('Kuchyň si pořád pamatuje'), true);
 t('neaktivita s receptem ho zmini jmenem',
   zpravaNeaktivita(9, 'Chilli con carne').text.startsWith('Chilli con carne'), true);
 t('neaktivita nikdy nerekne min nez tyden',
