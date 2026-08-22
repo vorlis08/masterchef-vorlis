@@ -745,7 +745,7 @@
     "slug": "carbonara-s-testovinami",
     "title": "Carbonara s těstovinami",
     "description": "Krémová carbonara s křupavou slaninou a kuřecím masem navrch. Vaječná směs se vmíchává až po odstavení z plotny — jinak se srazí a vznikne omeleta, ne omáčka.",
-    "image": "",
+    "image": "https://vorlis08.github.io/masterchef-vorlis/images/carbonara-s-testovinami.webp",
     "time": "45 min",
     "servings": 3,
     "difficulty": "Střední",
@@ -799,6 +799,7 @@
       "calcium": 190,
       "iron": 2.6,
       "vitamin_c": 3
-    }
+    },
+    "blur": "data:image/webp;base64,UklGRtAAAABXRUJQVlA4IMQAAACQBQCdASoUABMAPu1ur1IppiQiqAgBMB2JaACdMwTIg8AA+3eSUVDyxae49L3ycz0xWTz5AAD+3353MP/kd3RMXoQubY4U68+9+Yp/OpbPUynlSP39S0RZs5OVKBVEXk3IXX6odO6EOmz9Ph6GstoJvvAvaejZpgNYHnTg8UAYPL3+ewz9OA0nV0AnvXTDT8Nt+123NlgyyIlRWtn3ux4HgjEHJpz6iRxYjcPntdSoeeGLq1dm3hucFeqkGeq5JYp4oAAA"
   }
 ]
