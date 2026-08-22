@@ -18,6 +18,7 @@ import {
   updateProfile, listInventory, saveInventory, getNotify, setNotify,
   syncState, markIntroDone, listBookings, saveBooking,
   listShopping, saveShopping, savePush, listKitchens, saveKitchen,
+  deleteAccount,
 } from './api.js';
 import { spustCron } from './digest.js';
 
@@ -45,7 +46,7 @@ function corsHeaders(origin) {
     'Access-Control-Allow-Origin': origin,
     // GET kvuli /api/me, Authorization kvuli prihlasovacimu listku.
     // Kdyz tu Authorization chybi, prohlizec dotaz vubec neodesle.
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Vary': 'Origin',
   };
@@ -185,6 +186,12 @@ export default {
 
       if (path === '/api/profile' && request.method === 'POST') {
         return updateProfile(request, env, session, origin, corsHeaders);
+      }
+
+      // Smazani uctu. DELETE, ne POST - je to jedina akce v cele appce,
+      // ktera fyzicky maze data, tak at to i v HTTP metode sedi.
+      if (path === '/api/account' && request.method === 'DELETE') {
+        return deleteAccount(env, session, origin, corsHeaders);
       }
 
       if (path === '/api/intro-done' && request.method === 'POST') {

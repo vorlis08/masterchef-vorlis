@@ -258,6 +258,30 @@ Copywriterská prohlídka všech e-mailů, oznámení a textů v appce.
 
 ---
 
+## Smazání účtu (22. 8. 2026)
+
+V profilu dole malým, ztlumeným písmem tlačítko „Smazat účet" — schválně
+mimo hlavní akce, ať na něj nikdo neklikne omylem místo na „Odhlásit se".
+
+- `DELETE /api/account` (`worker/src/api.js` → `deleteAccount`) smaže
+  řádek v `users` — kuchyně, spíž, bookingy, zámky, hodnocení, nákupní
+  seznam i historii e-mailů smaže kaskádově `ON DELETE CASCADE`. Není to
+  soft-delete, je to nevratné.
+- **Appka musí zároveň uklidit i to, co drží lokálně v prohlížeči** —
+  oblíbené, wishlist, hodnocení každého receptu (`review_<slug>`).
+  Bez toho by `nactiStav()` po dalším přihlášení poslala tahle stará
+  data zpátky na server a smazaný účet by „ožil" sám od sebe. Řeší
+  `Store.zapomenVseOReceptech()`. Preference zařízení (motiv, pohled,
+  „vypisovat množství") zůstávají — ty nepatří účtu, patří telefonu.
+- Dvě různá potvrzení za sebou (`confirm` → `confirm`), první s
+  konkrétním číslem: kolik kuchyní, kolikrát uvařeno. „Smazat účet?" se
+  dá odklepnout z reflexu, „Opravdu? Poslední šance couvnout." už
+  většinou ne.
+- Test `test-smazani-uctu.mjs`: zrušení v libovolném z obou kroků nic
+  nesmaže, obě potvrzení pošlou DELETE a uklidí i localStorage.
+
+---
+
 ## Kuchyně (22. 8. 2026)
 
 Spíž se jmenuje **kuchyň** a může jich mít člověk víc. Není to nová

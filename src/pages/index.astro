@@ -753,6 +753,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           <span id="profil-stav" class="text-[12px] hidden"></span>
         </div>
 
+        <!-- Smazani uctu je zamerne dole, malym pismem, bez ramecku -
+             oddelene od beznych akci, aby na to nikdo neklikl omylem
+             misto na "Odhlasit se". -->
+        <p class="mt-5 pt-4 border-t border-border text-center">
+          <button id="profil-smazat" class="text-[11px] text-text-muted hover:text-red-400 transition-colors">Smazat účet</button>
+        </p>
+
       </div>
     </div>
   </div>
@@ -1158,6 +1165,30 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       // Stav receptu: neuvareno / wishlist / uvareno (4.7).
       getWishlist()       { return this._json('wishlist', []); },
       setWishlist(list)   { this._writeJson('wishlist', list); },
+
+      /**
+       * Smaze VSECHNO, co appka drzi v prohlizeci o receptech a uctu -
+       * oblibene, wishlist, kazde jednotlive hodnoceni (`review_<slug>`)
+       * a nakupni seznam pro neprihlasene.
+       *
+       * Vola se pri smazani uctu (8.25). Bez tohohle by localStorage
+       * prezil DELETE na serveru - a pri pristim prihlaseni by appka
+       * hodnoceni a oblibene poslala zpatky, protoze `nactiStav` posila
+       * VSECHNO, co ma lokalne ulozene. Preference zarizeni (motiv,
+       * pohled, "vypisovat mnozstvi") schvalne zustavaji - ty nepatri
+       * uctu, patri tomuhle telefonu.
+       */
+      zapomenVseOReceptech() {
+        this._remove('favorites');
+        this._remove('wishlist');
+        this._remove('shopping_list');
+        try {
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (k && k.indexOf('review_') === 0) localStorage.removeItem(k);
+          }
+        } catch (e) {}
+      },
     };
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -3435,11 +3466,11 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     // --- Spiz a profil -----------------------------------------------------
 
     /** Dotaz na Worker s prihlasovacim listkem. */
-    async function api(path, body) {
+    async function api(path, body, metoda) {
       const token = Store.getSession();
       if (!token) throw new Error('Nepřihlášeno');
       const res = await fetch(AI_WORKER + path, {
-        method: body ? 'POST' : 'GET',
+        method: metoda || (body ? 'POST' : 'GET'),
         headers: {
           Authorization: 'Bearer ' + token,
           ...(body ? { 'Content-Type': 'application/json' } : {}),
@@ -4512,6 +4543,62 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         paintProfile();
         zavriProfil();
         ukazBranu(true);
+      });
+
+      /**
+       * Smazani uctu (8.25). Nevratne - vysvetli se to primo ve varovani,
+       * at si to clovek promysli driv, nez klikne, ne az potom.
+       */
+      document.getElementById('profil-smazat').addEventListener('click', async () => {
+        if (!currentUser) return;
+        const st = mojeStatistiky();
+        const kolikKuchyni = kuchyne.length;
+        // 1 kuchyň / 2-4 kuchyně / 5+ kuchyní.
+        const kuchyneSlovo = kolikKuchyni === 1 ? 'kuchyň'
+          : (kolikKuchyni >= 2 && kolikKuchyni <= 4 ? 'kuchyně' : 'kuchyní');
+
+        const varovani = 'Smazat účet ' + currentUser.email + '?\n\n' +
+          'Nevratně zmizí ' + kolikKuchyni + ' ' + kuchyneSlovo +
+          ' se vším, co v nich máš, ' + st.uvareno + '× uvařeno, naplánovaná vaření ' +
+          'i nákupní seznam. Nejde to vzít zpátky.';
+
+        if (!confirm(varovani)) return;
+        // Jeste jednou, jinym typem otazky - "Smazat úcet?" se da odklepnout
+        // z reflexu, ale "Opravdu?" uz vetsinou ne.
+        if (!confirm('Opravdu? Poslední šance couvnout.')) return;
+
+        const btn = document.getElementById('profil-smazat');
+        btn.disabled = true;
+        btn.textContent = 'Mažu…';
+        try {
+          await api('/api/account', {}, 'DELETE');
+        } catch (e) {
+          alert('Nepovedlo se to: ' + e.message);
+          btn.disabled = false;
+          btn.textContent = 'Smazat účet';
+          return;
+        }
+
+        // Server je hotovy. Ted uklidime vsechno, co ma appka o uctu
+        // v prohlizeci - jinak by se pri pristim prihlaseni oblibene
+        // a hodnoceni poslaly zpatky (viz Store.zapomenVseOReceptech).
+        Store.setSession('');
+        Store.zapomenVseOReceptech();
+        reviewCache.clear();
+        currentUser = null;
+        pantryItems = [];
+        kuchyne = [];
+        kuchynId = null;
+        favorites = [];
+        wishlist = [];
+        znameServeru = new Set();
+
+        paintKuchyn();
+        paintAuth();
+        paintProfile();
+        zavriProfil();
+        ukazBranu(true);
+        renderGrid();
       });
     })();
 

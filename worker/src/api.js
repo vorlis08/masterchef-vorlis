@@ -69,6 +69,22 @@ export async function updateProfile(request, env, session, origin, cors) {
   return json(user, origin, cors);
 }
 
+/**
+ * Smaze ucet a VSECHNO, co k nemu patri.
+ *
+ * Staci smazat radek v `users` - kuchyne, spiz, bookingy, zamky,
+ * hodnoceni, nakupni seznam i historie e-mailu na nej odkazuji cizim
+ * klicem s `ON DELETE CASCADE`, takze zmizi same. Neni to soft-delete:
+ * po tomhle dotazu uz nikde nic nezbyde a nejde to vratit.
+ *
+ * Potvrzeni se dela na strane appky (viz index.astro) - sem uz prichazi
+ * jen prihlaseny pozadavek, ktery ma smysl provest hned.
+ */
+export async function deleteAccount(env, session, origin, cors) {
+  await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(session.sub).run();
+  return json({ ok: true }, origin, cors);
+}
+
 // -- Kuchyne --------------------------------------------------------------
 //
 // Kuchyn JE spiz - jen jich clovek muze mit vic (byt, chata) a kazda ma
