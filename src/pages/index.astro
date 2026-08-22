@@ -130,7 +130,8 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10" id="recipe-grid"></div>
     <div id="no-results" class="hidden text-center py-24">
       <p class="display text-[22px] text-text mb-2">Tady zatím nic není</p>
-      <p class="text-text-muted text-[14px] max-w-[280px] mx-auto leading-relaxed">Zkus hledat jinak, nebo přidej první recept tlačítkem plus.</p>
+      <p class="text-text-muted text-[14px] max-w-[280px] mx-auto leading-relaxed mb-5">Podle zadaného hledání nebo filtrů nic nesedí.</p>
+      <button id="no-results-reset" class="filtr-zrusit">✕ Zrušit hledání a filtry</button>
     </div>
   </section>
 
@@ -972,7 +973,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
   <script>
     import {
       fold, esc, escAttr, splitQty, scaleIngredient, roman,
-      parseDurations, fmtClock, parseIngredients, ingredientMatch,
+      parseDurations, fmtClock, parseIngredients,
     } from '../lib/recipe-logic.js';
     import { filterRecipes, headingFor, countLabel } from '../lib/filters.js';
     import { gridView } from '../lib/recipe-view.js';
@@ -1606,6 +1607,16 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         updateFilters(); renderGrid();
       });
 
+      // Prazdny vysledek hledani ma vlastni tlacitko se stejnym resetem,
+      // navic i s vyprazdnenim vyhledavaciho pole - filtry samy o sobe by
+      // recept, ktery nesedi na zadany text, stejne nevratily.
+      const noResultsReset = document.getElementById('no-results-reset');
+      if (noResultsReset) noResultsReset.addEventListener('click', () => {
+        searchInput.value = '';
+        activeCategory = 'all'; activeMeal = ''; activeTime = ''; activeStav = '';
+        updateFilters(); renderGrid();
+      });
+
       const navAll = document.getElementById('nav-all');
       const navFav = document.getElementById('nav-fav');
       if (navAll) navAll.classList.toggle('text-accent', activeCategory !== '__fav');
@@ -1947,10 +1958,16 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const userIngs = parseIngredients(chefInput.value);
       if (userIngs.length === 0) return;
 
+      // sediSurovina (uz pouzita ve spizi) srovnava hole koreny slov, ne
+      // cele podretezce - ingredientMatch by "smetanu" nesparoval se
+      // "smetany" a "kureci prsa" s "kurecich prsou" (ceske sklonovani),
+      // takze recept s presne zadanymi surovinami vypadl z vysledku
+      // uplne. Kdo napise, co ma v lednici, ma videt i recepty, ktere na
+      // to sedi.
       const scored = recipes.map(r => {
         const total = (r.ingredients || []).length;
         if (total === 0) return null;
-        const matched = (r.ingredients || []).filter(ing => ingredientMatch(userIngs, ing)).length;
+        const matched = (r.ingredients || []).filter(ing => userIngs.some(ui => sediSurovina(ui, ing))).length;
         return { recipe: r, matched, total, pct: Math.round((matched / total) * 100) };
       }).filter(s => s && s.matched > 0).sort((a, b) => b.pct - a.pct || b.matched - a.matched);
 

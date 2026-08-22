@@ -64,6 +64,17 @@ body {
 .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
+/* Filtrove pilulky (CHOD/CAS/STAV) na mobilu vodorovne scrolluji, ale
+   koncily natvrdo usteknute na okraji obrazovky - nic nerikalo, ze je
+   tam jeste dalsi pilulka. Tenky dozvuk (fade) napravo je stejne citelny
+   signal "scrolluj dal" jako sipka, jen se neplete do rozlozeni. */
+@media (max-width: 639px) {
+  #filter-bar, #filter-bar-2, #filter-bar-3 {
+    mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  }
+}
+
 /* iOS Safari zvetsi (zoomne) cely viewport, kdyz ma fokusovane pole
    font-size pod 16px - appka pak na iPhonu pri kazdem psani "skoci",
    zatimco na Androidu/desktopu ne. Radeji sjednotime velikost pod 640px,
