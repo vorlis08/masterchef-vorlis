@@ -304,10 +304,15 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           </button>
         </div>
 
-        <label class="flex items-center gap-2 mb-3 cursor-pointer shrink-0">
-          <input type="checkbox" id="checklist-detail" />
-          <span class="text-[12px] text-text-muted">Vypisovat množství úplně u všeho</span>
-        </label>
+        <div class="flex items-center justify-between gap-3 mb-3 shrink-0">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="checklist-detail" />
+            <span class="text-[12px] text-text-muted">Vypisovat množství úplně u všeho</span>
+          </label>
+          <!-- Rychla orientace v devet sekcich a 140+ polozkach: sbal vsechno
+               a rozbaluj jen tu policku, u ktere prave stojis. -->
+          <button type="button" id="checklist-sbalit-vse" class="text-[12px] text-text-muted hover:text-accent transition-colors shrink-0 whitespace-nowrap">Sbalit vše</button>
+        </div>
 
         <input id="checklist-filter" type="text" placeholder="Hledat v seznamu…" class="w-full bg-surface border border-border rounded-lg py-2 px-3 text-text text-[14px] focus:outline-none focus:border-accent transition-colors mb-3 shrink-0" />
 
@@ -3984,9 +3989,23 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     const checklistBody    = document.getElementById('checklist-body');
     let checklistGroups = [];
 
+    // Pres sto polozek v jednom sloupci nejde prohlednout ani zorientovat
+    // se v nem (viz komentar u spizPodleSekci v catalog.js) - proto se
+    // sekce daji sbalit, jedna po druhe, jak clovek prochazi kuchyni.
+    // Zacina se se vsemi rozbalenymi (nic se neschova samo od sebe), ale
+    // jakmile nejakou sbalis, zustane sbalena, dokud seznam znovu neotevres.
+    let checklistSbaleno = new Set();
+
+    document.getElementById('checklist-sbalit-vse').addEventListener('click', () => {
+      const vseSbaleno = checklistGroups.length > 0 && checklistGroups.every(s => checklistSbaleno.has(s.group));
+      checklistSbaleno = vseSbaleno ? new Set() : new Set(checklistGroups.map(s => s.group));
+      renderChecklist();
+    });
+
     function openChecklist() {
       document.getElementById('checklist-detail').checked = Store.getPantryDetail();
       checklistGroups = buildChecklist(recipes, pantryItems);
+      checklistSbaleno = new Set();
       renderChecklist();
       checklistOverlay.classList.remove('hidden');
       requestAnimationFrame(() => {
@@ -4016,13 +4035,38 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           : skupina.items;
         if (!items.length) return;
 
-        html += '<h3 class="label text-accent sticky top-0 bg-bg py-2 z-10">' + esc(skupina.group) + '</h3>';
-        html += '<ul class="divide-y divide-border mb-3">' + items.map(it => radek(it, detail)).join('') + '</ul>';
+        // Pri hledani se sbaleni ignoruje - kdyz nekdo hleda "cesnek",
+        // nema smysl mu schovavat vysledek jen proto, ze si predtim
+        // sbalil "Zeleninu a ovoce".
+        const jeSbaleno = !hledat && checklistSbaleno.has(skupina.group);
+        const vyplneno = skupina.items.filter(it => it.inPantry).length;
+
+        html += '<button type="button" class="chk-hlavicka w-full flex items-center justify-between gap-2 sticky top-0 bg-bg py-2.5 z-10" data-group="' + escAttr(skupina.group) + '" aria-expanded="' + (!jeSbaleno) + '">' +
+          '<span class="label text-accent">' + esc(skupina.group) + '</span>' +
+          '<span class="flex items-center gap-2 text-text-muted">' +
+            '<span class="meta">' + vyplneno + ' z ' + skupina.items.length + '</span>' +
+            '<svg class="w-3.5 h-3.5 transition-transform ' + (jeSbaleno ? '-rotate-90' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>' +
+          '</span>' +
+        '</button>';
+        if (!jeSbaleno) {
+          html += '<ul class="divide-y divide-border mb-3">' + items.map(it => radek(it, detail)).join('') + '</ul>';
+        }
       });
 
       checklistBody.innerHTML = html ||
         '<p class="py-8 text-center text-[13px] text-text-muted">Nic takového v seznamu není. Přidat vlastní jde v kuchyni.</p>';
+      checklistBody.querySelectorAll('.chk-hlavicka').forEach(h => h.addEventListener('click', () => {
+        const g = h.dataset.group;
+        if (checklistSbaleno.has(g)) checklistSbaleno.delete(g); else checklistSbaleno.add(g);
+        renderChecklist();
+      }));
       bindChecklistRows();
+
+      const sbalitVse = document.getElementById('checklist-sbalit-vse');
+      if (sbalitVse) {
+        const vseSbaleno = checklistGroups.length > 0 && checklistGroups.every(s => checklistSbaleno.has(s.group));
+        sbalitVse.textContent = vseSbaleno ? 'Rozbalit vše' : 'Sbalit vše';
+      }
     }
 
     /**
@@ -4057,9 +4101,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
             jednotka +
           '</div>';
 
-      return '<li class="py-2.5 flex items-center gap-3">' +
-        '<span class="w-2 h-2 rounded-full shrink-0 ' + (it.inPantry ? 'bg-accent' : 'bg-border') + '"></span>' +
-        '<span class="flex-1 min-w-0 text-[14px] text-text truncate">' + esc(it.name) + '</span>' +
+      // Zadny `truncate`: krokovadlo + jednotka uz beztak zaberou vetsinu
+      // radku, takze delsim nazvum ("mouka polohruba") nezbyva sirka a
+      // orizly se uprostred slova ("mouka poloh..."). At se radeji
+      // zalomi na dva radky - porad citelne, jen o kousek vyssi.
+      return '<li class="py-2.5 flex items-start gap-3">' +
+        '<span class="w-2 h-2 rounded-full shrink-0 mt-2 ' + (it.inPantry ? 'bg-accent' : 'bg-border') + '"></span>' +
+        '<span class="flex-1 min-w-0 text-[14px] text-text leading-snug py-1">' + esc(it.name) + '</span>' +
         ovladani +
       '</li>';
     }
