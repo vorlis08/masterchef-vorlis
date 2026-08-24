@@ -943,12 +943,16 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     </div>
   </div>
 
-  <!-- Mobile bottom nav -->
+  <!-- Mobile bottom nav. Poradi (zleva doprava): Spiz, Oblibene, AI
+       (stred, vyvyseny), Nakup, Profil - spiz je jadro appky (sekce 1),
+       ne "dalsi seznam", proto je hned prvni; profil vzdy uplne vpravo,
+       at ho clovek najde na stejnem miste jako palec na pravem okraji. -->
   <nav class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-bg/95 backdrop-blur-lg border-t border-border pb-[env(safe-area-inset-bottom)]">
-    <div class="grid grid-cols-4 items-end">
-      <button id="nav-all" class="flex flex-col items-center gap-1 py-2.5 text-text-muted transition-colors">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
-        <span class="text-[10px] font-medium">Recepty</span>
+    <div class="grid grid-cols-5 items-end">
+      <button id="nav-pantry" class="relative flex flex-col items-center gap-1 py-2.5 text-text-muted transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 3h16.5M3.75 3H2.25M20.25 3h1.5M9 7.5h6M9 11.25h6M8.25 16.5v3.75M15.75 16.5v3.75" /></svg>
+        <span class="text-[10px] font-medium">Spíž</span>
+        <span id="nav-pantry-badge" class="hidden absolute top-1 right-[22%] min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-semibold flex items-center justify-center"></span>
       </button>
       <button id="nav-fav" class="flex flex-col items-center gap-1 py-2.5 text-text-muted transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
@@ -964,7 +968,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         <span class="text-[10px] font-medium">Nákup</span>
         <span id="nav-shop-count" class="hidden absolute top-1 right-[22%] min-w-[16px] h-4 px-1 rounded-full bg-accent text-white text-[9px] font-semibold flex items-center justify-center"></span>
       </button>
-          </div>
+      <button id="nav-profil" class="flex flex-col items-center gap-1 py-2.5 text-text-muted transition-colors">
+        <svg id="nav-profil-ikona" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+        <img id="nav-profil-foto" alt="" class="hidden w-6 h-6 rounded-full object-cover" />
+        <span class="text-[10px] font-medium">Profil</span>
+      </button>
+    </div>
   </nav>
 
 
@@ -1045,6 +1054,10 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const label = document.getElementById('auth-label');
       const foto = document.getElementById('auth-foto');
       const ikona = document.getElementById('auth-ikona');
+      // Stejna dvojice ikona/foto v mobilnim spodnim navu - profil se
+      // tam pozna podle stejneho obrazku jako v hlavicce.
+      const navFoto = document.getElementById('nav-profil-foto');
+      const navIkona = document.getElementById('nav-profil-ikona');
       if (!btn || !label) return;
 
       if (currentUser) {
@@ -1057,11 +1070,18 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           foto.classList.remove('hidden');
         }
         if (ikona) ikona.classList.add('hidden');
+        if (navFoto) {
+          navFoto.src = currentUser.avatar || (ZAKLAD_URL + 'avatary/panev.svg');
+          navFoto.classList.remove('hidden');
+        }
+        if (navIkona) navIkona.classList.add('hidden');
       } else {
         label.textContent = 'Přihlásit';
         btn.title = 'Přihlásit se přes Google';
         if (foto) foto.classList.add('hidden');
         if (ikona) ikona.classList.remove('hidden');
+        if (navFoto) navFoto.classList.add('hidden');
+        if (navIkona) navIkona.classList.remove('hidden');
       }
     }
 
@@ -1617,9 +1637,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
         updateFilters(); renderGrid();
       });
 
-      const navAll = document.getElementById('nav-all');
       const navFav = document.getElementById('nav-fav');
-      if (navAll) navAll.classList.toggle('text-accent', activeCategory !== '__fav');
       if (navFav) navFav.classList.toggle('text-accent', activeCategory === '__fav');
     }
 
@@ -2563,16 +2581,16 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     updateShoppingBadge();
 
     // --- Bottom nav (mobile) ---
-    document.getElementById('nav-all').addEventListener('click', () => {
-      activeCategory = 'all'; updateFilters(); renderGrid();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
     document.getElementById('nav-fav').addEventListener('click', () => {
       activeCategory = '__fav'; updateFilters(); renderGrid();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
     document.getElementById('nav-chef').addEventListener('click', () => document.getElementById('chef-btn').click());
     document.getElementById('nav-shop').addEventListener('click', () => document.getElementById('shopping-btn').click());
+    document.getElementById('nav-pantry').addEventListener('click', () => document.getElementById('pantry-btn').click());
+    // Profil v listě je stejne tlacitko jako "auth-btn" v hlavicce -
+    // prihlaseny se jim dostane do profilu, odhlaseny na prihlaseni.
+    document.getElementById('nav-profil').addEventListener('click', () => document.getElementById('auth-btn').click());
 
     // --- Zavirani oken: Escape a tlacitko zpet ----------------------------
     //
@@ -3805,12 +3823,12 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       // Odznak u tlacitka: kolik veci dochazi nebo doslo. Nula se
       // neukazuje - prazdny krouzek nikomu nic nerekne.
-      const odznak = document.getElementById('pantry-badge');
-      if (odznak) {
-        const dochazi = kolik('dochazi') + kolik('doslo');
+      const dochazi = kolik('dochazi') + kolik('doslo');
+      [document.getElementById('pantry-badge'), document.getElementById('nav-pantry-badge')].forEach(odznak => {
+        if (!odznak) return;
         odznak.textContent = dochazi > 99 ? '99+' : dochazi;
         odznak.classList.toggle('hidden', dochazi === 0);
-      }
+      });
 
       const sekce = spizPodleSekci(views, pantryHledane);
       const nenalezeno = document.getElementById('pantry-nenalezeno');
