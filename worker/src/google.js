@@ -59,10 +59,15 @@ export async function startLogin(request, env, allowed) {
   to.searchParams.set('client_id', env.GOOGLE_CLIENT_ID);
   to.searchParams.set('redirect_uri', redirectUri(request));
   to.searchParams.set('response_type', 'code');
-  // Kalendar je navic k prihlaseni. Google si na nej rekne uzivateli
-  // zvlast - kdo souhlas nedá, prihlasi se dal, jen mu vareni do
-  // kalendare chodit nebude.
-  to.searchParams.set('scope', 'openid email profile ' + SCOPE_KALENDAR);
+  // Kalendar je navic k prihlaseni, ne jeho soucast - proto se o nej
+  // rika jen tehdy, kdyz uzivatel prisel PRAVE kvuli nemu (consent=1,
+  // tlacitko "Připojit Google kalendář"). Bezne prihlaseni tak zada jen
+  // o "openid email profile" - tri necitlive rozsahy, ktere Google
+  // nevyzaduji predchozi overeni appky. Kdyz se `calendar.events`
+  // (citlivy rozsah) zada pri kazdem prihlaseni, Google appku nepusti
+  // do produkce (nabidne jen "Publish" po dokonceni overeni) - presne
+  // tohle appku drzelo v Testing rezimu s limitem 100 uctu.
+  to.searchParams.set('scope', chceKalendar ? 'openid email profile ' + SCOPE_KALENDAR : 'openid email profile');
   to.searchParams.set('state', state);
 
   // Bez `offline` dostaneme jen hodinovy pristup a do kalendare by
