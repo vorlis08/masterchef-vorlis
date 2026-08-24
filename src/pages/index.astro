@@ -295,11 +295,19 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     <div class="fixed inset-0 flex items-center justify-center p-3 sm:p-6">
       <div id="checklist-modal" class="bg-bg border border-border rounded-2xl w-full max-w-2xl p-5 sm:p-7 scale-95 opacity-0 transition-all duration-200 max-h-[92vh] flex flex-col">
         <div class="flex items-start justify-between gap-3 mb-4 shrink-0">
-          <div class="min-w-0">
-            <h2 class="text-[20px] font-semibold text-text">Co mám doma</h2>
-            <p id="checklist-progress" class="meta text-text-muted"></p>
+          <div class="min-w-0 flex items-start gap-2">
+            <!-- "Co mam doma" se otvira z "Moje kuchyne" - sipka vraci
+                 tam, X (vedle) zavira uplne vsechno. Dve ruzne veci, ne
+                 jedno tlacitko se dvema vyznamy. -->
+            <button id="checklist-back" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors shrink-0 mt-0.5" title="Zpět do Moje kuchyně" aria-label="Zpět do Moje kuchyně">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+            </button>
+            <div class="min-w-0">
+              <h2 class="text-[20px] font-semibold text-text">Co mám doma</h2>
+              <p id="checklist-progress" class="meta text-text-muted"></p>
+            </div>
           </div>
-          <button id="checklist-close" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors shrink-0">
+          <button id="checklist-close" class="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-text-muted hover:text-text transition-colors shrink-0" title="Zavřít">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -3809,6 +3817,16 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     let pantryHledane = '';
 
+    // Kompaktni ikony misto trech sirokych pilulek "Mam/Dochazi/Nemam" -
+    // pouziva rychly prehled ve "Moje kuchyne" i velky seznam "Co mam doma".
+    const STATUS_ICONS = { mam: '✓', dochazi: '◐', doslo: '✕' };
+
+    /** Jednotka je od teď pevna (appka si ji vybere sama) - uzivatel uz
+     *  ji v seznamu nemeni, jen +/- meni mnozstvi v ni. */
+    function defaultUnit(it) {
+      return it.unit || (it.units && it.units[0]) || (it.kind === 'count' ? 'ks' : 'g');
+    }
+
     function renderPantry() {
       const views = pantryView(pantryItems, Store.getPantryDetail());
       document.getElementById('pantry-empty').classList.toggle('hidden', views.length > 0);
@@ -3844,16 +3862,18 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
       const radek = v => {
         const polozka = pantryItems.find(x => String(x.id) === String(v.id)) || v;
+        // Stejna kompaktni tabulka jako v "Co mam doma": pevna jednotka
+        // (uz se nevybira rucne) a ikony misto sirokych pilulek.
         const ovladani = v.showQuantity
           ? '<div class="flex items-center gap-1.5">' +
               krokovadlo('pantry', v.id, v.quantity, v.unit, krokMnozstvi(polozka)) +
-              '<input class="pantry-unit w-14 bg-surface border border-border rounded-lg py-1.5 px-2 text-text-muted text-[13px] focus:outline-none focus:border-accent" ' +
-              'type="text" maxlength="20" placeholder="' + (v.countable ? 'ks' : 'g') + '" value="' + escAttr(v.unit) + '" data-id="' + escAttr(v.id) + '" />' +
+              '<span class="text-[12px] text-text-muted w-7 shrink-0">' + esc(v.unit || (v.countable ? 'ks' : 'g')) + '</span>' +
             '</div>'
           : '<div class="flex gap-1">' + STATUSES.map(st =>
-              '<button class="pantry-status px-2.5 py-1.5 rounded-lg text-[12px] border transition-colors ' +
+              '<button class="pantry-status w-7 h-7 rounded-md text-[13px] border transition-colors flex items-center justify-center ' +
               (v.status === st ? 'bg-accent text-white border-accent' : 'bg-surface text-text-muted border-border hover:border-accent') +
-              '" data-id="' + escAttr(v.id) + '" data-status="' + escAttr(st) + '">' + esc(statusLabel(st)) + '</button>'
+              '" data-id="' + escAttr(v.id) + '" data-status="' + escAttr(st) + '" title="' + escAttr(statusLabel(st)) + '" aria-label="' + escAttr(statusLabel(st)) + '">' +
+              STATUS_ICONS[st] + '</button>'
             ).join('') + '</div>';
 
         // Stav se pozna barvou proužku i tvarem popisku - barva sama
@@ -3932,13 +3952,13 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           savePantryItem({ ...it, quantity: posunMnozstvi(it, smer) });
         })
       );
-      pantryList.querySelectorAll('.pantry-qty, .pantry-unit').forEach(inp =>
+      // Jednotka uz neni editovatelna (appka ji vybira sama), takze se
+      // uklada jen prepis presneho mnozstvi.
+      pantryList.querySelectorAll('.pantry-qty').forEach(inp =>
         inp.addEventListener('change', () => {
           const it = itemById(inp.dataset.id);
           if (!it) return;
-          const qty = pantryList.querySelector('.pantry-qty[data-id="' + inp.dataset.id + '"]');
-          const unit = pantryList.querySelector('.pantry-unit[data-id="' + inp.dataset.id + '"]');
-          savePantryItem({ ...it, quantity: qty ? qty.value : '', unit: unit ? unit.value : '' });
+          savePantryItem({ ...it, quantity: inp.value, unit: defaultUnit(it) });
         })
       );
       pantryList.querySelectorAll('.pantry-del').forEach(b =>
@@ -4072,9 +4092,9 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     /**
      * Jeden radek seznamu.
      *
-     * - priblizna surovina  -> jen Mam / Dochazi / Nemam
+     * - priblizna surovina  -> jen Mam / Dochazi / Nemam (kompaktni ikony)
      * - pocitana (vejce)    -> pocet a "ks"
-     * - vazena (maso)       -> mnozstvi a jednotka
+     * - vazena (maso)       -> mnozstvi a pevna jednotka
      *
      * `detail` = uzivatel si nahore rekl, ze chce mnozstvi uplne u vseho.
      */
@@ -4082,29 +4102,21 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
       const klic = escAttr(it.name);
       const ptatSeNaMnozstvi = detail || it.kind !== 'approx';
 
-      // Kdyz katalog zna vic jednotek (brambory kg/ks), nabidneme vyber.
-      const jednotka = it.units && it.units.length
-        ? '<select class="chk-unit bg-surface border border-border rounded-lg py-1.5 px-1 text-text-muted text-[12px] focus:outline-none focus:border-accent" data-name="' + klic + '">' +
-            it.units.map(u => '<option value="' + escAttr(u) + '"' + ((it.unit || it.units[0]) === u ? ' selected' : '') + '>' + esc(u) + '</option>').join('') +
-          '</select>'
-        : '<input class="chk-unit w-14 bg-surface border border-border rounded-lg py-1.5 px-2 text-text-muted text-[13px] focus:outline-none focus:border-accent" ' +
-          'type="text" maxlength="20" placeholder="' + (it.kind === 'count' ? 'ks' : 'g') + '" value="' + escAttr(it.unit) + '" data-name="' + klic + '" />';
-
       const ovladani = !ptatSeNaMnozstvi
         ? '<div class="flex gap-1 shrink-0">' + STATUSES.map(st =>
-            '<button class="chk-status px-2 py-1.5 rounded-lg text-[12px] border transition-colors ' +
+            '<button class="chk-status w-7 h-7 rounded-md text-[13px] border transition-colors flex items-center justify-center ' +
             (it.status === st ? 'bg-accent text-white border-accent' : 'bg-surface text-text-muted border-border hover:border-accent') +
-            '" data-name="' + klic + '" data-status="' + escAttr(st) + '">' + esc(statusLabel(st)) + '</button>'
+            '" data-name="' + klic + '" data-status="' + escAttr(st) + '" title="' + escAttr(statusLabel(st)) + '" aria-label="' + escAttr(statusLabel(st)) + '">' +
+            STATUS_ICONS[st] + '</button>'
           ).join('') + '</div>'
         : '<div class="flex items-center gap-1.5 shrink-0">' +
             krokovadloSeznam(it, klic) +
-            jednotka +
+            '<span class="text-[12px] text-text-muted w-7 shrink-0">' + esc(defaultUnit(it)) + '</span>' +
           '</div>';
 
-      // Zadny `truncate`: krokovadlo + jednotka uz beztak zaberou vetsinu
-      // radku, takze delsim nazvum ("mouka polohruba") nezbyva sirka a
-      // orizly se uprostred slova ("mouka poloh..."). At se radeji
-      // zalomi na dva radky - porad citelne, jen o kousek vyssi.
+      // Zadny `truncate`: i po zuzeni ovladacich prvku na kompaktni tabulku
+      // se delsi nazvy ("mouka polohruba") radeji zalomi na dva radky, nez
+      // aby se orizly uprostred slova.
       return '<li class="py-2.5 flex items-start gap-3">' +
         '<span class="w-2 h-2 rounded-full shrink-0 mt-2 ' + (it.inPantry ? 'bg-accent' : 'bg-border') + '"></span>' +
         '<span class="flex-1 min-w-0 text-[14px] text-text leading-snug py-1">' + esc(it.name) + '</span>' +
@@ -4115,7 +4127,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
     /** Krokovadlo v dlouhem seznamu. Klic je nazev, ne id - polozka
      *  jeste nemusi ve spizi existovat. */
     function krokovadloSeznam(it, klic) {
-      const krok = krokMnozstvi({ kind: it.kind, unit: it.unit || (it.units && it.units[0]) });
+      const krok = krokMnozstvi({ kind: it.kind, unit: defaultUnit(it) });
       return '<div class="krokovadlo">' +
         '<button type="button" class="chk-minus krok-btn" data-name="' + klic + '" aria-label="O ' + escAttr(krok) + ' míň">&minus;</button>' +
         '<input class="chk-qty krok-pole" type="number" min="0" step="any" inputmode="decimal" ' +
@@ -4174,20 +4186,20 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
           const it = checklistItem(b.dataset.name);
           if (!it) return;
           const smer = b.classList.contains('chk-plus') ? 1 : -1;
-          const jednotka = it.unit || (it.units && it.units[0]) || '';
+          const jednotka = defaultUnit(it);
           saveChecklistRow(it, {
             quantity: posunMnozstvi({ kind: it.kind, unit: jednotka, quantity: it.quantity }, smer),
             unit: jednotka,
           });
         })
       );
-      checklistBody.querySelectorAll('.chk-qty, .chk-unit').forEach(inp =>
+      // Jednotka uz neni editovatelna (appka ji vybira sama) - zbyva jen
+      // rucni prepis presneho mnozstvi v poli mezi +/-.
+      checklistBody.querySelectorAll('.chk-qty').forEach(inp =>
         inp.addEventListener('change', () => {
           const it = checklistItem(inp.dataset.name);
           if (!it) return;
-          const q = checklistBody.querySelector('.chk-qty[data-name="' + CSS.escape(inp.dataset.name) + '"]');
-          const u = checklistBody.querySelector('.chk-unit[data-name="' + CSS.escape(inp.dataset.name) + '"]');
-          saveChecklistRow(it, { quantity: q ? q.value : '', unit: u ? u.value : '' });
+          saveChecklistRow(it, { quantity: inp.value, unit: defaultUnit(it) });
         })
       );
     }
@@ -4207,6 +4219,7 @@ const categories = [...new Set(recipesData.map((r: any) => r.category))];
 
     document.getElementById('checklist-open').addEventListener('click', openChecklist);
     document.getElementById('checklist-close').addEventListener('click', closeChecklist);
+    document.getElementById('checklist-back').addEventListener('click', () => { closeChecklist(); openPantry(); });
     checklistOverlay.addEventListener('click', e => { if (e.target === checklistOverlay) closeChecklist(); });
     document.getElementById('checklist-filter').addEventListener('input', renderChecklist);
 

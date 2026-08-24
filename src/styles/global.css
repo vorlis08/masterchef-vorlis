@@ -1569,9 +1569,10 @@ body {
 .spiz-nazev {
   font-size: 14px;
   color: var(--color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.35;
+  /* Drive orizle "mouka poloh..." pri sirsim ovladani vedle - radeji
+     necha delsi nazev zalomit na druhy radek, nez aby ho utnul uprostred
+     slova (viz stejna oprava u "Co mam doma" v index.astro). */
 }
 
 /* „Mám doma standardně" bývalo zaškrtávátko s popiskem pod každým
